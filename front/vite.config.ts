@@ -13,7 +13,7 @@ export default defineConfig({
   },
   // Add the preview configuration for production builds
   preview: {
-    port: 4174,
+    port: 4175,
     host: "0.0.0.0",
     allowedHosts: [
       "admin.natural-supps.com",
