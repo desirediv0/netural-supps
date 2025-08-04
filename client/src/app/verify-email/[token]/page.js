@@ -324,7 +324,7 @@ export default function VerifyEmailPage({ params }) {
                 <div className="bg-orange-50 rounded-lg p-4 mb-6 w-full">
                   <div className="flex items-center space-x-2 text-sm text-gray-700">
                     <Sparkles className="w-4 h-4 text-orange-600" />
-                    <span>Don't forget to check your spam folder</span>
+                    <span>Don&apos;t forget to check your spam folder</span>
                   </div>
                 </div>
                 <Link href="/login">
