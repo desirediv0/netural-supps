@@ -33,6 +33,7 @@ import { AlertCircle } from "lucide-react";
 import { Card, CardContent } from "./components/ui/card";
 import UserManagementPage from "./pages/UserManagementPage";
 import AnalyticsDashboard from "@/pages/AnalyticsDashboard";
+import BrandsPage from "./pages/BrandsPage";
 
 // Protected Route Component
 const ProtectedRoute = ({
@@ -443,6 +444,15 @@ const App = () => {
             element={
               <ProtectedRoute resource={Resource.FAQS} action={Action.CREATE}>
                 <FAQCreatePage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="brands"
+            element={
+              <ProtectedRoute resource={Resource.BRANDS} action={Action.READ}>
+                <BrandsPage />
               </ProtectedRoute>
             }
           />

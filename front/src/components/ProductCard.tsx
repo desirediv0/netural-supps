@@ -29,6 +29,12 @@ interface ProductVariant {
   flavor?: { id: string; name: string } | null;
   weight?: { id: string; value: number; unit: string } | null;
   quantity: number;
+  images?: Array<{
+    id: string;
+    url: string;
+    alt?: string;
+    isPrimary?: boolean;
+  }>;
 }
 
 // Add helper functions to determine if it's a simple product and to get a display name for variants
@@ -75,8 +81,40 @@ export function ProductCard({
     null
   );
 
-  // Find primary image or use first image
-  const primaryImage = images.find((img) => img.isPrimary) || images[0];
+  // Get display image considering variant images with improved fallback
+  const getDisplayImage = () => {
+    // Priority 1: Selected variant images
+    if (selectedVariant?.images && selectedVariant.images.length > 0) {
+      const primaryVariantImage = selectedVariant.images.find(
+        (img) => img.isPrimary
+      );
+      return primaryVariantImage || selectedVariant.images[0];
+    }
+
+    // Priority 2: Product images
+    const productImage = images.find((img) => img.isPrimary) || images[0];
+    if (productImage) {
+      return productImage;
+    }
+
+    // Priority 3: Any variant images from any variant
+    if (variants && variants.length > 0) {
+      const variantWithImages = variants.find(
+        (variant) => variant.images && variant.images.length > 0
+      );
+      if (variantWithImages && variantWithImages.images) {
+        const primaryVariantImage = variantWithImages.images.find(
+          (img) => img.isPrimary
+        );
+        return primaryVariantImage || variantWithImages.images[0];
+      }
+    }
+
+    // Final fallback
+    return null;
+  };
+
+  const displayImage = getDisplayImage();
 
   // Set default variant on initial load
   useEffect(() => {
@@ -183,8 +221,8 @@ export function ProductCard({
       <div className="relative overflow-hidden">
         <Link to={`/products/${slug}`}>
           <img
-            src={primaryImage?.url || "/placeholder-product.jpg"}
-            alt={primaryImage?.alt || name}
+            src={displayImage?.url || "/placeholder-product.jpg"}
+            alt={displayImage?.alt || name}
             className="h-48 w-full object-cover transition-transform group-hover:scale-105"
           />
         </Link>

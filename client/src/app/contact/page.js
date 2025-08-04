@@ -389,7 +389,7 @@ export default function ContactPage() {
                     },${
                       contactInfo?.mapCoordinates?.lng || 72.8777
                     }&t=&z=13&ie=UTF8&iwloc=&output=embed`}
-                    title="Power Fitness Location"
+                    title="Natural Supps Location"
                     width="100%"
                     height="100%"
                     style={{ border: 0 }}

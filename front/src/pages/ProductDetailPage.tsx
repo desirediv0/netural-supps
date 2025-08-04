@@ -295,6 +295,11 @@ export default function ProductDetailPage() {
               Featured
             </Badge>
           )}
+          {product.ourProduct && (
+            <Badge variant="default" className="ml-2 bg-blue-600">
+              Our Product
+            </Badge>
+          )}
           {!product.isActive && (
             <Badge variant="destructive" className="ml-2">
               Inactive

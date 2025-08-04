@@ -73,7 +73,7 @@ export const registerUser = asyncHandler(async (req, res, next) => {
   try {
     await sendEmail({
       email,
-      subject: "Verify Your Email - GenuineNutrition",
+      subject: "Verify Your Email - Natural Supps",
       html: getVerificationTemplate(verificationLink),
     });
 
@@ -343,7 +343,7 @@ export const forgotPassword = asyncHandler(async (req, res, next) => {
   try {
     await sendEmail({
       email,
-      subject: "Reset Your Password - GenuineNutrition",
+      subject: "Reset Your Password - Natural Supps",
       html: getResetTemplate(resetLink),
     });
 
@@ -777,27 +777,127 @@ export const getUserWishlist = asyncHandler(async (req, res, next) => {
               include: {
                 flavor: true,
                 weight: true,
+                images: true,
+              },
+            },
+            reviews: {
+              where: { status: "APPROVED" },
+              select: { rating: true },
+            },
+            _count: {
+              select: {
+                reviews: true,
+                variants: true,
               },
             },
           },
         },
       },
+      orderBy: { createdAt: "desc" },
     });
 
-    // Format the response
-    const formattedItems = wishlistItems.map((item) => ({
-      id: item.id,
-      productId: item.product.id,
-      name: item.product.name,
-      description: item.product.description,
-      price:
-        item.product.variants[0]?.salePrice ||
-        item.product.variants[0]?.price ||
-        0,
-      images: item.product.images.map((img) => getFileUrl(img.url)),
-      slug: item.product.slug,
-      createdAt: item.createdAt,
-    }));
+    // Format the response with improved image handling
+    const formattedItems = wishlistItems.map((item) => {
+      const product = item.product;
+
+      // Enhanced image handling with fallback logic
+      let primaryImageUrl = null;
+      const allImages = [];
+
+      // Priority 1: Product images
+      if (product.images && product.images.length > 0) {
+        const primaryImage = product.images.find((img) => img.isPrimary);
+        primaryImageUrl = primaryImage
+          ? primaryImage.url
+          : product.images[0].url;
+
+        // Add all product images to the images array
+        allImages.push(...product.images.map((img) => getFileUrl(img.url)));
+      }
+      // Priority 2: Variant images as fallback
+      else if (product.variants && product.variants.length > 0) {
+        const variantWithImages = product.variants.find(
+          (variant) => variant.images && variant.images.length > 0
+        );
+        if (variantWithImages) {
+          const primaryImage = variantWithImages.images.find(
+            (img) => img.isPrimary
+          );
+          primaryImageUrl = primaryImage
+            ? primaryImage.url
+            : variantWithImages.images[0].url;
+
+          // Add variant images to the images array
+          allImages.push(
+            ...variantWithImages.images.map((img) => getFileUrl(img.url))
+          );
+        }
+      }
+
+      // Calculate average rating
+      const avgRating =
+        product.reviews.length > 0
+          ? (
+              product.reviews.reduce((sum, review) => sum + review.rating, 0) /
+              product.reviews.length
+            ).toFixed(1)
+          : 0;
+
+      // Get price from first available variant
+      const firstVariant = product.variants[0];
+      const price = firstVariant?.salePrice || firstVariant?.price || 0;
+      const regularPrice = firstVariant?.price || 0;
+      const hasSale =
+        firstVariant?.salePrice &&
+        firstVariant?.salePrice < firstVariant?.price;
+
+      return {
+        id: item.id,
+        productId: product.id,
+        name: product.name,
+        description: product.description,
+        price: price,
+        regularPrice: regularPrice,
+        hasSale: hasSale,
+        image: primaryImageUrl ? getFileUrl(primaryImageUrl) : null,
+        images: allImages,
+        slug: product.slug,
+        featured: product.featured,
+        avgRating: parseFloat(avgRating),
+        reviewCount: product._count.reviews,
+        flavors: product._count.variants,
+        variants: product.variants.map((variant) => ({
+          id: variant.id,
+          sku: variant.sku,
+          price: variant.price,
+          salePrice: variant.salePrice,
+          flavor: variant.flavor
+            ? {
+                id: variant.flavor.id,
+                name: variant.flavor.name,
+                image: variant.flavor.image
+                  ? getFileUrl(variant.flavor.image)
+                  : null,
+              }
+            : null,
+          weight: variant.weight
+            ? {
+                id: variant.weight.id,
+                value: variant.weight.value,
+                unit: variant.weight.unit,
+                display: `${variant.weight.value}${variant.weight.unit}`,
+              }
+            : null,
+          images: variant.images
+            ? variant.images.map((img) => ({
+                ...img,
+                url: getFileUrl(img.url),
+              }))
+            : [],
+        })),
+        createdAt: item.createdAt,
+      };
+    });
 
     res
       .status(200)
@@ -986,7 +1086,7 @@ export const requestAccountDeletion = asyncHandler(async (req, res, next) => {
   try {
     await sendEmail({
       email: user.email,
-      subject: "Confirm Account Deletion - GenuineNutrition",
+      subject: "Confirm Account Deletion - Natural Supps",
       html: getDeleteTemplate(deletionLink),
     });
 
@@ -1265,7 +1365,7 @@ export const resendVerificationEmail = asyncHandler(async (req, res, next) => {
   try {
     await sendEmail({
       email,
-      subject: "Verify Your Email - GenuineNutrition",
+      subject: "Verify Your Email - Natural Supps",
       html: getVerificationTemplate(verificationLink),
     });
 

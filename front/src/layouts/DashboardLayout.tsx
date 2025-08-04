@@ -1,4 +1,4 @@
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { Link, useLocation, Navigate, Outlet } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
@@ -89,6 +89,17 @@ export default function DashboardLayout() {
   const { admin, isAuthenticated, logout, isLoading } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // Prevent body scrolling
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = "unset";
+      document.documentElement.style.overflow = "unset";
+    };
+  }, []);
+
   if (isLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
@@ -111,7 +122,7 @@ export default function DashboardLayout() {
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background">
       {/* Sidebar - Desktop */}
-      <aside className="bg-sidebar hidden w-64 flex-col border-r border-sidebar-border md:flex">
+      <aside className="bg-sidebar hidden w-64 flex-col border-r border-sidebar-border md:flex flex-shrink-0">
         <div className="flex h-14 items-center border-b border-sidebar-border px-4">
           <Link
             to="/dashboard"
@@ -151,6 +162,16 @@ export default function DashboardLayout() {
                 hasPermission={hasPermissionFor(
                   admin,
                   Resource.PRODUCTS,
+                  Action.READ
+                )}
+              />
+              <NavItem
+                href="/brands"
+                icon={<Tags className="h-5 w-5" />}
+                title="Brands"
+                hasPermission={hasPermissionFor(
+                  admin,
+                  Resource.BRANDS,
                   Action.READ
                 )}
               />
@@ -264,12 +285,12 @@ export default function DashboardLayout() {
                   Action.READ
                 )}
               />
-              <NavItem
+              {/* <NavItem
                 href="/admins"
                 icon={<Users className="h-5 w-5" />}
                 title="Admins"
                 hasPermission={admin?.role === "SUPER_ADMIN"}
-              />
+              /> */}
             </div>
           </SafeRender>
         </nav>
@@ -354,6 +375,17 @@ export default function DashboardLayout() {
                 hasPermission={hasPermissionFor(
                   admin,
                   Resource.PRODUCTS,
+                  Action.READ
+                )}
+              />
+              <NavItem
+                href="/brands"
+                icon={<Tags className="h-5 w-5" />}
+                title="Brands"
+                onClick={toggleMobileMenu}
+                hasPermission={hasPermissionFor(
+                  admin,
+                  Resource.BRANDS,
                   Action.READ
                 )}
               />
@@ -530,7 +562,7 @@ export default function DashboardLayout() {
       </aside>
 
       {/* Main content */}
-      <div className="flex w-full flex-col">
+      <div className="flex w-full flex-col flex-1 min-h-0">
         {/* Topbar */}
         <header className="flex h-14 items-center justify-between border-b border-border px-4 lg:px-6">
           <div className="flex items-center md:hidden">

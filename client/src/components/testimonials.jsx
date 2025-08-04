@@ -11,7 +11,7 @@ export default function TestimonialsSection() {
       role: "Fitness Enthusiast",
       avatar: "RS",
       quote:
-        "I've tried many supplements, but GenuineNutrition products have truly made a difference in my training and recovery.",
+        "I've tried many supplements, but Natural Supps products have truly made a difference in my training and recovery.",
       rating: 5,
     },
     {

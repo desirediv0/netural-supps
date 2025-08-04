@@ -94,13 +94,10 @@ model Category {
   description String?
   image       String?
   slug        String            @unique
-  parentId    String?
   isDefault   Boolean           @default(false)
   createdBy   String?
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
-  parent      Category?         @relation("CategorySubcategories", fields: [parentId], references: [id])
-  children    Category[]        @relation("CategorySubcategories")
   products    ProductCategory[]
 }
 
@@ -113,6 +110,7 @@ model Product {
   ingredients       String?
   nutritionInfo     Json?
   featured          Boolean           @default(false)
+  productType       Json? // New field for flexible product categorization
   isActive          Boolean           @default(true)
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
@@ -121,6 +119,13 @@ model Product {
   metaTitle         String?
   metaDescription   String?
   keywords          String?
+  tags              String[]          @default([])
+  topBrandIds       String[]          @default([])
+  newBrandIds       String[]          @default([])
+  hotBrandIds       String[]          @default([])
+  ourProduct        Boolean           @default(false)
+  brandId           String?
+  brand             Brand?            @relation(fields: [brandId], references: [id])
   orderItems        OrderItem[]
   categories        ProductCategory[]
   images            ProductImage[]
@@ -136,9 +141,12 @@ model ProductImage {
   url       String
   alt       String?
   isPrimary Boolean  @default(false)
+  order     Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId, order])
 }
 
 model Flavor {
@@ -157,24 +165,39 @@ model Weight {
 }
 
 model ProductVariant {
-  id         String      @id @default(uuid())
+  id         String                @id @default(uuid())
   productId  String
-  sku        String      @unique
+  sku        String                @unique
   flavorId   String?
   weightId   String?
-  price      Decimal     @db.Decimal(10, 2)
-  salePrice  Decimal?    @db.Decimal(10, 2)
-  quantity   Int         @default(0)
-  isActive   Boolean     @default(true)
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
+  price      Decimal               @db.Decimal(10, 2)
+  salePrice  Decimal?              @db.Decimal(10, 2)
+  quantity   Int                   @default(0)
+  isActive   Boolean               @default(true)
+  createdAt  DateTime              @default(now())
+  updatedAt  DateTime              @updatedAt
   cartItems  CartItem[]
   orderItems OrderItem[]
-  flavor     Flavor?     @relation(fields: [flavorId], references: [id])
-  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
-  weight     Weight?     @relation(fields: [weightId], references: [id])
+  images     ProductVariantImage[]
+  flavor     Flavor?               @relation(fields: [flavorId], references: [id])
+  product    Product               @relation(fields: [productId], references: [id], onDelete: Cascade)
+  weight     Weight?               @relation(fields: [weightId], references: [id])
 
   @@unique([productId, flavorId, weightId])
+}
+
+model ProductVariantImage {
+  id        String         @id @default(uuid())
+  variantId String
+  url       String
+  alt       String?
+  isPrimary Boolean        @default(false)
+  order     Int            @default(0)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@index([variantId, order])
 }
 
 model CartItem {
@@ -488,6 +511,17 @@ model ProductView {
 
   @@index([productId])
   @@index([userId])
+}
+
+model Brand {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  slug      String    @unique
+  image     String
+  tags      String[]  @default([])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
 }
 
 enum UserRole {

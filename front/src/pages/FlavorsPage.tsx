@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { ErrorDialog } from "@/components/ErrorDialog";
+import { useDebounce } from "@/utils/debounce";
 
 export default function FlavorsPage() {
   const { id } = useParams();
@@ -54,12 +55,17 @@ function FlavorsList() {
     description: "",
   });
 
+  // Search state
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 500);
+
   // Fetch flavors
   useEffect(() => {
     const fetchFlavors = async () => {
       try {
         setIsLoading(true);
-        const response = await flavors.getFlavors();
+        const params = debouncedSearch ? { search: debouncedSearch } : {};
+        const response = await flavors.getFlavors(params);
 
         if (response.data.success) {
           setFlavorsList(response.data.data?.flavors || []);
@@ -75,12 +81,15 @@ function FlavorsList() {
     };
 
     fetchFlavors();
-  }, []);
+  }, [debouncedSearch]);
 
   // Handle flavor deletion
-  const handleDeleteFlavor = async (flavorId: string) => {
+  const handleDeleteFlavor = async (
+    flavorId: string,
+    force: boolean = false
+  ) => {
     try {
-      const response = await flavors.deleteFlavor(flavorId);
+      const response = await flavors.deleteFlavor(flavorId, force);
 
       if (response.data.success) {
         toast.success("Flavor deleted successfully");
@@ -89,19 +98,7 @@ function FlavorsList() {
         // Close the error dialog if it's open
         setIsErrorDialogOpen(false);
       } else {
-        // Check for specific error messages
-        if (
-          response.data.message?.includes("in use by product variants") ||
-          response.data.message?.includes("Cannot delete flavor")
-        ) {
-          setErrorDialogContent({
-            title: "Cannot Delete Flavor",
-            description: `This flavor cannot be deleted because it is currently in use by one or more product variants.\n\nTo delete this flavor, you must first remove it from all product variants that use it.`,
-          });
-          setIsErrorDialogOpen(true);
-        } else {
-          toast.error(response.data.message || "Failed to delete flavor");
-        }
+        toast.error(response.data.message || "Failed to delete flavor");
       }
     } catch (error: any) {
       console.error("Error deleting flavor:", error);
@@ -111,13 +108,17 @@ function FlavorsList() {
         error.response?.data?.message ||
         "An error occurred while deleting the flavor";
 
+      // Check if this is a "flavor in use" error and backend allows force delete
       if (
-        errorMessage.includes("in use by product variants") ||
-        errorMessage.includes("Cannot delete flavor")
+        error.response?.status === 400 &&
+        (error.response?.data?.canForceDelete ||
+          error.response?.data?.data?.canForceDelete) &&
+        !force
       ) {
+        const errorData = error.response.data.data || error.response.data;
         setErrorDialogContent({
-          title: "Cannot Delete Flavor",
-          description: `This flavor cannot be deleted because it is currently in use by one or more product variants.\n\nTo delete this flavor, you must first remove it from all product variants that use it.`,
+          title: "Flavor In Use",
+          description: `This flavor is being used by ${errorData.variantCount || "some"} product variants. You can force delete this flavor, which will remove it from all product variants that use it.`,
         });
         setIsErrorDialogOpen(true);
       } else {
@@ -180,7 +181,7 @@ function FlavorsList() {
           label: "Force Delete",
           onClick: () => {
             if (flavorToDelete) {
-              handleDeleteFlavor(flavorToDelete.id);
+              handleDeleteFlavor(flavorToDelete.id, true);
             }
           },
           isDestructive: true,
@@ -196,6 +197,16 @@ function FlavorsList() {
             Add Flavor
           </Link>
         </Button>
+      </div>
+
+      {/* Search Input */}
+      <div className="max-w-xs mb-2">
+        <Input
+          type="text"
+          placeholder="Search flavors..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
       </div>
 
       {/* Flavors List */}

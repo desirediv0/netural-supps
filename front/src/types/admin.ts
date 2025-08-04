@@ -44,6 +44,7 @@ export enum Resource {
   CONTACT = "contact",
   FAQS = "faqs",
   ANALYTICS = "analytics",
+  BRANDS = "brands",
 }
 
 export enum Action {

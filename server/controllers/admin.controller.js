@@ -433,36 +433,70 @@ export const getLowStockAlerts = asyncHandler(async (req, res) => {
           id: true,
           name: true,
           slug: true,
-          images: {
-            where: { isPrimary: true },
-            take: 1,
+          images: true,
+          variants: {
+            where: { isActive: true },
+            include: {
+              images: true,
+            },
           },
         },
       },
       flavor: true,
       weight: true,
+      images: true,
     },
     orderBy: { quantity: "asc" },
   });
 
-  // Format response with proper image URLs
-  const formattedAlerts = lowStockVariants.map((variant) => ({
-    id: variant.id,
-    productId: variant.productId,
-    productName: variant.product.name,
-    productSlug: variant.product.slug,
-    stock: variant.quantity, // Use quantity but keep the response field as "stock" for frontend compatibility
-    sku: variant.sku,
-    flavor: variant.flavor ? variant.flavor.name : null,
-    weight: variant.weight
-      ? `${variant.weight.value}${variant.weight.unit}`
-      : null,
-    image: variant.product.images[0]
-      ? getFileUrl(variant.product.images[0].url)
-      : null,
-    status: variant.quantity === 0 ? "OUT_OF_STOCK" : "LOW_STOCK",
-    createdAt: variant.createdAt,
-  }));
+  // Format response with proper image URLs with fallback logic
+  const formattedAlerts = lowStockVariants.map((variant) => {
+    // Get image with priority: variant images > product images > other variant images
+    let imageUrl = null;
+
+    // Priority 1: Current variant images
+    if (variant.images && variant.images.length > 0) {
+      const primaryImage = variant.images.find((img) => img.isPrimary);
+      imageUrl = primaryImage ? primaryImage.url : variant.images[0].url;
+    }
+    // Priority 2: Product images
+    else if (variant.product.images && variant.product.images.length > 0) {
+      const primaryImage = variant.product.images.find((img) => img.isPrimary);
+      imageUrl = primaryImage
+        ? primaryImage.url
+        : variant.product.images[0].url;
+    }
+    // Priority 3: Any variant images from any variant
+    else if (variant.product.variants && variant.product.variants.length > 0) {
+      const variantWithImages = variant.product.variants.find(
+        (v) => v.images && v.images.length > 0
+      );
+      if (variantWithImages) {
+        const primaryImage = variantWithImages.images.find(
+          (img) => img.isPrimary
+        );
+        imageUrl = primaryImage
+          ? primaryImage.url
+          : variantWithImages.images[0].url;
+      }
+    }
+
+    return {
+      id: variant.id,
+      productId: variant.productId,
+      productName: variant.product.name,
+      productSlug: variant.product.slug,
+      stock: variant.quantity, // Use quantity but keep the response field as "stock" for frontend compatibility
+      sku: variant.sku,
+      flavor: variant.flavor ? variant.flavor.name : null,
+      weight: variant.weight
+        ? `${variant.weight.value}${variant.weight.unit}`
+        : null,
+      image: imageUrl ? getFileUrl(imageUrl) : null,
+      status: variant.quantity === 0 ? "OUT_OF_STOCK" : "LOW_STOCK",
+      createdAt: variant.createdAt,
+    };
+  });
 
   res.status(200).json(
     new ApiResponsive(

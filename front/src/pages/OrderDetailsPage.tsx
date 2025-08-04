@@ -127,10 +127,29 @@ export default function OrderDetailsPage() {
   };
 
   // Get image URL helper
-  const getImageUrl = (image: string | undefined) => {
+  const getImageUrl = (image: string | string[] | undefined | null): string => {
     if (!image) return "/images/product-placeholder.jpg";
-    if (image.startsWith("http")) return image;
-    return `https://desirediv-storage.blr1.digitaloceanspaces.com/${image}`;
+
+    // Handle array of images (take first one)
+    if (Array.isArray(image)) {
+      if (image.length === 0) return "/images/product-placeholder.jpg";
+      const firstImage = image[0];
+      if (typeof firstImage === "string") {
+        return firstImage.startsWith("http")
+          ? firstImage
+          : `https://desirediv-storage.blr1.digitaloceanspaces.com/${firstImage}`;
+      }
+      return "/images/product-placeholder.jpg";
+    }
+
+    // Handle single image string
+    if (typeof image === "string") {
+      return image.startsWith("http")
+        ? image
+        : `https://desirediv-storage.blr1.digitaloceanspaces.com/${image}`;
+    }
+
+    return "/images/product-placeholder.jpg";
   };
 
   // Loading state
@@ -344,10 +363,19 @@ export default function OrderDetailsPage() {
                             <div className="h-12 w-12 rounded-md bg-muted/50 overflow-hidden">
                               <img
                                 src={getImageUrl(
-                                  item.product?.images?.[0]?.url
+                                  item.imageUrl ||
+                                    item.product?.imageUrl ||
+                                    item.product?.images?.[0]?.url ||
+                                    item.product?.images?.[0] ||
+                                    item.variant?.images?.[0]?.url ||
+                                    item.variant?.images?.[0]
                                 )}
                                 alt={item.product?.name || "Product"}
                                 className="h-full w-full object-contain"
+                                onError={(e) => {
+                                  e.currentTarget.src =
+                                    "/images/product-placeholder.jpg";
+                                }}
                               />
                             </div>
                             <div>

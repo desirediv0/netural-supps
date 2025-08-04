@@ -230,7 +230,7 @@ export default function CheckoutPage() {
           key: razorpayKey,
           amount: razorpayOrder.amount,
           currency: razorpayOrder.currency,
-          name: "Power Fitness - Premium Supplements for Your Fitness Journey",
+          name: "Natural Supps - Premium Supplements for Your Fitness Journey",
           description: "Get high-quality supplements at the best prices.",
           order_id: razorpayOrder.id,
           prefill: {

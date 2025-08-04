@@ -23,7 +23,7 @@ const poppinsFont = localFont({
 });
 
 export const metadata = {
-  title: "Natural supp - Premium Supplements for Your Fitness Journey",
+  title: "Natural Supps - Premium Supplements for Your Fitness Journey",
   description:
     "Get high-quality supplements at the best prices. Free shipping on orders over ₹999.",
 };

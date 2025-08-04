@@ -11,19 +11,7 @@ import { createSlug } from "../helper/Slug.js";
 // Get all categories with their subcategories
 export const getAllCategories = asyncHandler(async (req, res) => {
   const categories = await prisma.category.findMany({
-    where: {
-      parentId: null, // Root categories only
-    },
     include: {
-      children: {
-        include: {
-          _count: {
-            select: {
-              products: true,
-            },
-          },
-        },
-      },
       _count: {
         select: {
           products: true,
@@ -39,10 +27,6 @@ export const getAllCategories = asyncHandler(async (req, res) => {
   const formattedCategories = categories.map((category) => ({
     ...category,
     image: category.image ? getFileUrl(category.image) : null,
-    children: category.children.map((child) => ({
-      ...child,
-      image: child.image ? getFileUrl(child.image) : null,
-    })),
   }));
 
   res
@@ -69,20 +53,14 @@ export const getProductsByCategory = asyncHandler(async (req, res) => {
   // Find the category by slug
   const category = await prisma.category.findUnique({
     where: { slug },
-    include: {
-      children: true,
-    },
   });
 
   if (!category) {
     throw new ApiError(404, "Category not found");
   }
 
-  // Get all subcategory IDs
-  const categoryIds = [
-    category.id,
-    ...category.children.map((child) => child.id),
-  ];
+  // Get category ID
+  const categoryIds = [category.id];
 
   // Count total products in this category and its subcategories
   const totalProducts = await prisma.product.count({
@@ -130,8 +108,8 @@ export const getProductsByCategory = asyncHandler(async (req, res) => {
         include: {
           flavor: true,
           weight: true,
+          images: true,
         },
-        take: 1, // Get at least one variant for display
       },
       _count: {
         select: {
@@ -139,9 +117,7 @@ export const getProductsByCategory = asyncHandler(async (req, res) => {
         },
       },
     },
-    orderBy: {
-      [sort]: order,
-    },
+    orderBy: [{ ourProduct: "desc" }, { [sort]: order }],
     skip: (parseInt(page) - 1) * parseInt(limit),
     take: parseInt(limit),
   });
@@ -152,6 +128,29 @@ export const getProductsByCategory = asyncHandler(async (req, res) => {
     const primaryCategory =
       product.categories.length > 0 ? product.categories[0].category : null;
 
+    // Get image with fallback logic
+    let imageUrl = null;
+
+    // Priority 1: Product images
+    if (product.images && product.images.length > 0) {
+      const primaryImage = product.images.find((img) => img.isPrimary);
+      imageUrl = primaryImage ? primaryImage.url : product.images[0].url;
+    }
+    // Priority 2: Any variant images
+    else if (product.variants && product.variants.length > 0) {
+      const variantWithImages = product.variants.find(
+        (variant) => variant.images && variant.images.length > 0
+      );
+      if (variantWithImages) {
+        const primaryImage = variantWithImages.images.find(
+          (img) => img.isPrimary
+        );
+        imageUrl = primaryImage
+          ? primaryImage.url
+          : variantWithImages.images[0].url;
+      }
+    }
+
     return {
       ...product,
       category: primaryCategory,
@@ -159,6 +158,8 @@ export const getProductsByCategory = asyncHandler(async (req, res) => {
         ...image,
         url: getFileUrl(image.url),
       })),
+      // Add fallback image
+      image: imageUrl ? getFileUrl(imageUrl) : null,
       basePrice:
         product.variants.length > 0
           ? Math.min(
@@ -192,16 +193,9 @@ export const getProductsByCategory = asyncHandler(async (req, res) => {
 export const getAdminCategories = asyncHandler(async (req, res) => {
   const categories = await prisma.category.findMany({
     include: {
-      parent: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
       _count: {
         select: {
           products: true,
-          children: true,
         },
       },
     },
@@ -234,8 +228,6 @@ export const getCategoryById = asyncHandler(async (req, res) => {
   const category = await prisma.category.findUnique({
     where: { id: categoryId },
     include: {
-      parent: true,
-      children: true,
       _count: {
         select: {
           products: true,
@@ -252,10 +244,6 @@ export const getCategoryById = asyncHandler(async (req, res) => {
   const formattedCategory = {
     ...category,
     image: category.image ? getFileUrl(category.image) : null,
-    children: category.children.map((child) => ({
-      ...child,
-      image: child.image ? getFileUrl(child.image) : null,
-    })),
   };
 
   res
@@ -271,7 +259,7 @@ export const getCategoryById = asyncHandler(async (req, res) => {
 
 // Create a new category
 export const createCategory = asyncHandler(async (req, res) => {
-  const { name, description, parentId } = req.body;
+  const { name, description } = req.body;
 
   if (!name) {
     throw new ApiError(400, "Category name is required");
@@ -289,16 +277,7 @@ export const createCategory = asyncHandler(async (req, res) => {
     throw new ApiError(409, "Category with this name already exists");
   }
 
-  // If parentId provided, verify parent exists
-  if (parentId) {
-    const parentCategory = await prisma.category.findUnique({
-      where: { id: parentId },
-    });
-
-    if (!parentCategory) {
-      throw new ApiError(404, "Parent category not found");
-    }
-  }
+  // Parent-child relationships removed for simplicity
 
   // Process image if uploaded
   let imageUrl = null;
@@ -311,7 +290,6 @@ export const createCategory = asyncHandler(async (req, res) => {
     data: {
       name,
       description,
-      parentId: parentId || null,
       slug,
       image: imageUrl,
     },
@@ -334,7 +312,7 @@ export const createCategory = asyncHandler(async (req, res) => {
 // Update category
 export const updateCategory = asyncHandler(async (req, res) => {
   const { categoryId } = req.params;
-  const { name, description, parentId } = req.body;
+  const { name, description } = req.body;
 
   // Check if category exists
   const category = await prisma.category.findUnique({
@@ -373,35 +351,7 @@ export const updateCategory = asyncHandler(async (req, res) => {
     updateData.description = description;
   }
 
-  // Validate parent ID
-  if (parentId !== undefined) {
-    // Cannot set self as parent
-    if (parentId === categoryId) {
-      throw new ApiError(400, "Category cannot be its own parent");
-    }
-
-    // Check if parent exists
-    if (parentId) {
-      const parentCategory = await prisma.category.findUnique({
-        where: { id: parentId },
-      });
-
-      if (!parentCategory) {
-        throw new ApiError(404, "Parent category not found");
-      }
-
-      // Prevent circular references
-      const childCategories = await prisma.category.findMany({
-        where: { parentId: categoryId },
-      });
-
-      if (childCategories.some((child) => child.id === parentId)) {
-        throw new ApiError(400, "Cannot set a child category as parent");
-      }
-    }
-
-    updateData.parentId = parentId || null;
-  }
+  // Parent-child relationships removed for simplicity
 
   // Process new image if uploaded
   if (req.file) {
@@ -445,7 +395,6 @@ export const deleteCategory = asyncHandler(async (req, res) => {
   const category = await prisma.category.findUnique({
     where: { id: categoryId },
     include: {
-      children: true,
       products: true,
     },
   });
@@ -454,38 +403,49 @@ export const deleteCategory = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Category not found");
   }
 
-  // Check if category has children when force is not true
-  if (category.children.length > 0 && force !== "true") {
-    throw new ApiError(
-      400,
-      "Cannot delete category with subcategories. Delete subcategories first or reassign them."
-    );
-  }
+  // Remove parent-child check since we simplified the schema
 
   // Check if category has products when force is not true
   if (category.products.length > 0 && force !== "true") {
-    throw new ApiError(
-      400,
-      "Cannot delete category with products. Delete products first or reassign them."
+    return res.status(400).json(
+      new ApiResponsive(
+        400,
+        {
+          canForceDelete: true,
+          productCount: category.products.length,
+        },
+        `Cannot delete category. It has ${category.products.length} products associated with it. Use force=true to move products to Uncategorized category.`
+      )
     );
   }
 
   try {
-    // When force is true, handle the case with products or subcategories
+    // When force is true, handle the case with products
     if (force === "true") {
       await prisma.$transaction(async (tx) => {
-        // Handle subcategories - update them to have no parent
-        if (category.children.length > 0) {
-          await tx.category.updateMany({
-            where: { parentId: categoryId },
-            data: { parentId: null },
-          });
-        }
-
-        // Handle products - remove them from this category
+        // Handle products - remove them from this category or reassign to default
         if (category.products.length > 0) {
-          await tx.productCategory.deleteMany({
+          // Find or create default category
+          let defaultCategory = await tx.category.findFirst({
+            where: { name: "Uncategorized" },
+          });
+
+          if (!defaultCategory) {
+            defaultCategory = await tx.category.create({
+              data: {
+                name: "Uncategorized",
+                slug: "uncategorized",
+                description:
+                  "Default category for products without specific category",
+                isDefault: true,
+              },
+            });
+          }
+
+          // Reassign all products to default category
+          await tx.productCategory.updateMany({
             where: { categoryId },
+            data: { categoryId: defaultCategory.id },
           });
         }
 

@@ -5,7 +5,124 @@ import { prisma } from "../config/db.js";
 import { deleteFromS3, getFileUrl } from "../utils/deleteFromS3.js";
 import { processAndUploadImage } from "../middlewares/multer.middlerware.js";
 import { createSlug } from "../helper/Slug.js";
-import { generateSKU, generateVariantSKUs } from "../utils/generateSKU.js";
+import { generateSKU } from "../utils/generateSKU.js";
+
+// Get products by type (featured, bestseller, trending, new, etc.)
+export const getProductsByType = asyncHandler(async (req, res, next) => {
+  const { productType } = req.params;
+  const {
+    page = 1,
+    limit = 10,
+    sort = "createdAt",
+    order = "desc",
+  } = req.query;
+
+  const skip = (parseInt(page) - 1) * parseInt(limit);
+
+  // Build filter conditions for product type
+  const filterConditions = {
+    isActive: true,
+    productType: {
+      array_contains: [productType],
+    },
+  };
+
+  // Get total count for pagination
+  const totalProducts = await prisma.product.count({
+    where: filterConditions,
+  });
+
+  // Get products with sorting
+  const products = await prisma.product.findMany({
+    where: filterConditions,
+    include: {
+      categories: {
+        include: {
+          category: true,
+        },
+      },
+      images: {
+        orderBy: { order: "asc" },
+      },
+      variants: {
+        include: {
+          flavor: true,
+          weight: true,
+          images: {
+            orderBy: { order: "asc" },
+          },
+        },
+      },
+      _count: {
+        select: {
+          reviews: true,
+        },
+      },
+    },
+    orderBy: [{ ourProduct: "desc" }, { [sort]: order }],
+    skip,
+    take: parseInt(limit),
+  });
+
+  // Format the response data
+  const formattedProducts = products.map((product) => {
+    // Add image URLs and clean up the data
+    return {
+      ...product,
+      // Extract categories into a more usable format
+      categories: product.categories.map((pc) => ({
+        id: pc.category.id,
+        name: pc.category.name,
+        description: pc.category.description,
+        image: pc.category.image ? getFileUrl(pc.category.image) : null,
+        slug: pc.category.slug,
+        isPrimary: pc.isPrimary,
+      })),
+      primaryCategory:
+        product.categories.find((pc) => pc.isPrimary)?.category ||
+        (product.categories.length > 0 ? product.categories[0].category : null),
+      images: product.images.map((image) => ({
+        ...image,
+        url: getFileUrl(image.url),
+      })),
+      variants: product.variants.map((variant) => ({
+        ...variant,
+        flavor: variant.flavor
+          ? {
+              ...variant.flavor,
+              image: variant.flavor.image
+                ? getFileUrl(variant.flavor.image)
+                : null,
+            }
+          : null,
+        images: variant.images
+          ? variant.images
+              .sort((a, b) => a.order - b.order)
+              .map((image) => ({
+                ...image,
+                url: getFileUrl(image.url),
+              }))
+          : [],
+      })),
+    };
+  });
+
+  res.status(200).json(
+    new ApiResponsive(
+      200,
+      {
+        products: formattedProducts,
+        pagination: {
+          total: totalProducts,
+          page: parseInt(page),
+          limit: parseInt(limit),
+          pages: Math.ceil(totalProducts / parseInt(limit)),
+        },
+      },
+      `${productType} products fetched successfully`
+    )
+  );
+});
 
 // Get all products with pagination, filtering, and sorting
 export const getProducts = asyncHandler(async (req, res, next) => {
@@ -57,11 +174,16 @@ export const getProducts = asyncHandler(async (req, res, next) => {
           category: true,
         },
       },
-      images: true,
+      images: {
+        orderBy: { order: "asc" },
+      },
       variants: {
         include: {
           flavor: true,
           weight: true,
+          images: {
+            orderBy: { order: "asc" },
+          },
         },
       },
       _count: {
@@ -70,9 +192,7 @@ export const getProducts = asyncHandler(async (req, res, next) => {
         },
       },
     },
-    orderBy: {
-      [sort]: order,
-    },
+    orderBy: [{ ourProduct: "desc" }, { [sort]: order }],
     skip,
     take: parseInt(limit),
   });
@@ -108,6 +228,14 @@ export const getProducts = asyncHandler(async (req, res, next) => {
                 : null,
             }
           : null,
+        images: variant.images
+          ? variant.images
+              .sort((a, b) => a.order - b.order)
+              .map((image) => ({
+                ...image,
+                url: getFileUrl(image.url),
+              }))
+          : [],
       })),
     };
   });
@@ -141,11 +269,16 @@ export const getProductById = asyncHandler(async (req, res, next) => {
           category: true,
         },
       },
-      images: true,
+      images: {
+        orderBy: { order: "asc" },
+      },
       variants: {
         include: {
           flavor: true,
           weight: true,
+          images: {
+            orderBy: { order: "asc" },
+          },
         },
       },
       reviews: {
@@ -196,6 +329,12 @@ export const getProductById = asyncHandler(async (req, res, next) => {
               : null,
           }
         : null,
+      images: variant.images
+        ? variant.images.map((image) => ({
+            ...image,
+            url: getFileUrl(image.url),
+          }))
+        : [],
     })),
     // Include SEO fields
     metaTitle: product.metaTitle || product.name,
@@ -216,6 +355,9 @@ export const getProductById = asyncHandler(async (req, res, next) => {
 
 // Create a new product
 export const createProduct = asyncHandler(async (req, res, next) => {
+  // Initialize variantIdsWithOrders for new product creation (empty since no existing variants)
+  let variantIdsWithOrders = [];
+
   // Check if body is completely empty
   if (!req.body || Object.keys(req.body).length === 0) {
     throw new ApiError(400, "Product data is missing. Empty request received.");
@@ -230,12 +372,14 @@ export const createProduct = asyncHandler(async (req, res, next) => {
     ingredients,
     nutritionInfo,
     featured,
+    productType,
     isActive,
     hasVariants,
     variants: variantsJson,
     metaTitle,
     metaDescription,
     keywords,
+    ourProduct,
   } = req.body;
 
   // Validation checks with better error handling
@@ -337,6 +481,23 @@ export const createProduct = asyncHandler(async (req, res, next) => {
         }
       }
 
+      // Parse productType if provided
+      let parsedProductType = [];
+      if (productType) {
+        try {
+          parsedProductType =
+            typeof productType === "string"
+              ? JSON.parse(productType)
+              : productType;
+          if (!Array.isArray(parsedProductType)) {
+            parsedProductType = [];
+          }
+        } catch (error) {
+          console.error("Error parsing productType:", error);
+          parsedProductType = [];
+        }
+      }
+
       const newProduct = await prisma.product.create({
         data: {
           name: cleanName,
@@ -347,10 +508,32 @@ export const createProduct = asyncHandler(async (req, res, next) => {
           ingredients,
           nutritionInfo: parsedNutritionInfo,
           featured: featured === "true" || featured === true,
+          productType: parsedProductType,
           isActive: isActive === "true" || isActive === true || true,
           metaTitle: metaTitle || cleanName,
           metaDescription: metaDescription || description,
           keywords,
+          tags: req.body.tags
+            ? Array.isArray(req.body.tags)
+              ? req.body.tags
+              : [req.body.tags]
+            : [],
+          topBrandIds: req.body.topBrandIds
+            ? typeof req.body.topBrandIds === "string"
+              ? JSON.parse(req.body.topBrandIds)
+              : req.body.topBrandIds
+            : [],
+          newBrandIds: req.body.newBrandIds
+            ? typeof req.body.newBrandIds === "string"
+              ? JSON.parse(req.body.newBrandIds)
+              : req.body.newBrandIds
+            : [],
+          hotBrandIds: req.body.hotBrandIds
+            ? typeof req.body.hotBrandIds === "string"
+              ? JSON.parse(req.body.hotBrandIds)
+              : req.body.hotBrandIds
+            : [],
+          ourProduct: ourProduct === "true" || ourProduct === true,
         },
       });
 
@@ -492,7 +675,7 @@ export const createProduct = asyncHandler(async (req, res, next) => {
           );
         }
 
-        await prisma.productVariant.create({
+        const createdVariant = await prisma.productVariant.create({
           data: {
             productId: newProduct.id,
             sku: variantSku,
@@ -504,6 +687,9 @@ export const createProduct = asyncHandler(async (req, res, next) => {
             isActive: variant.isActive !== undefined ? variant.isActive : true,
           },
         });
+
+        // Store variant ID for later use in image processing
+        variant._dbId = createdVariant.id;
       }
 
       // If we don't have any variants and it's not a variant product, create a default variant
@@ -548,8 +734,16 @@ export const createProduct = asyncHandler(async (req, res, next) => {
         });
       }
 
+      // Debug: Log request files
+      console.log("🔍 DEBUG: req.files =", req.files);
+      console.log("🔍 DEBUG: req.file =", req.file);
+      console.log("🔍 DEBUG: files length =", req.files ? req.files.length : 0);
+
       // Upload product images if provided
       if (req.files && req.files.length > 0) {
+        console.log(
+          `📸 Uploading ${req.files.length} images for product ${newProduct.id}`
+        );
         let primaryImageIndex = 0;
 
         // Get primary image index from request body
@@ -572,19 +766,39 @@ export const createProduct = asyncHandler(async (req, res, next) => {
 
         for (let i = 0; i < req.files.length; i++) {
           const file = req.files[i];
-          const imageUrl = await processAndUploadImage(
-            file,
-            `products/${newProduct.id}`
-          );
+          console.log(`📸 Processing image ${i + 1}: ${file.originalname}`);
+          try {
+            console.log(
+              `📸 Starting upload for file: ${file.originalname}, size: ${file.size} bytes`
+            );
+            const imageUrl = await processAndUploadImage(
+              file,
+              `products/${newProduct.id}`
+            );
+            console.log(`✅ Image uploaded to S3: ${imageUrl}`);
 
-          await prisma.productImage.create({
-            data: {
-              productId: newProduct.id,
-              url: imageUrl,
-              alt: `${newProduct.name} - Image ${i + 1}`,
-              isPrimary: i === primaryImageIndex,
-            },
-          });
+            const savedImage = await prisma.productImage.create({
+              data: {
+                productId: newProduct.id,
+                url: imageUrl,
+                alt: `${newProduct.name} - Image ${i + 1}`,
+                isPrimary: i === primaryImageIndex,
+                order: i,
+              },
+            });
+            console.log(`✅ Image saved to database with ID: ${savedImage.id}`);
+          } catch (error) {
+            console.error(`❌ Error uploading image ${i + 1}:`, error);
+            console.error(`❌ Error details:`, {
+              message: error.message,
+              stack: error.stack,
+              filename: file?.originalname,
+              filesize: file?.size,
+            });
+            // Don't throw error to prevent product creation failure
+            // Just log the error and continue
+            console.warn(`⚠️ Continuing product creation without this image`);
+          }
         }
       } else if (req.file) {
         // For backward compatibility with single image upload
@@ -603,6 +817,63 @@ export const createProduct = asyncHandler(async (req, res, next) => {
         });
       }
 
+      // Process variant images if any
+      if (variants.length > 0 && req.files) {
+        console.log("🔍 Processing variant images...");
+
+        // Group files by variant index
+        const variantImageFiles = {};
+        req.files.forEach((file) => {
+          // Check if this is a variant image file
+          const variantMatch = file.fieldname.match(/^variantImages_(\d+)$/);
+          if (variantMatch) {
+            const variantIndex = parseInt(variantMatch[1]);
+            if (!variantImageFiles[variantIndex]) {
+              variantImageFiles[variantIndex] = [];
+            }
+            variantImageFiles[variantIndex].push(file);
+          }
+        });
+
+        // Upload images for each variant
+        for (const variantIndex in variantImageFiles) {
+          const files = variantImageFiles[variantIndex];
+          const variant = variants[parseInt(variantIndex)];
+
+          if (variant && variant._dbId) {
+            console.log(
+              `📸 Uploading ${files.length} images for variant ${variant._dbId}`
+            );
+
+            for (let i = 0; i < files.length; i++) {
+              const file = files[i];
+              try {
+                const imageUrl = await processAndUploadImage(
+                  file,
+                  `products/${newProduct.id}/variants/${variant._dbId}`
+                );
+
+                await prisma.productVariantImage.create({
+                  data: {
+                    variantId: variant._dbId,
+                    url: imageUrl,
+                    alt: `${variant.name || newProduct.name} - Variant Image ${
+                      i + 1
+                    }`,
+                    isPrimary: i === 0, // First image is primary
+                    order: i, // Set proper order
+                  },
+                });
+
+                console.log(`✅ Variant image uploaded: ${imageUrl}`);
+              } catch (error) {
+                console.error(`❌ Error uploading variant image:`, error);
+              }
+            }
+          }
+        }
+      }
+
       // Return product with relations
       return await prisma.product.findUnique({
         where: { id: newProduct.id },
@@ -617,6 +888,7 @@ export const createProduct = asyncHandler(async (req, res, next) => {
             include: {
               flavor: true,
               weight: true,
+              images: true,
             },
           },
         },
@@ -653,6 +925,12 @@ export const createProduct = asyncHandler(async (req, res, next) => {
                   : null,
               }
             : null,
+          images: variant.images
+            ? variant.images.map((image) => ({
+                ...image,
+                url: getFileUrl(image.url),
+              }))
+            : [],
         })),
         // Include message when variants couldn't be deleted due to orders
         _message:
@@ -706,6 +984,7 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
     ingredients,
     nutritionInfo,
     featured,
+    productType,
     isActive,
     hasVariants,
     variants: variantsJson,
@@ -715,6 +994,7 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
     metaTitle,
     metaDescription,
     keywords,
+    ourProduct,
   } = req.body;
 
   // Check if product exists
@@ -727,7 +1007,15 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
         },
       },
       images: true,
-      variants: true,
+      variants: {
+        include: {
+          flavor: true,
+          weight: true,
+          images: true,
+        },
+      },
+      reviews: true,
+      orderItems: true,
     },
   });
 
@@ -843,12 +1131,45 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
           ...(featured !== undefined && {
             featured: featured === "true" || featured === true,
           }),
+          ...(productType !== undefined && {
+            productType:
+              typeof productType === "string"
+                ? JSON.parse(productType)
+                : productType,
+          }),
           ...(isActive !== undefined && {
             isActive: isActive === "true" || isActive === true,
           }),
           ...(metaTitle !== undefined && { metaTitle }),
           ...(metaDescription !== undefined && { metaDescription }),
           ...(keywords !== undefined && { keywords }),
+          ...(req.body.tags !== undefined && {
+            tags: Array.isArray(req.body.tags)
+              ? req.body.tags
+              : [req.body.tags],
+          }),
+          ...(req.body.topBrandIds !== undefined && {
+            topBrandIds:
+              typeof req.body.topBrandIds === "string"
+                ? JSON.parse(req.body.topBrandIds)
+                : req.body.topBrandIds,
+          }),
+          ...(req.body.newBrandIds !== undefined && {
+            newBrandIds:
+              typeof req.body.newBrandIds === "string"
+                ? JSON.parse(req.body.newBrandIds)
+                : req.body.newBrandIds,
+          }),
+          ...(req.body.hotBrandIds !== undefined && {
+            hotBrandIds:
+              typeof req.body.hotBrandIds === "string"
+                ? JSON.parse(req.body.hotBrandIds)
+                : req.body.hotBrandIds,
+          }),
+          ...(ourProduct !== undefined && {
+            ourProduct: ourProduct === "true" || ourProduct === true,
+          }),
+          ...(req.body.brandId !== undefined && { brandId: req.body.brandId }),
         },
       });
 
@@ -932,6 +1253,18 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
 
         // Delete removed variants safely
         if (variantIdsToDelete.length > 0) {
+          console.log(
+            `🗑️ Preparing to delete variants: ${variantIdsToDelete.join(", ")}`
+          );
+
+          // First, get all variant images that need to be deleted from S3
+          const variantsToDelete = await prisma.productVariant.findMany({
+            where: { id: { in: variantIdsToDelete } },
+            include: {
+              images: true,
+            },
+          });
+
           // Check if any variants have related order items
           const variantsWithOrders = await prisma.orderItem.findMany({
             where: {
@@ -965,9 +1298,38 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
             );
 
             if (safeToDeleteIds.length > 0) {
+              // Clean up images from S3 before deleting variants
+              const variantsToActuallyDelete = variantsToDelete.filter((v) =>
+                safeToDeleteIds.includes(v.id)
+              );
+
+              for (const variant of variantsToActuallyDelete) {
+                if (variant.images && variant.images.length > 0) {
+                  console.log(
+                    `🧹 Cleaning up ${variant.images.length} images for variant ${variant.sku}`
+                  );
+                  for (const image of variant.images) {
+                    try {
+                      await deleteFromS3(image.url);
+                      console.log(
+                        `✅ Deleted variant image from S3: ${image.url}`
+                      );
+                    } catch (error) {
+                      console.error(
+                        `❌ Failed to delete variant image from S3: ${image.url}`,
+                        error
+                      );
+                    }
+                  }
+                }
+              }
+
               await prisma.productVariant.deleteMany({
                 where: { id: { in: safeToDeleteIds } },
               });
+              console.log(
+                `✅ Deleted ${safeToDeleteIds.length} variants from database`
+              );
             }
 
             // Don't try to save notes to the database since the field doesn't exist in the schema            // Just log a message instead            console.log(`Product ${productId}: Some variants could not be deleted because they have associated orders.`);                        // We'll include this message in the API response after the transaction
@@ -978,9 +1340,35 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
                 ", "
               )}`
             );
+
+            // Clean up ALL variant images from S3 before deleting
+            for (const variant of variantsToDelete) {
+              if (variant.images && variant.images.length > 0) {
+                console.log(
+                  `🧹 Cleaning up ${variant.images.length} images for variant ${variant.sku}`
+                );
+                for (const image of variant.images) {
+                  try {
+                    await deleteFromS3(image.url);
+                    console.log(
+                      `✅ Deleted variant image from S3: ${image.url}`
+                    );
+                  } catch (error) {
+                    console.error(
+                      `❌ Failed to delete variant image from S3: ${image.url}`,
+                      error
+                    );
+                  }
+                }
+              }
+            }
+
             await prisma.productVariant.deleteMany({
               where: { id: { in: variantIdsToDelete } },
             });
+            console.log(
+              `✅ Deleted ${variantIdsToDelete.length} variants from database`
+            );
           }
         }
 
@@ -1103,6 +1491,76 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
               }
             } catch (error) {
               console.error(`Error parsing variant data: ${error.message}`);
+            }
+
+            // Handle variant image cleanup if images were removed
+            if (
+              variant.removedImageIds &&
+              Array.isArray(variant.removedImageIds) &&
+              variant.removedImageIds.length > 0
+            ) {
+              console.log(
+                `🧹 Cleaning up ${variant.removedImageIds.length} removed images for variant ${variant.id}`
+              );
+
+              // Get the images to be deleted
+              const imagesToDelete = await prisma.productVariantImage.findMany({
+                where: {
+                  id: { in: variant.removedImageIds },
+                  variantId: variant.id, // Security check
+                },
+              });
+
+              // Delete from S3 first
+              for (const image of imagesToDelete) {
+                try {
+                  await deleteFromS3(image.url);
+                  console.log(`✅ Deleted removed image from S3: ${image.url}`);
+                } catch (error) {
+                  console.error(
+                    `❌ Failed to delete image from S3: ${image.url}`,
+                    error
+                  );
+                }
+              }
+
+              // Delete from database
+              await prisma.productVariantImage.deleteMany({
+                where: {
+                  id: { in: variant.removedImageIds },
+                  variantId: variant.id, // Security check
+                },
+              });
+
+              // Reorder remaining images
+              const remainingImages = await prisma.productVariantImage.findMany(
+                {
+                  where: { variantId: variant.id },
+                  orderBy: { order: "asc" },
+                }
+              );
+
+              // Update order values to close gaps
+              for (let i = 0; i < remainingImages.length; i++) {
+                await prisma.productVariantImage.update({
+                  where: { id: remainingImages[i].id },
+                  data: { order: i },
+                });
+              }
+
+              // Ensure we have a primary image
+              if (remainingImages.length > 0) {
+                const hasPrimary = remainingImages.some((img) => img.isPrimary);
+                if (!hasPrimary) {
+                  await prisma.productVariantImage.update({
+                    where: { id: remainingImages[0].id },
+                    data: { isPrimary: true },
+                  });
+                  console.log(
+                    `✅ Set new primary image for variant ${variant.id}`
+                  );
+                }
+              }
             }
 
             await prisma.productVariant.update({
@@ -1500,6 +1958,7 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
               url: imageUrl,
               alt: `${updatedProduct.name} - Image ${i + 1}`,
               isPrimary: i === primaryImageIndex,
+              order: i,
             },
           });
         }
@@ -1528,6 +1987,7 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
               url: imageUrl,
               alt: updatedProduct.name,
               isPrimary: true,
+              order: 0,
             },
           });
         } catch (error) {
@@ -1540,11 +2000,6 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
       const refreshedVariants = await prisma.$queryRaw`
         SELECT * FROM "ProductVariant" WHERE "productId" = ${productId};
       `;
-
-      console.log(
-        "Refreshed variants:",
-        JSON.stringify(refreshedVariants, null, 2)
-      );
 
       // Get the full product with fresh data
       const freshProduct = await prisma.product.findUnique({
@@ -1619,10 +2074,8 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
           : null,
       })),
       // Include message when variants couldn't be deleted due to orders
-      _message:
-        variantIdsWithOrders && variantIdsWithOrders.length > 0
-          ? "Some variants could not be deleted because they have associated orders."
-          : undefined,
+      // (variantIdsWithOrders is only defined in update function, not create)
+      _message: undefined,
     };
 
     res
@@ -1650,7 +2103,11 @@ export const deleteProduct = asyncHandler(async (req, res, next) => {
     where: { id: productId },
     include: {
       images: true,
-      variants: true,
+      variants: {
+        include: {
+          images: true, // Include variant images
+        },
+      },
       reviews: true,
       orderItems: true,
     },
@@ -1680,7 +2137,32 @@ export const deleteProduct = asyncHandler(async (req, res, next) => {
     await prisma.$transaction(async (tx) => {
       // Delete all product images from S3
       for (const image of product.images) {
-        await deleteFromS3(image.url);
+        try {
+          await deleteFromS3(image.url);
+          console.log(`Deleted product image from S3: ${image.url}`);
+        } catch (error) {
+          console.error(
+            `Failed to delete product image from S3: ${image.url}`,
+            error
+          );
+        }
+      }
+
+      // Delete all variant images from S3
+      for (const variant of product.variants) {
+        if (variant.images && variant.images.length > 0) {
+          for (const variantImage of variant.images) {
+            try {
+              await deleteFromS3(variantImage.url);
+              console.log(`Deleted variant image from S3: ${variantImage.url}`);
+            } catch (error) {
+              console.error(
+                `Failed to delete variant image from S3: ${variantImage.url}`,
+                error
+              );
+            }
+          }
+        }
       }
 
       // If force deleting a product with orders, handle the order items
@@ -1690,6 +2172,11 @@ export const deleteProduct = asyncHandler(async (req, res, next) => {
           where: { productId },
         });
       }
+
+      // Delete related analytics data (ProductView entries)
+      await tx.productView.deleteMany({
+        where: { productId },
+      });
 
       // Delete product and all related items (cascading deletes)
       await tx.product.delete({
@@ -1747,6 +2234,15 @@ export const uploadProductImage = asyncHandler(async (req, res, next) => {
         });
       }
 
+      // Get the current highest order for this product
+      const maxOrder = await tx.productImage.findFirst({
+        where: { productId },
+        orderBy: { order: "desc" },
+        select: { order: true },
+      });
+
+      const nextOrder = (maxOrder?.order || -1) + 1;
+
       // Create image record
       return await tx.productImage.create({
         data: {
@@ -1754,6 +2250,7 @@ export const uploadProductImage = asyncHandler(async (req, res, next) => {
           url: imageUrl,
           alt: req.body.alt || product.name,
           isPrimary: isPrimary === "true" || isPrimary === true,
+          order: nextOrder,
         },
       });
     });
@@ -2131,6 +2628,7 @@ export const deleteProductVariant = asyncHandler(async (req, res, next) => {
   const variant = await prisma.productVariant.findUnique({
     where: { id: variantId },
     include: {
+      images: true, // Include variant images
       product: {
         select: {
           id: true,
@@ -2169,6 +2667,21 @@ export const deleteProductVariant = asyncHandler(async (req, res, next) => {
   // Delete variant with transaction if needed
   if (variant.orderItems.length > 0 && force === "true") {
     await prisma.$transaction(async (tx) => {
+      // Delete variant images from S3 first
+      if (variant.images && variant.images.length > 0) {
+        for (const variantImage of variant.images) {
+          try {
+            await deleteFromS3(variantImage.url);
+            console.log(`Deleted variant image from S3: ${variantImage.url}`);
+          } catch (error) {
+            console.error(
+              `Failed to delete variant image from S3: ${variantImage.url}`,
+              error
+            );
+          }
+        }
+      }
+
       // Delete order items associated with this variant
       await tx.orderItem.deleteMany({
         where: { variantId },
@@ -2180,6 +2693,21 @@ export const deleteProductVariant = asyncHandler(async (req, res, next) => {
       });
     });
   } else {
+    // Delete variant images from S3 first
+    if (variant.images && variant.images.length > 0) {
+      for (const variantImage of variant.images) {
+        try {
+          await deleteFromS3(variantImage.url);
+          console.log(`Deleted variant image from S3: ${variantImage.url}`);
+        } catch (error) {
+          console.error(
+            `Failed to delete variant image from S3: ${variantImage.url}`,
+            error
+          );
+        }
+      }
+    }
+
     // Just delete the variant if no orders
     await prisma.productVariant.delete({
       where: { id: variantId },
@@ -2193,7 +2721,22 @@ export const deleteProductVariant = asyncHandler(async (req, res, next) => {
 
 // Get all flavors
 export const getFlavors = asyncHandler(async (req, res, next) => {
-  const flavors = await prisma.flavor.findMany();
+  const { search } = req.query;
+  let where = {};
+
+  if (search) {
+    where = {
+      name: {
+        contains: search,
+        mode: "insensitive",
+      },
+    };
+  }
+
+  const flavors = await prisma.flavor.findMany({
+    where,
+    orderBy: { name: "asc" },
+  });
 
   // Format flavors with proper image URLs
   const formattedFlavors = flavors.map((flavor) => ({
@@ -2352,7 +2895,7 @@ export const updateFlavor = asyncHandler(async (req, res, next) => {
 // Delete flavor
 export const deleteFlavor = asyncHandler(async (req, res, next) => {
   const { flavorId } = req.params;
-  const { force } = req.query; // Add force parameter
+  const { force } = req.query;
 
   // Check if flavor exists
   const flavor = await prisma.flavor.findUnique({
@@ -2366,37 +2909,30 @@ export const deleteFlavor = asyncHandler(async (req, res, next) => {
     throw new ApiError(404, "Flavor not found");
   }
 
-  // Check if flavor is in use
+  // If flavor is in use and force is not true, give user option to force delete
   if (flavor.productVariants.length > 0 && force !== "true") {
-    throw new ApiError(
-      400,
-      "Cannot delete flavor that is in use by product variants"
+    return res.status(400).json(
+      new ApiResponsive(
+        400,
+        {
+          canForceDelete: true,
+          variantCount: flavor.productVariants.length,
+        },
+        `Flavor is being used by ${flavor.productVariants.length} product variants. Use force=true to remove it from all variants and delete.`
+      )
     );
   }
 
   try {
-    // Handle deletion with transaction if force is true and flavor has variants
-    if (flavor.productVariants.length > 0 && force === "true") {
-      await prisma.$transaction(async (tx) => {
-        // Update all product variants to remove this flavor
+    await prisma.$transaction(async (tx) => {
+      // If force delete, remove flavor from all variants first
+      if (flavor.productVariants.length > 0) {
         await tx.productVariant.updateMany({
           where: { flavorId },
           data: { flavorId: null },
         });
+      }
 
-        // Delete flavor image if exists
-        if (flavor.image) {
-          console.log(`Deleting flavor image from S3: ${flavor.image}`);
-          await deleteFromS3(flavor.image);
-        }
-
-        // Delete flavor
-        await tx.flavor.delete({
-          where: { id: flavorId },
-        });
-      });
-    } else {
-      // Regular deletion (no variants)
       // Delete flavor image if exists
       if (flavor.image) {
         console.log(`Deleting flavor image from S3: ${flavor.image}`);
@@ -2404,10 +2940,10 @@ export const deleteFlavor = asyncHandler(async (req, res, next) => {
       }
 
       // Delete flavor
-      await prisma.flavor.delete({
+      await tx.flavor.delete({
         where: { id: flavorId },
       });
-    }
+    });
 
     res
       .status(200)
@@ -2420,7 +2956,30 @@ export const deleteFlavor = asyncHandler(async (req, res, next) => {
 
 // Get all weights
 export const getWeights = asyncHandler(async (req, res, next) => {
+  const { search } = req.query;
+  let where = {};
+
+  if (search) {
+    // Try to match value (as string) or unit
+    where = {
+      OR: [
+        {
+          value: {
+            equals: isNaN(Number(search)) ? undefined : Number(search),
+          },
+        },
+        {
+          unit: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+      ],
+    };
+  }
+
   const weights = await prisma.weight.findMany({
+    where,
     orderBy: { value: "asc" },
   });
 
@@ -2529,6 +3088,7 @@ export const updateWeight = asyncHandler(async (req, res, next) => {
 // Delete weight
 export const deleteWeight = asyncHandler(async (req, res, next) => {
   const { weightId } = req.params;
+  const { force } = req.query;
 
   // Check if weight exists
   const weight = await prisma.weight.findUnique({
@@ -2542,22 +3102,379 @@ export const deleteWeight = asyncHandler(async (req, res, next) => {
     throw new ApiError(404, "Weight not found");
   }
 
-  // Check if weight is in use
-  if (weight.productVariants.length > 0) {
-    throw new ApiError(
-      400,
-      "Cannot delete weight that is in use by product variants"
+  // If weight is in use and force is not true, give user option to force delete
+  if (weight.productVariants.length > 0 && force !== "true") {
+    return res.status(400).json(
+      new ApiResponsive(
+        400,
+        {
+          canForceDelete: true,
+          variantCount: weight.productVariants.length,
+        },
+        `Weight is being used by ${weight.productVariants.length} product variants. Use force=true to remove it from all variants and delete.`
+      )
     );
   }
 
-  // Delete weight
-  await prisma.weight.delete({
-    where: { id: weightId },
+  try {
+    await prisma.$transaction(async (tx) => {
+      // If force delete, remove weight from all variants first
+      if (weight.productVariants.length > 0) {
+        await tx.productVariant.updateMany({
+          where: { weightId },
+          data: { weightId: null },
+        });
+      }
+
+      // Delete weight
+      await tx.weight.delete({
+        where: { id: weightId },
+      });
+    });
+
+    res
+      .status(200)
+      .json(new ApiResponsive(200, {}, "Weight deleted successfully"));
+  } catch (error) {
+    console.error("Error deleting weight:", error);
+    throw new ApiError(500, `Failed to delete weight: ${error.message}`);
+  }
+});
+
+// Upload variant image
+export const uploadVariantImage = asyncHandler(async (req, res, next) => {
+  const { variantId } = req.params;
+  const { isPrimary, order } = req.body;
+
+  // Check if variant exists
+  const variant = await prisma.productVariant.findUnique({
+    where: { id: variantId },
+    include: {
+      images: {
+        orderBy: { order: "asc" },
+      },
+    },
   });
 
-  res
-    .status(200)
-    .json(new ApiResponsive(200, {}, "Weight deleted successfully"));
+  if (!variant) {
+    throw new ApiError(404, "Product variant not found");
+  }
+
+  if (!req.file) {
+    throw new ApiError(400, "Image file is required");
+  }
+
+  try {
+    // Upload to S3 using existing function
+    const imageUrl = await processAndUploadImage(
+      req.file,
+      `variants/${variantId}`
+    );
+
+    // Handle image creation with retry logic for race conditions
+    let retryCount = 0;
+    const maxRetries = 3;
+    let newImage;
+
+    while (retryCount < maxRetries) {
+      try {
+        newImage = await prisma.$transaction(async (tx) => {
+          // Get fresh variant data
+          const currentVariant = await tx.productVariant.findUnique({
+            where: { id: variantId },
+            include: {
+              images: {
+                orderBy: { order: "asc" },
+              },
+            },
+          });
+
+          if (!currentVariant) {
+            throw new Error("Variant not found");
+          }
+
+          // Determine if this should be primary
+          // Priority 1: Explicit request to make it primary (isPrimary = true)
+          // Priority 2: If no existing images and no explicit isPrimary value sent (undefined/null)
+          const explicitlyPrimary = isPrimary === "true" || isPrimary === true;
+          const explicitlyNotPrimary =
+            isPrimary === "false" || isPrimary === false;
+          const isFirstImageEver = currentVariant.images.length === 0;
+          const noPrimarySpecified =
+            isPrimary === undefined || isPrimary === null || isPrimary === "";
+
+          // Only set as primary if explicitly requested, OR if it's the first image and no explicit value was sent
+          const shouldBePrimary =
+            explicitlyPrimary ||
+            (isFirstImageEver && noPrimarySpecified && !explicitlyNotPrimary);
+
+          // Determine the correct order first
+          let imageOrder;
+
+          if (shouldBePrimary) {
+            // Primary images always go to order 0
+            imageOrder = 0;
+
+            // Shift all existing images up by 1 ONLY if we have existing images
+            if (currentVariant.images.length > 0) {
+              await tx.productVariantImage.updateMany({
+                where: { variantId },
+                data: {
+                  order: { increment: 1 },
+                },
+              });
+              console.log(
+                `🔑 Shifted ${currentVariant.images.length} existing images up by 1`
+              );
+            }
+
+            // Unset primary flag from all other images
+            const primaryImages = currentVariant.images.filter(
+              (img) => img.isPrimary
+            );
+            if (primaryImages.length > 0) {
+              await tx.productVariantImage.updateMany({
+                where: {
+                  variantId,
+                  isPrimary: true,
+                },
+                data: { isPrimary: false },
+              });
+              console.log(
+                `🔑 Removed primary flag from ${primaryImages.length} existing images`
+              );
+            }
+          } else {
+            // Non-primary images go to the end
+            imageOrder = currentVariant.images.length;
+            console.log(`📎 Non-primary image set to order ${imageOrder}`);
+          }
+
+          // Create the new image
+          const createdImage = await tx.productVariantImage.create({
+            data: {
+              variantId,
+              url: imageUrl,
+              alt: req.body.alt || null,
+              isPrimary: shouldBePrimary,
+              order: imageOrder,
+            },
+          });
+
+          return createdImage;
+        });
+
+        // If we reach here, transaction succeeded
+        break;
+      } catch (error) {
+        retryCount++;
+        console.log(`⚠️ Transaction attempt ${retryCount} failed:`, error.code);
+
+        if (error.code === "P2034" && retryCount < maxRetries) {
+          // Wait a bit before retrying for deadlock/write conflict
+          await new Promise((resolve) => setTimeout(resolve, 100 * retryCount));
+          console.log(
+            `🔄 Retrying transaction (attempt ${retryCount + 1}/${maxRetries})`
+          );
+          continue;
+        } else {
+          throw error;
+        }
+      }
+    }
+
+    res
+      .status(201)
+      .json(
+        new ApiResponsive(
+          201,
+          { image: newImage },
+          "Variant image uploaded successfully"
+        )
+      );
+  } catch (error) {
+    console.error("Error uploading variant image:", error);
+    throw new ApiError(500, "Failed to upload variant image");
+  }
+});
+
+// Delete variant image
+export const deleteVariantImage = asyncHandler(async (req, res, next) => {
+  const { imageId } = req.params;
+
+  // Check if image exists
+  const image = await prisma.productVariantImage.findUnique({
+    where: { id: imageId },
+    include: {
+      variant: {
+        select: {
+          id: true,
+          images: {
+            select: { id: true, isPrimary: true, url: true, order: true },
+            orderBy: { order: "asc" },
+          },
+        },
+      },
+    },
+  });
+
+  if (!image) {
+    throw new ApiError(404, "Variant image not found");
+  }
+
+  try {
+    // Delete image from S3
+    console.log(`Deleting variant image from S3: ${image.url}`);
+    await deleteFromS3(image.url);
+
+    // Use transaction to handle deletion and reordering
+    await prisma.$transaction(async (tx) => {
+      // Get the order of the image being deleted
+      const deletedImageOrder = image.order;
+      const isPrimary = image.isPrimary;
+
+      // Delete image record from database
+      await tx.productVariantImage.delete({
+        where: { id: imageId },
+      });
+
+      // Adjust order of remaining images
+      await tx.productVariantImage.updateMany({
+        where: {
+          variantId: image.variant.id,
+          order: { gt: deletedImageOrder },
+        },
+        data: {
+          order: { decrement: 1 },
+        },
+      });
+
+      // If deleted image was primary, set the first remaining image as primary
+      if (isPrimary) {
+        const remainingImages = image.variant.images.filter(
+          (img) => img.id !== imageId
+        );
+        if (remainingImages.length > 0) {
+          // Find the image that will be at order 0 after reordering
+          const newPrimaryImage =
+            remainingImages.find(
+              (img) =>
+                img.order === 0 ||
+                (img.order > deletedImageOrder && img.order - 1 === 0)
+            ) || remainingImages[0];
+
+          await tx.productVariantImage.update({
+            where: { id: newPrimaryImage.id },
+            data: { isPrimary: true },
+          });
+        }
+      }
+    });
+
+    res
+      .status(200)
+      .json(new ApiResponsive(200, {}, "Variant image deleted successfully"));
+  } catch (error) {
+    console.error("Error deleting variant image:", error);
+    throw new ApiError(500, `Failed to delete variant image: ${error.message}`);
+  }
+});
+
+// Reorder variant images
+export const reorderVariantImages = asyncHandler(async (req, res, next) => {
+  const { variantId } = req.params;
+  const { imageOrders } = req.body; // Array of { imageId, order }
+
+  if (!imageOrders || !Array.isArray(imageOrders)) {
+    throw new ApiError(400, "imageOrders array is required");
+  }
+
+  // Check if variant exists
+  const variant = await prisma.productVariant.findUnique({
+    where: { id: variantId },
+    include: {
+      images: {
+        select: { id: true, isPrimary: true, order: true },
+        orderBy: { order: "asc" },
+      },
+    },
+  });
+
+  if (!variant) {
+    throw new ApiError(404, "Product variant not found");
+  }
+
+  // Validate that all imageIds belong to this variant
+  const variantImageIds = variant.images.map((img) => img.id);
+  const requestImageIds = imageOrders.map((item) => item.imageId);
+
+  const invalidIds = requestImageIds.filter(
+    (id) => !variantImageIds.includes(id)
+  );
+
+  if (invalidIds.length > 0) {
+    throw new ApiError(
+      400,
+      `Images ${invalidIds.join(", ")} do not belong to this variant`
+    );
+  }
+
+  try {
+    // Use transaction to update all orders atomically
+    await prisma.$transaction(async (tx) => {
+      // Update each image's order
+      for (const { imageId, order } of imageOrders) {
+        await tx.productVariantImage.update({
+          where: { id: imageId },
+          data: { order: parseInt(order) },
+        });
+      }
+
+      // Ensure primary image is at order 0
+      const primaryImage = variant.images.find((img) => img.isPrimary);
+      if (primaryImage) {
+        const newPrimaryOrder = imageOrders.find(
+          (item) => item.imageId === primaryImage.id
+        )?.order;
+
+        if (newPrimaryOrder !== undefined && parseInt(newPrimaryOrder) !== 0) {
+          // If primary image is not at order 0, we need to adjust
+          // Find what image is now at order 0
+          const imageAtOrderZero = imageOrders.find(
+            (item) => parseInt(item.order) === 0
+          );
+
+          if (
+            imageAtOrderZero &&
+            imageAtOrderZero.imageId !== primaryImage.id
+          ) {
+            // Set the image at order 0 as primary
+            await tx.productVariantImage.updateMany({
+              where: { variantId },
+              data: { isPrimary: false },
+            });
+
+            await tx.productVariantImage.update({
+              where: { id: imageAtOrderZero.imageId },
+              data: { isPrimary: true },
+            });
+          }
+        }
+      }
+    });
+
+    res
+      .status(200)
+      .json(
+        new ApiResponsive(200, {}, "Variant images reordered successfully")
+      );
+  } catch (error) {
+    console.error("Error reordering variant images:", error);
+    throw new ApiError(
+      500,
+      `Failed to reorder variant images: ${error.message}`
+    );
+  }
 });
 
 // Handle bulk variant operations (add, update, delete multiple variants)
@@ -2748,4 +3665,139 @@ export const bulkVariantOperations = asyncHandler(async (req, res) => {
         "Product variants updated successfully"
       )
     );
+});
+
+// Set variant image as primary
+export const setVariantImageAsPrimary = asyncHandler(async (req, res, next) => {
+  const { imageId } = req.params;
+
+  // Check if image exists
+  const image = await prisma.productVariantImage.findUnique({
+    where: { id: imageId },
+    include: {
+      variant: {
+        select: {
+          id: true,
+          images: {
+            select: { id: true, isPrimary: true, order: true },
+            orderBy: { order: "asc" },
+          },
+        },
+      },
+    },
+  });
+
+  if (!image) {
+    throw new ApiError(404, "Variant image not found");
+  }
+
+  // If already primary, no action needed
+  if (image.isPrimary) {
+    return res
+      .status(200)
+      .json(new ApiResponsive(200, {}, "Image is already set as primary"));
+  }
+
+  try {
+    let retryCount = 0;
+    const maxRetries = 3;
+
+    while (retryCount < maxRetries) {
+      try {
+        // Use a transaction to ensure all database operations complete together
+        await prisma.$transaction(async (tx) => {
+          // Get fresh image data to ensure we have current state
+          const currentImage = await tx.productVariantImage.findUnique({
+            where: { id: imageId },
+            include: {
+              variant: {
+                select: {
+                  id: true,
+                  images: {
+                    select: { id: true, isPrimary: true, order: true },
+                    orderBy: { order: "asc" },
+                  },
+                },
+              },
+            },
+          });
+
+          if (!currentImage) {
+            throw new Error("Image not found");
+          }
+
+          const currentOrder = currentImage.order;
+          const variantId = currentImage.variant.id;
+
+          // Step 1: Remove primary flag from all images in this variant
+          await tx.productVariantImage.updateMany({
+            where: {
+              variantId,
+              isPrimary: true,
+            },
+            data: { isPrimary: false },
+          });
+
+          // Step 2: If the image is not at order 0, move it to order 0
+          if (currentOrder !== 0) {
+            // Shift all images with order < currentOrder up by 1
+            await tx.productVariantImage.updateMany({
+              where: {
+                variantId,
+                order: { lt: currentOrder },
+              },
+              data: {
+                order: { increment: 1 },
+              },
+            });
+
+            // Set this image to order 0 and primary
+            await tx.productVariantImage.update({
+              where: { id: imageId },
+              data: {
+                order: 0,
+                isPrimary: true,
+              },
+            });
+
+            console.log(`🔑 Moved image to order 0 and set as primary`);
+          } else {
+            // Image is already at order 0, just set as primary
+            await tx.productVariantImage.update({
+              where: { id: imageId },
+              data: { isPrimary: true },
+            });
+
+            console.log(`🔑 Set image as primary (already at order 0)`);
+          }
+        });
+
+        // Transaction succeeded, break the retry loop
+        break;
+      } catch (error) {
+        retryCount++;
+
+        if (error.code === "P2034" && retryCount < maxRetries) {
+          // Wait a bit before retrying for deadlock/write conflict
+          await new Promise((resolve) => setTimeout(resolve, 100 * retryCount));
+
+          continue;
+        } else {
+          throw error;
+        }
+      }
+    }
+
+    res
+      .status(200)
+      .json(
+        new ApiResponsive(200, {}, "Variant image set as primary successfully")
+      );
+  } catch (error) {
+    console.error("Error setting variant image as primary:", error);
+    throw new ApiError(
+      500,
+      `Failed to set variant image as primary: ${error.message}`
+    );
+  }
 });

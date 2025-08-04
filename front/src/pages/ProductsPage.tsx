@@ -26,6 +26,9 @@ import { Badge } from "@/components/ui/badge";
 import { v4 as uuidv4 } from "uuid";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DeleteProductDialog } from "@/components/DeleteProductDialog";
+import VariantCard from "@/components/VariantCard";
+import { useDebounce } from "@/utils/debounce";
+// import { MultiSelect } from "@/components/ui/multiselect";
 
 function useCategories() {
   const [categoriesData, setCategoriesData] = useState<any[]>([]);
@@ -83,6 +86,8 @@ export function ProductForm({
     quantity: 0,
     isSupplement: false,
     featured: false,
+    ourProduct: false,
+    productType: [] as string[],
     isActive: true,
     ingredients: "",
     nutritionInfo: {
@@ -97,6 +102,10 @@ export function ProductForm({
     metaTitle: "",
     metaDescription: "",
     keywords: "",
+    tags: [] as string[],
+    topBrandIds: [] as string[],
+    newBrandIds: [] as string[],
+    hotBrandIds: [] as string[],
   });
 
   const [imageFiles, setImageFiles] = useState<File[]>([]);
@@ -121,33 +130,75 @@ export function ProductForm({
   }
 
   // Handle image drop for upload
-  const onDrop = useCallback(
-    (acceptedFiles: File[]) => {
-      // Create local previews for the UI
-      const newPreviews = acceptedFiles.map((file) => ({
-        url: URL.createObjectURL(file),
-        isPrimary: false,
-      }));
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    console.log(
+      `📸 Files dropped/selected: ${acceptedFiles.length}`,
+      acceptedFiles
+    );
 
-      // Set first image as primary if there are no other images
-      if (imagePreviews.length === 0 && newPreviews.length > 0) {
+    if (acceptedFiles.length === 0) {
+      toast.error("No valid files selected");
+      return;
+    }
+
+    // Validate files
+    const validFiles = acceptedFiles.filter((file) => {
+      const isValidType = file.type.startsWith("image/");
+      const isValidSize = file.size <= 10 * 1024 * 1024; // 10MB
+
+      if (!isValidType) {
+        toast.error(`${file.name} is not a valid image file`);
+        return false;
+      }
+      if (!isValidSize) {
+        toast.error(`${file.name} is too large. Maximum size is 10MB`);
+        return false;
+      }
+      return true;
+    });
+
+    if (validFiles.length === 0) {
+      return;
+    }
+
+    // Create local previews for the UI
+    const newPreviews = validFiles.map((file) => ({
+      url: URL.createObjectURL(file),
+      isPrimary: false,
+    }));
+
+    setImageFiles((prev) => {
+      // Set first image as primary if there are no existing images
+      if (prev.length === 0 && newPreviews.length > 0) {
         newPreviews[0].isPrimary = true;
       }
+      console.log(
+        `📸 Total files after addition: ${prev.length + validFiles.length}`
+      );
+      return [...prev, ...validFiles];
+    });
 
-      setImageFiles((prev) => [...prev, ...acceptedFiles]);
-      setImagePreviews((prev) => [...prev, ...newPreviews]);
-    },
-    [imagePreviews.length]
-  );
+    setImagePreviews((prev) => [...prev, ...newPreviews]);
 
-  const { getRootProps, getInputProps } = useDropzone({
+    toast.success(`${validFiles.length} image(s) added successfully`);
+  }, []);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
       "image/jpeg": [],
       "image/png": [],
       "image/webp": [],
+      "image/gif": [],
     },
-    maxSize: 5 * 1024 * 1024, // 5MB
+    maxSize: 10 * 1024 * 1024, // 10MB
+    multiple: true,
+    onDropRejected: (rejectedFiles) => {
+      rejectedFiles.forEach((file) => {
+        const errors = file.errors.map((e) => e.message).join(", ");
+        toast.error(`${file.file.name}: ${errors}`);
+      });
+    },
   });
 
   // Remove image from preview and files
@@ -287,6 +338,8 @@ export function ProductForm({
                   : 0,
               isSupplement: productData.isSupplement || false,
               featured: productData.featured || false,
+              ourProduct: productData.ourProduct || false,
+              productType: productData.productType || [],
               isActive:
                 productData.isActive !== undefined
                   ? productData.isActive
@@ -304,9 +357,13 @@ export function ProductForm({
               metaTitle: productData.metaTitle || "",
               metaDescription: productData.metaDescription || "",
               keywords: productData.keywords || "",
+              tags: productData.tags || [],
+              topBrandIds: productData.topBrandIds || [],
+              newBrandIds: productData.newBrandIds || [],
+              hotBrandIds: productData.hotBrandIds || [],
             });
 
-            // Set selected categories
+            // Set selected categories (for radio buttons, not checkboxes)
             setSelectedCategories(productCategories);
 
             // Setup image previews
@@ -346,6 +403,14 @@ export function ProductForm({
                     quantity: variant.quantity || 0,
                     isActive:
                       variant.isActive !== undefined ? variant.isActive : true,
+                    images: Array.isArray(variant.images)
+                      ? variant.images.map((img: any) => ({
+                          url: img.url,
+                          id: img.id,
+                          isPrimary: img.isPrimary || false,
+                          isNew: false,
+                        }))
+                      : [],
                   })
                 );
 
@@ -438,17 +503,26 @@ export function ProductForm({
     // Generate combinations of flavors and weights
     const newVariants: any[] = [];
 
-    // If both flavors and weights are selected, create combinations
+    // Helper to check for duplicate
+    const isDuplicate = (flavorId: string | null, weightId: string | null) => {
+      return variants.some(
+        (v) =>
+          (v.flavorId || null) === (flavorId || null) &&
+          (v.weightId || null) === (weightId || null)
+      );
+    };
+
     if (selectedFlavorObjects.length > 0 && selectedWeightObjects.length > 0) {
       selectedFlavorObjects.forEach((flavor) => {
         selectedWeightObjects.forEach((weight) => {
+          if (isDuplicate(flavor.id, weight.id)) {
+            return;
+          }
           const skuBase = product.sku || "";
           const variantSku = `${skuBase}-${flavor.name
             .substring(0, 3)
             .toUpperCase()}-${weight.value}${weight.unit}`;
-
           const variantName = `${flavor.name} - ${weight.value}${weight.unit}`;
-
           newVariants.push({
             id: uuidv4(),
             name: variantName,
@@ -461,17 +535,19 @@ export function ProductForm({
             salePrice: product.salePrice || "",
             quantity: product.quantity || 0,
             isActive: true,
+            images: [],
           });
         });
       });
     } else if (selectedFlavorObjects.length > 0) {
-      // Only flavors selected
       selectedFlavorObjects.forEach((flavor) => {
+        if (isDuplicate(flavor.id, null)) {
+          return;
+        }
         const skuBase = product.sku || "";
         const variantSku = `${skuBase}-${flavor.name
           .substring(0, 3)
           .toUpperCase()}`;
-
         newVariants.push({
           id: uuidv4(),
           name: flavor.name,
@@ -484,14 +560,16 @@ export function ProductForm({
           salePrice: product.salePrice || "",
           quantity: product.quantity || 0,
           isActive: true,
+          images: [],
         });
       });
     } else if (selectedWeightObjects.length > 0) {
-      // Only weights selected
       selectedWeightObjects.forEach((weight) => {
+        if (isDuplicate(null, weight.id)) {
+          return;
+        }
         const skuBase = product.sku || "";
         const variantSku = `${skuBase}-${weight.value}${weight.unit}`;
-
         newVariants.push({
           id: uuidv4(),
           name: `${weight.value}${weight.unit}`,
@@ -504,31 +582,53 @@ export function ProductForm({
           salePrice: product.salePrice || "",
           quantity: product.quantity || 0,
           isActive: true,
+          images: [],
         });
       });
     }
 
-    setVariants((prev) => [...prev, ...newVariants]);
-  };
-
-  // Update variant field
-  const updateVariant = (variantId: string, field: string, value: any) => {
-    // Ensure numeric values are properly handled
-    if (field === "price" || field === "salePrice" || field === "quantity") {
-      // If empty string, use empty string (allows clearing sale price)
-      value = value === "" ? "" : value;
+    if (newVariants.length === 0) {
+      // If all were duplicates, show a toast
+      toast.error(
+        "No new variants generated. All selected combinations already exist.",
+        {
+          position: "top-center",
+        }
+      );
+      return;
     }
 
+    setVariants((prev) => [...prev, ...newVariants]);
+    toast.success(`${newVariants.length} new variant(s) generated!`, {
+      position: "top-center",
+    });
+  };
+
+  // Handle variant images change (used by VariantCard)
+  const handleVariantImagesChange = (variantIndex: number, images: any[]) => {
     setVariants((prev) =>
-      prev.map((variant) =>
-        variant.id === variantId ? { ...variant, [field]: value } : variant
+      prev.map((variant, i) =>
+        i === variantIndex ? { ...variant, images } : variant
       )
     );
   };
 
-  // Remove variant
-  const removeVariant = (variantId: string) => {
-    setVariants((prev) => prev.filter((variant) => variant.id !== variantId));
+  // Update variant by index (used by VariantCard)
+  const updateVariantByIndex = (
+    variantIndex: number,
+    field: string,
+    value: any
+  ) => {
+    setVariants((prev) =>
+      prev.map((variant, i) =>
+        i === variantIndex ? { ...variant, [field]: value } : variant
+      )
+    );
+  };
+
+  // Remove variant by index (used by VariantCard)
+  const removeVariantByIndex = (variantIndex: number) => {
+    setVariants((prev) => prev.filter((_, i) => i !== variantIndex));
   };
 
   // Handle form submission
@@ -565,6 +665,8 @@ export function ProductForm({
       formData.append("name", product.name);
       formData.append("description", product.description || "");
       formData.append("featured", String(product.featured));
+      formData.append("ourProduct", String(product.ourProduct));
+      formData.append("productType", JSON.stringify(product.productType));
       formData.append("isActive", String(product.isActive));
       formData.append("hasVariants", String(hasVariants));
       formData.append("isSupplement", String(product.isSupplement));
@@ -573,6 +675,7 @@ export function ProductForm({
       formData.append("metaTitle", product.metaTitle || "");
       formData.append("metaDescription", product.metaDescription || "");
       formData.append("keywords", product.keywords || "");
+      formData.append("tags", JSON.stringify(product.tags || []));
 
       // Add categories information
       if (product.categoryIds && product.categoryIds.length > 0) {
@@ -612,30 +715,56 @@ export function ProductForm({
             salePrice: variant.salePrice ? String(variant.salePrice) : "",
             quantity: String(variant.quantity || 0),
             isActive: variant.isActive !== undefined ? variant.isActive : true,
+            removedImageIds: variant.removedImageIds || [], // Include removed image IDs for cleanup
           };
         });
 
         formData.append("variants", JSON.stringify(processedVariants));
       }
 
-      // Add images
-      if (imageFiles.length > 0) {
+      // Add images (only for non-variant products)
+      if (!hasVariants && imageFiles.length > 0) {
+        console.log(
+          `📸 Submitting ${imageFiles.length} images for simple product:`,
+          imageFiles
+        );
+
         // Add primary image index
         const primaryIndex = imagePreviews.findIndex(
           (img) => img.isPrimary === true
         );
         if (primaryIndex >= 0) {
           formData.append("primaryImageIndex", String(primaryIndex));
+          console.log(`📸 Primary image index: ${primaryIndex}`);
         } else {
           // Default to first image as primary if none is marked
           formData.append("primaryImageIndex", "0");
+          console.log(`📸 Default primary image index: 0`);
         }
 
-        // Append each image file
-        imageFiles.forEach((file) => {
-          formData.append(`images`, file);
+        // Append each image file with proper field name for multer
+        imageFiles.forEach((file, index) => {
+          formData.append("images", file);
+          console.log(
+            `📸 Added image ${index + 1}: ${file.name} (${file.size} bytes)`
+          );
         });
+
+        // Also log the FormData contents
+        console.log(
+          `📸 FormData contents:`,
+          Object.fromEntries(formData.entries())
+        );
+      } else if (hasVariants) {
+        console.log(
+          `📸 Skipping product images for variant product - will use variant-specific images`
+        );
       }
+
+      // Add topBrandIds, newBrandIds, hotBrandIds to formData
+      formData.append("topBrandIds", JSON.stringify(product.topBrandIds || []));
+      formData.append("newBrandIds", JSON.stringify(product.newBrandIds || []));
+      formData.append("hotBrandIds", JSON.stringify(product.hotBrandIds || []));
 
       let response;
       if (mode === "create") {
@@ -645,6 +774,111 @@ export function ProductForm({
       }
 
       if (response.data.success) {
+        // If product creation/update was successful and we have variant images, upload them
+        if (hasVariants && response.data.data?.product?.variants) {
+          const productVariants = response.data.data.product.variants;
+          console.log(
+            `📸 Processing variant images for ${productVariants.length} variants`
+          );
+
+          let uploadPromises = [];
+
+          // Match variants by their temporary IDs or flavor/weight combination
+          for (let i = 0; i < variants.length; i++) {
+            const localVariant = variants[i];
+
+            // In create mode: match by index
+            // In edit mode: match by ID or create new mapping for newly generated variants
+            let serverVariant;
+
+            if (mode === "create") {
+              serverVariant = productVariants[i]; // Match by index since they're created in same order
+            } else {
+              // Edit mode: find matching variant by ID or create new one
+              const isNewVariant =
+                localVariant.id && localVariant.id.includes("-"); // UUID format
+
+              if (isNewVariant) {
+                // This is a newly generated variant, find it in the updated product variants
+                // Match by flavor/weight combination
+                serverVariant = productVariants.find(
+                  (sv: any) =>
+                    sv.flavorId === localVariant.flavorId &&
+                    sv.weightId === localVariant.weightId
+                );
+              } else {
+                // This is an existing variant, find by ID
+                serverVariant = productVariants.find(
+                  (sv: any) => sv.id === localVariant.id
+                );
+              }
+            }
+
+            if (localVariant && localVariant.images && serverVariant) {
+              // Filter only new images that need to be uploaded
+              const newImages = localVariant.images.filter(
+                (img: any) => img.isNew && img.file
+              );
+
+              if (newImages.length > 0) {
+                console.log(
+                  `📸 Found ${newImages.length} new images for variant ${serverVariant.id} (${localVariant.flavor?.name || "N/A"} - ${localVariant.weight?.value || "N/A"}${localVariant.weight?.unit || ""}) [Mode: ${mode}]`
+                );
+
+                // Upload each new image for this variant
+                for (let j = 0; j < newImages.length; j++) {
+                  const imageData = newImages[j];
+
+                  // FIXED: Send undefined for non-explicitly-marked images to let backend decide
+                  // Only send true/false when explicitly set, otherwise let backend handle it
+                  const isPrimary =
+                    imageData.isPrimary === true ? true : undefined;
+
+                  console.log(`📸 Upload decision for image ${j + 1}:`, {
+                    imageDataIsPrimary: imageData.isPrimary,
+                    finalIsPrimary: isPrimary,
+                    note: "undefined = let backend decide, true = force primary",
+                  });
+
+                  const uploadPromise = products
+                    .uploadVariantImage(
+                      serverVariant.id,
+                      imageData.file,
+                      isPrimary
+                    )
+                    .then(() => {
+                      console.log(
+                        `📸 Uploaded image ${j + 1}/${newImages.length} for variant ${serverVariant.id} (isPrimary: ${isPrimary})`
+                      );
+                    })
+                    .catch((error) => {
+                      console.error(
+                        `❌ Failed to upload image ${j + 1} for variant ${serverVariant.id}:`,
+                        error
+                      );
+                      throw error;
+                    });
+
+                  uploadPromises.push(uploadPromise);
+                }
+              }
+            }
+          }
+
+          // Wait for all uploads to complete
+          if (uploadPromises.length > 0) {
+            try {
+              await Promise.all(uploadPromises);
+              toast.success(
+                `Successfully uploaded ${uploadPromises.length} variant image(s)`
+              );
+            } catch (error) {
+              console.error("Some variant image uploads failed:", error);
+              toast.error("Failed to upload some variant images");
+            }
+          }
+        }
+
         toast.success(
           mode === "create"
             ? "Product created successfully"
@@ -826,6 +1060,27 @@ export function ProductForm({
     categories,
   ]);
 
+  // ... inside ProductForm, after brands state:
+  // const [brands, setBrands] = useState<{ label: string; value: string }[]>([]); // Removed unused brands state
+
+  // useEffect(() => {
+  //   async function fetchBrands() {
+  //     try {
+  //       const res = await import("@/api/adminService").then((m) =>
+  //         m.brands.getBrands()
+  //       );
+  //       const brandOptions = (res.data.data.brands || []).map((b: any) => ({
+  //         label: b.name,
+  //         value: b.id,
+  //       }));
+  //       setBrands(brandOptions);
+  //     } catch (e) {
+  //       // ignore
+  //     }
+  //   }
+  //   fetchBrands();
+  // }, []);
+
   if (formLoading) {
     return (
       <div className="flex h-full w-full items-center justify-center py-10">
@@ -942,7 +1197,112 @@ export function ProductForm({
                 <Checkbox
                   checked={hasVariants}
                   onCheckedChange={handleVariantsToggle}
+                  className="h-6 w-6 border-gray-400 cursor-pointer"
                 />
+              </div>
+
+              {/* Product Settings */}
+              <div className="space-y-4 rounded-lg border p-4 bg-gray-50">
+                <h3 className="text-lg font-semibold">Product Settings</h3>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {/* <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="isSupplement"
+                      name="isSupplement"
+                      checked={product.isSupplement}
+                      onCheckedChange={(checked) =>
+                        setProduct((prev) => ({
+                          ...prev,
+                          isSupplement: !!checked,
+                        }))
+                      }
+                    />
+                    <Label htmlFor="isSupplement">Is Supplement</Label>
+                  </div> */}
+
+                  {/* <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="featured"
+                      name="featured"
+                      checked={product.featured}
+                      onCheckedChange={(checked) =>
+                        setProduct((prev) => ({ ...prev, featured: !!checked }))
+                      }
+                    />
+                    <Label htmlFor="featured">Featured Product</Label>
+                  </div> */}
+
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="isActive"
+                      name="isActive"
+                      checked={product.isActive}
+                      onCheckedChange={(checked) =>
+                        setProduct((prev) => ({ ...prev, isActive: !!checked }))
+                      }
+                    />
+                    <Label htmlFor="isActive">Active</Label>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="ourProduct"
+                      name="ourProduct"
+                      checked={product.ourProduct}
+                      onCheckedChange={(checked) =>
+                        setProduct((prev) => ({
+                          ...prev,
+                          ourProduct: !!checked,
+                        }))
+                      }
+                    />
+                    <Label htmlFor="ourProduct">
+                      Our Product (Prioritized in listings)
+                    </Label>
+                  </div>
+                </div>
+
+                {/* Product Type Selection */}
+                <div className="space-y-2">
+                  <Label>Product Categories</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Select which categories this product belongs to
+                  </p>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {[
+                      { key: "featured", label: "Featured", icon: "⭐" },
+                      { key: "bestseller", label: "Bestseller", icon: "📈" },
+                      { key: "trending", label: "Trending", icon: "🔥" },
+                      { key: "new", label: "New Arrivals", icon: "🆕" },
+                    ].map((type) => (
+                      <div key={type.key} className="flex items-center gap-2">
+                        <Checkbox
+                          id={`productType-${type.key}`}
+                          checked={product.productType.includes(type.key)}
+                          onCheckedChange={(checked) => {
+                            setProduct((prev) => ({
+                              ...prev,
+                              productType: checked
+                                ? [...prev.productType, type.key]
+                                : prev.productType.filter(
+                                    (t) => t !== type.key
+                                  ),
+                            }));
+                          }}
+                          className="h-6 w-6 border-gray-400 cursor-pointer"
+                        />
+                        <Label
+                          htmlFor={`productType-${type.key}`}
+                          className="flex items-center gap-1 cursor-pointer"
+                        >
+                          <span>{type.icon}</span>
+                          {type.label}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {!hasVariants && (
@@ -1026,83 +1386,127 @@ export function ProductForm({
             </div>
           </div>
 
-          {/* Product Images - Dropzone */}
-          <div className="space-y-4 rounded-lg border p-4 bg-gray-50">
-            <h2 className="text-xl font-semibold border-b pb-2">
-              Product Images
-            </h2>
-            <div className="space-y-2">
-              <div className="flex flex-col gap-1">
-                <p className="text-sm font-medium">Upload Images</p>
-                <p className="text-xs text-muted-foreground">
-                  Drag and drop images here, or click to select files. The first
-                  image will be the primary image.
-                </p>
-              </div>
-              <div
-                {...getRootProps()}
-                className="border-2 border-dashed rounded-md p-8 cursor-pointer hover:bg-muted/50 transition-colors text-center bg-white"
-              >
-                <input {...getInputProps()} />
-                <ImageIcon className="h-10 w-10 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-muted-foreground">
-                  Drop images here, or click to select files
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Maximum size: 5MB per image
-                </p>
-              </div>
-            </div>
+          {/* Product Images - Dropzone - Only show when variants are NOT enabled */}
+          {!hasVariants && (
+            <div className="space-y-4 rounded-lg border p-4 bg-gray-50">
+              <h2 className="text-xl font-semibold border-b pb-2">
+                Product Images
+              </h2>
+              <div className="space-y-2">
+                <div className="flex flex-col gap-1">
+                  <p className="text-sm font-medium">Upload Images</p>
+                  <p className="text-xs text-muted-foreground">
+                    Drag and drop images here, or click to select files. The
+                    first image will be the primary image.
+                  </p>
+                </div>
+                <div
+                  {...getRootProps()}
+                  className={`border-2 border-dashed rounded-md p-8 cursor-pointer transition-colors text-center bg-white ${
+                    isDragActive
+                      ? "border-blue-400 bg-blue-50"
+                      : "border-gray-300 hover:border-gray-400 hover:bg-gray-50"
+                  }`}
+                >
+                  <input {...getInputProps()} />
+                  <ImageIcon className="h-10 w-10 mx-auto mb-2 text-muted-foreground" />
+                  {isDragActive ? (
+                    <p className="text-blue-600 font-medium">
+                      Drop the images here...
+                    </p>
+                  ) : (
+                    <>
+                      <p className="text-muted-foreground">
+                        Drop multiple images here, or click to select files
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Supports JPEG, PNG, WebP, GIF • Maximum size: 10MB per
+                        image
+                      </p>
+                    </>
+                  )}
+                </div>
 
-            {/* Image previews */}
-            {imagePreviews.length > 0 && (
-              <div className="mt-4">
-                <Label className="mb-3 block">Product Images</Label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                  {imagePreviews.map((preview, index) => (
-                    <div key={index} className="relative group">
-                      <div
-                        className={`relative h-32 rounded-md overflow-hidden border-2 ${preview.isPrimary ? "border-primary" : "border-transparent"}`}
-                      >
-                        <img
-                          src={preview.url}
-                          alt={`Product preview ${index + 1}`}
-                          className="h-full w-full object-cover"
-                        />
-                        {preview.isPrimary && (
-                          <span className="absolute top-2 left-2 bg-primary text-white text-xs py-1 px-2 rounded-full">
-                            Primary
-                          </span>
-                        )}
-                      </div>
-                      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 flex space-x-1">
-                        {!preview.isPrimary && (
+                {/* Fallback file input */}
+                <div className="mt-2">
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    multiple
+                    onChange={(e) => {
+                      if (e.target.files) {
+                        const files = Array.from(e.target.files);
+                        onDrop(files);
+                        // Clear the input so the same file can be selected again
+                        e.target.value = "";
+                      }
+                    }}
+                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Alternative: Use this input if drag and drop doesn't work
+                  </p>
+                </div>
+
+                {/* Manual File Input as Fallback */}
+              </div>
+
+              {/* Image previews */}
+              {imagePreviews.length > 0 && (
+                <div className="mt-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <Label>Product Images</Label>
+                    <Badge variant="outline" className="text-xs">
+                      {imagePreviews.length} image
+                      {imagePreviews.length !== 1 ? "s" : ""}
+                    </Badge>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {imagePreviews.map((preview, index) => (
+                      <div key={index} className="relative group">
+                        <div
+                          className={`relative h-32 rounded-md overflow-hidden border-2 ${preview.isPrimary ? "border-primary" : "border-transparent"}`}
+                        >
+                          <img
+                            src={preview.url}
+                            alt={`Product preview ${index + 1}`}
+                            className="h-full w-full object-cover"
+                          />
+                          {preview.isPrimary && (
+                            <span className="absolute top-2 left-2 bg-primary text-white text-xs py-1 px-2 rounded-full">
+                              Primary
+                            </span>
+                          )}
+                        </div>
+                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 flex space-x-1">
+                          {!preview.isPrimary && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-7 w-7 bg-white hover:bg-primary hover:text-white"
+                              onClick={() => setPrimaryImage(index)}
+                            >
+                              <Star className="h-4 w-4" />
+                            </Button>
+                          )}
                           <Button
                             type="button"
                             variant="outline"
                             size="icon"
-                            className="h-7 w-7 bg-white hover:bg-primary hover:text-white"
-                            onClick={() => setPrimaryImage(index)}
+                            className="h-7 w-7 bg-white hover:bg-destructive hover:text-white"
+                            onClick={() => removeImage(index)}
                           >
-                            <Star className="h-4 w-4" />
+                            <Trash2 className="h-4 w-4" />
                           </Button>
-                        )}
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          className="h-7 w-7 bg-white hover:bg-destructive hover:text-white"
-                          onClick={() => removeImage(index)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
 
           {/* SEO Section */}
           <div className="space-y-4 rounded-lg border p-4 bg-gray-50">
@@ -1158,9 +1562,21 @@ export function ProductForm({
           {/* Variants Configuration */}
           {hasVariants && (
             <div className="space-y-4 rounded-lg border p-4 bg-gray-50">
-              <h2 className="text-xl font-semibold border-b pb-2">
-                Variants Configuration
-              </h2>
+              <div className="flex items-center justify-between border-b pb-2">
+                <h2 className="text-xl font-semibold">
+                  Variants Configuration
+                </h2>
+                <Badge variant="secondary" className="text-xs">
+                  Using variant-specific images
+                </Badge>
+              </div>
+
+              <div className="bg-green-50 border border-green-200 rounded-md p-3">
+                <p className="text-sm text-green-700">
+                  <strong>✓ Variant Mode:</strong> Each variant can have its own
+                  images. Upload images for each variant below in the table.
+                </p>
+              </div>
 
               <div className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -1177,7 +1593,7 @@ export function ProductForm({
                             id={`flavor-${flavor.id}`}
                             checked={selectedFlavors.includes(flavor.id)}
                             onChange={() => handleFlavorToggle(flavor.id)}
-                            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                            className="h-6 w-6 rounded border-gray-400 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
                           />
                           <Label
                             htmlFor={`flavor-${flavor.id}`}
@@ -1208,7 +1624,7 @@ export function ProductForm({
                             id={`weight-${weight.id}`}
                             checked={selectedWeights.includes(weight.id)}
                             onChange={() => handleWeightToggle(weight.id)}
-                            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                            className="h-6 w-6 rounded border-gray-400 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
                           />
                           <Label
                             htmlFor={`weight-${weight.id}`}
@@ -1250,106 +1666,18 @@ export function ProductForm({
                   </div>
 
                   {variants.length > 0 ? (
-                    <div className="overflow-x-auto">
-                      <table className="w-full min-w-full divide-y divide-gray-200 border">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              SKU
-                            </th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Variant
-                            </th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Price
-                            </th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Sale Price
-                            </th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Stock
-                            </th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Actions
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {variants.map((variant) => (
-                            <tr key={variant.id}>
-                              <td className="px-3 py-2 whitespace-nowrap">
-                                <Input
-                                  value={variant.sku || "Auto-generated"}
-                                  readOnly
-                                  className="h-8 bg-muted"
-                                />
-                              </td>
-                              <td className="px-3 py-2 whitespace-nowrap">
-                                {variant.flavor ? variant.flavor.name : ""}{" "}
-                                {variant.weight
-                                  ? `${variant.weight.value}${variant.weight.unit}`
-                                  : ""}
-                              </td>
-                              <td className="px-3 py-2 whitespace-nowrap">
-                                <Input
-                                  value={variant.price || ""}
-                                  onChange={(e) =>
-                                    updateVariant(
-                                      variant.id,
-                                      "price",
-                                      e.target.value
-                                    )
-                                  }
-                                  type="number"
-                                  min="0"
-                                  className="h-8"
-                                  required
-                                />
-                              </td>
-                              <td className="px-3 py-2 whitespace-nowrap">
-                                <Input
-                                  value={variant.salePrice || ""}
-                                  onChange={(e) =>
-                                    updateVariant(
-                                      variant.id,
-                                      "salePrice",
-                                      e.target.value
-                                    )
-                                  }
-                                  type="number"
-                                  min="0"
-                                  className="h-8"
-                                />
-                              </td>
-                              <td className="px-3 py-2 whitespace-nowrap">
-                                <Input
-                                  value={variant.quantity || ""}
-                                  onChange={(e) =>
-                                    updateVariant(
-                                      variant.id,
-                                      "quantity",
-                                      e.target.value
-                                    )
-                                  }
-                                  type="number"
-                                  min="0"
-                                  className="h-8"
-                                  required
-                                />
-                              </td>
-                              <td className="px-3 py-2 whitespace-nowrap">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => removeVariant(variant.id)}
-                                >
-                                  <Trash2 className="h-4 w-4 text-red-500" />
-                                </Button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                    <div className="space-y-4">
+                      {variants.map((variant, variantIndex) => (
+                        <VariantCard
+                          key={variant.id || `variant-${variantIndex}`}
+                          variant={variant}
+                          index={variantIndex}
+                          onUpdate={updateVariantByIndex}
+                          onRemove={removeVariantByIndex}
+                          onImagesChange={handleVariantImagesChange}
+                          isEditMode={mode === "edit"}
+                        />
+                      ))}
                     </div>
                   ) : (
                     <div className="text-center p-4 border rounded-md bg-white">
@@ -1462,6 +1790,72 @@ export function ProductForm({
             </div>
           )}
 
+          {/* Product Tags */}
+          {/* <div className="space-y-4 rounded-lg border p-4 bg-gray-50">
+            <h2 className="text-xl font-semibold border-b pb-2">
+              Product Tags
+            </h2>
+            <div className="flex gap-4">
+              {tagOptions.map((tag) => (
+                <label key={tag.key} className="flex items-center gap-1">
+                  <input
+                    type="checkbox"
+                    checked={product.tags.includes(tag.key)}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      setProduct((prev) => ({
+                        ...prev,
+                        tags: checked
+                          ? [...prev.tags, tag.key]
+                          : prev.tags.filter((t) => t !== tag.key),
+                      }));
+                    }}
+                  />
+                  {tag.label}
+                </label>
+              ))}
+            </div>
+            {product.tags.includes("top") && (
+              <div className="mt-4">
+                <Label>Select brands for Top tag</Label>
+                <MultiSelect
+                  options={brands}
+                  value={product.topBrandIds}
+                  onChange={(val: string[]) =>
+                    setProduct((prev) => ({ ...prev, topBrandIds: val }))
+                  }
+                  placeholder="Select brands for Top"
+                />
+              </div>
+            )}
+            {product.tags.includes("new") && (
+              <div className="mt-4">
+                <Label>Select brands for New tag</Label>
+                <MultiSelect
+                  options={brands}
+                  value={product.newBrandIds}
+                  onChange={(val: string[]) =>
+                    setProduct((prev) => ({ ...prev, newBrandIds: val }))
+                  }
+                  placeholder="Select brands for New"
+                />
+              </div>
+            )}
+            {product.tags.includes("hot") && (
+              <div className="mt-4">
+                <Label>Select brands for Hot tag</Label>
+                <MultiSelect
+                  options={brands}
+                  value={product.hotBrandIds}
+                  onChange={(val: string[]) =>
+                    setProduct((prev) => ({ ...prev, hotBrandIds: val }))
+                  }
+                  placeholder="Select brands for Hot"
+                />
+              </div>
+            )}
+          </div> */}
+
           {/* Submit Buttons */}
           <div className="flex justify-end gap-2">
             <Button
@@ -1552,13 +1946,15 @@ const CategorySelector = ({
 
     if (isCurrentlySelected) {
       // If deselecting, remove this category
-      newSelectionIds = newSelectionIds.filter((id) => id !== categoryId);
+      newSelectionIds = newSelectionIds.filter(
+        (id: string) => id !== categoryId
+      );
 
       // If this is a parent, also remove all its children
       if (isParent(categoryId)) {
         const childrenIds = getChildrenIds(categoryId);
         newSelectionIds = newSelectionIds.filter(
-          (id) => !childrenIds.includes(id)
+          (id: string) => !childrenIds.includes(id)
         );
       }
     } else {
@@ -1613,11 +2009,11 @@ const CategorySelector = ({
               id={`cat-${categoryId}`}
               checked={isSelected}
               onChange={() => handleCategorySelect(categoryId)}
-              className="mr-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+              className="mr-2 h-6 w-6 rounded border-gray-400 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
             />
             <label
               htmlFor={`cat-${categoryId}`}
-              className="text-sm font-medium"
+              className="text-sm font-medium cursor-pointer"
             >
               {category.name}
             </label>
@@ -1662,9 +2058,12 @@ const CategorySelector = ({
                       id={`cat-${childId}`}
                       checked={isChildSelected}
                       onChange={() => handleCategorySelect(childId)}
-                      className="mr-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      className="mr-2 h-6 w-6 rounded border-gray-400 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
                     />
-                    <label htmlFor={`cat-${childId}`} className="text-sm">
+                    <label
+                      htmlFor={`cat-${childId}`}
+                      className="text-sm cursor-pointer"
+                    >
                       {child.name}
                     </label>
                   </div>
@@ -1729,6 +2128,7 @@ function ProductsList() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -1748,14 +2148,16 @@ function ProductsList() {
         const params = {
           page: currentPage,
           limit: 10,
-          ...(searchQuery && { search: searchQuery }),
+          ...(debouncedSearchQuery && { search: debouncedSearchQuery }),
           ...(selectedCategory && { category: selectedCategory }),
         };
 
         const response = await products.getProducts(params);
 
         if (response.data.success) {
-          setProductsList(response.data.data?.products || []);
+          const products = response.data.data?.products || [];
+
+          setProductsList(products);
           setTotalPages(response.data.data?.pagination?.pages || 1);
         } else {
           setError(response.data.message || "Failed to fetch products");
@@ -1769,7 +2171,7 @@ function ProductsList() {
     };
 
     fetchProducts();
-  }, [currentPage, searchQuery, selectedCategory]);
+  }, [currentPage, debouncedSearchQuery, selectedCategory]);
 
   // Fetch categories for filter
   useEffect(() => {
@@ -2177,11 +2579,28 @@ function ProductsList() {
                   productsList.map((product) => {
                     const { basePrice, regularPrice, hasSale } =
                       getProductPrices(product);
-                    const productImage =
-                      product.images && product.images.length > 0
-                        ? product.images.find((img: any) => img.isPrimary) ||
-                          product.images[0]
-                        : null;
+                    // Get image with fallback logic
+                    let productImage = null;
+
+                    // Priority 1: Product images
+                    if (product.images && product.images.length > 0) {
+                      productImage =
+                        product.images.find((img: any) => img.isPrimary) ||
+                        product.images[0];
+                    }
+                    // Priority 2: Any variant images
+                    else if (product.variants && product.variants.length > 0) {
+                      const variantWithImages = product.variants.find(
+                        (variant: any) =>
+                          variant.images && variant.images.length > 0
+                      );
+                      if (variantWithImages) {
+                        productImage =
+                          variantWithImages.images.find(
+                            (img: any) => img.isPrimary
+                          ) || variantWithImages.images[0];
+                      }
+                    }
 
                     return (
                       <tr
@@ -2202,7 +2621,17 @@ function ProductsList() {
                               </div>
                             )}
                             <div>
-                              <p className="font-medium">{product.name}</p>
+                              <div className="flex items-center gap-2">
+                                <p className="font-medium">{product.name}</p>
+                                {product.ourProduct && (
+                                  <Badge
+                                    variant="default"
+                                    className="text-xs bg-blue-600"
+                                  >
+                                    Our Product
+                                  </Badge>
+                                )}
+                              </div>
                               {product.hasVariants && (
                                 <p className="text-xs text-muted-foreground">
                                   {product.variants.length} variants
@@ -2342,3 +2771,10 @@ function ProductsList() {
     </div>
   );
 }
+
+// // Add state for tags
+// const tagOptions = [
+//   { key: "top", label: "Top" },
+//   { key: "hot", label: "Hot" },
+//   { key: "new", label: "New" },
+// ];

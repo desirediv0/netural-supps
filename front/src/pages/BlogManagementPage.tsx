@@ -108,15 +108,12 @@ const BlogManagementPage = () => {
         `${API_URL}/admin/blog?page=${page}&limit=10`
       );
 
-      console.log("Blog API response:", response.data);
-
-      // Add defensive checks for the response structure
       const responseData = response.data?.data;
       setBlogPosts(responseData?.posts || []);
       setTotalPages(responseData?.pagination?.totalPages || 1);
     } catch (error) {
       console.error("Error fetching blog posts:", error);
-      setBlogPosts([]); // Set empty array on error
+      setBlogPosts([]);
       toast.error("Failed to fetch blog posts. Please try again.");
     } finally {
       setIsLoading(false);

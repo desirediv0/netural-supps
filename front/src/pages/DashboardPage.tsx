@@ -27,10 +27,29 @@ import {
 } from "recharts";
 
 // Helper function to get proper image URL
-const getImageUrl = (image: string | undefined | null): string => {
+const getImageUrl = (image: string | string[] | undefined | null): string => {
   if (!image) return "/images/blog-placeholder.jpg";
-  if (image.startsWith("http")) return image;
-  return `https://desirediv-storage.blr1.digitaloceanspaces.com/${image}`;
+
+  // Handle array of images (take first one)
+  if (Array.isArray(image)) {
+    if (image.length === 0) return "/images/blog-placeholder.jpg";
+    const firstImage = image[0];
+    if (typeof firstImage === "string") {
+      return firstImage.startsWith("http")
+        ? firstImage
+        : `https://desirediv-storage.blr1.digitaloceanspaces.com/${firstImage}`;
+    }
+    return "/images/blog-placeholder.jpg";
+  }
+
+  // Handle single image string
+  if (typeof image === "string") {
+    return image.startsWith("http")
+      ? image
+      : `https://desirediv-storage.blr1.digitaloceanspaces.com/${image}`;
+  }
+
+  return "/images/blog-placeholder.jpg";
 };
 
 // Define types for API data

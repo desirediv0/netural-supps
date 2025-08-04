@@ -41,8 +41,6 @@ export default function OrdersPage() {
         };
 
         const response = await orders.getOrders(params);
-        console.log("Orders response (full):", response); // Debug full response
-        console.log("Orders data:", response.data); // Debug just the data
 
         if (response && response.data && response.data.success) {
           setOrdersList(response.data.data?.orders || []);

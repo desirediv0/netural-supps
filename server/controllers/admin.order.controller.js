@@ -165,16 +165,14 @@ export const getOrderById = asyncHandler(async (req, res, next) => {
         include: {
           product: {
             include: {
-              images: {
-                where: { isPrimary: true },
-                take: 1,
-              },
+              images: true,
             },
           },
           variant: {
             include: {
               flavor: true,
               weight: true,
+              images: true,
             },
           },
         },
@@ -208,9 +206,49 @@ export const getOrderById = asyncHandler(async (req, res, next) => {
     throw new ApiError(404, "Order not found");
   }
 
+  // Function to get proper image URL
+  const getImageUrl = (image) => {
+    if (!image) return null;
+    if (image.startsWith("http")) return image;
+    return `https://desirediv-storage.blr1.digitaloceanspaces.com/${image}`;
+  };
+
+  // Process order items to include proper image URLs
+  const processedItems = order.items.map((item) => {
+    let imageUrl = null;
+
+    // Priority 1: Product images (primary first)
+    if (item.product.images && item.product.images.length > 0) {
+      const primaryImage = item.product.images.find((img) => img.isPrimary);
+      imageUrl = primaryImage
+        ? getImageUrl(primaryImage.url)
+        : getImageUrl(item.product.images[0].url);
+    }
+    // Priority 2: Variant images as fallback
+    else if (item.variant.images && item.variant.images.length > 0) {
+      const primaryVariantImage = item.variant.images.find(
+        (img) => img.isPrimary
+      );
+      imageUrl = primaryVariantImage
+        ? getImageUrl(primaryVariantImage.url)
+        : getImageUrl(item.variant.images[0].url);
+    }
+
+    return {
+      ...item,
+      imageUrl, // Add computed image URL
+      product: {
+        ...item.product,
+        // Keep original images array but also add computed image URL
+        imageUrl: imageUrl,
+      },
+    };
+  });
+
   // Normalize values for tax and shipping
   const modifiedOrder = {
     ...order,
+    items: processedItems, // Use processed items with image URLs
     tax: "0.00", // Always set tax to 0
     shippingCost: "0.00", // Always set shipping to 0
     total: (

@@ -45,7 +45,7 @@ export default function AboutPage() {
       <section className="bg-gradient-to-r from-primary/10 to-primary/5 py-16 md:py-24">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-3xl md:text-5xl font-bold mb-6">
-            About Natural supp
+            About Natural Supps
           </h1>
           <p className="text-xl md:text-2xl text-gray-700 max-w-3xl mx-auto">
             Your trusted partner for high-quality nutritional supplements and
@@ -65,7 +65,7 @@ export default function AboutPage() {
                 </h2>
                 <div className="prose prose-lg max-w-none">
                   <p>
-                    Founded in 2015, GenuineNutrition started with a simple
+                    Founded in 2015, Natural Supps started with a simple
                     mission: to provide high-quality nutritional supplements
                     that actually work, backed by science and free from harmful
                     additives.

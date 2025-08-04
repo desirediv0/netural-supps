@@ -145,8 +145,6 @@ const ContactManagementPage = () => {
         url
       );
 
-      console.log("Contact API response:", response.data);
-
       // Add defensive checks for the response structure
       const responseData = response.data?.data;
       setSubmissions(responseData?.submissions || []);

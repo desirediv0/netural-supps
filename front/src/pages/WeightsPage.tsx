@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { ErrorDialog } from "@/components/ErrorDialog";
+import { useDebounce } from "@/utils/debounce";
 
 export default function WeightsPage() {
   const { id } = useParams();
@@ -42,17 +43,27 @@ function WeightsList() {
 
   // Error dialog state
   const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(false);
-  const [errorDialogContent, setErrorDialogContent] = useState({
+  const [errorDialogContent, setErrorDialogContent] = useState<{
+    title: string;
+    description: string;
+    showForceDelete?: boolean;
+    onForceDelete?: () => void;
+  }>({
     title: "",
     description: "",
   });
+
+  // Search state
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 500);
 
   // Fetch weights
   useEffect(() => {
     const fetchWeights = async () => {
       try {
         setIsLoading(true);
-        const response = await weights.getWeights();
+        const params = debouncedSearch ? { search: debouncedSearch } : {};
+        const response = await weights.getWeights(params);
 
         if (response.data.success) {
           setWeightsList(response.data.data?.weights || []);
@@ -68,7 +79,7 @@ function WeightsList() {
     };
 
     fetchWeights();
-  }, []);
+  }, [debouncedSearch]);
 
   // Handle weight deletion confirmation
   const confirmDeleteWeight = (weightId: string, weightName: string) => {
@@ -76,40 +87,37 @@ function WeightsList() {
   };
 
   // Handle weight deletion
-  const handleDeleteWeight = async (weightId: string, weightName: string) => {
+  const handleDeleteWeight = async (
+    weightId: string,
+    weightName: string,
+    force: boolean = false
+  ) => {
     try {
-      const response = await weights.deleteWeight(weightId);
+      const response = await weights.deleteWeight(weightId, force);
 
-      if (response.data.success) {
+      if (response.data.success || response.status === 200) {
         toast.success("Weight deleted successfully");
         // Update the weights list
         setWeightsList(weightsList.filter((weight) => weight.id !== weightId));
       } else {
-        // Check for specific error messages
-        if (
-          response.data.message?.includes("in use by product variants") ||
-          response.data.message?.includes("Cannot delete weight")
-        ) {
-          setErrorDialogContent({
-            title: "Cannot Delete Weight",
-            description: `This weight (${weightName}) cannot be deleted because it is currently in use by one or more product variants.\n\nTo delete this weight, you must first remove it from all product variants that use it.`,
-          });
-          setIsErrorDialogOpen(true);
-        } else {
-          toast.error(response.data.message || "Failed to delete weight");
-        }
+        toast.error(response.data.message || "Failed to delete weight");
       }
     } catch (error: any) {
       console.error("Error deleting weight:", error);
 
-      // Check if there's a specific error message from the API
-      const errorMessage =
-        error.response?.data?.message ||
-        "An error occurred while deleting the weight";
-
+      // Handle error with force delete option
       if (
-        errorMessage.includes("in use by product variants") ||
-        errorMessage.includes("Cannot delete weight")
+        error.response?.status === 400 &&
+        error.response?.data?.data?.canForceDelete
+      ) {
+        setErrorDialogContent({
+          title: "Weight in Use",
+          description: `${error.response.data.message}\n\nForce delete available - this will remove the weight from all product variants and then delete it. This action cannot be undone.`,
+        });
+        setIsErrorDialogOpen(true);
+      } else if (
+        error.response?.data?.message?.includes("in use by product variants") ||
+        error.response?.data?.message?.includes("Cannot delete weight")
       ) {
         setErrorDialogContent({
           title: "Cannot Delete Weight",
@@ -117,7 +125,10 @@ function WeightsList() {
         });
         setIsErrorDialogOpen(true);
       } else {
-        toast.error(errorMessage);
+        toast.error(
+          error.response?.data?.message ||
+          "An error occurred while deleting the weight"
+        );
       }
     }
   };
@@ -162,10 +173,30 @@ function WeightsList() {
         setOpen={setIsErrorDialogOpen}
         title={errorDialogContent.title}
         description={errorDialogContent.description}
-        secondaryAction={{
-          label: "View Products",
-          onClick: () => navigate("/products"),
-        }}
+        secondaryAction={
+          errorDialogContent.title === "Weight in Use"
+            ? {
+              label: "Force Delete",
+              onClick: () => {
+                setIsErrorDialogOpen(false);
+                // Extract weightId and weightName from current context
+                const weightToDelete = weightsList.find((w) =>
+                  errorDialogContent.description.includes(w.value.toString())
+                );
+                if (weightToDelete) {
+                  handleDeleteWeight(
+                    weightToDelete.id,
+                    `${weightToDelete.value} ${weightToDelete.unit}`,
+                    true
+                  );
+                }
+              },
+            }
+            : {
+              label: "View Products",
+              onClick: () => navigate("/products"),
+            }
+        }
       />
 
       {/* Header and Actions */}
@@ -177,6 +208,16 @@ function WeightsList() {
             Add Weight
           </Link>
         </Button>
+      </div>
+
+      {/* Search Input */}
+      <div className="max-w-xs mb-2">
+        <Input
+          type="text"
+          placeholder="Search weights..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
       </div>
 
       {/* Weights List */}
@@ -275,6 +316,13 @@ function WeightForm({
     { value: "mg", label: "Milligrams (mg)" },
     { value: "lb", label: "Pounds (lb)" },
     { value: "oz", label: "Ounces (oz)" },
+    { value: "ml", label: "Milliliters (ml)" },
+    { value: "cl", label: "Centiliters (cl)" },
+    { value: "l", label: "Liters (L)" },
+    { value: "pcs", label: "Pieces (pcs)" },
+    { value: "tabs", label: "Tabs (tabs)" },
+    { value: "capsules", label: "Capsules (capsules)" },
+    { value: "servings", label: "Servings (servings)" },
   ];
 
   // Fetch weight details if in edit mode
@@ -284,7 +332,6 @@ function WeightForm({
         try {
           setIsFetching(true);
           const response = await weights.getWeightById(weightId);
-          console.log("Weight details response:", response); // Debug logging
 
           if (response.data.success) {
             const weightData = response.data.data?.weight;
@@ -351,7 +398,7 @@ function WeightForm({
       } else {
         setError(
           response.data.message ||
-            `Failed to ${mode === "create" ? "create" : "update"} weight`
+          `Failed to ${mode === "create" ? "create" : "update"} weight`
         );
       }
     } catch (error: any) {
@@ -410,7 +457,7 @@ function WeightForm({
                 id="value"
                 name="value"
                 type="number"
-                step="0.01"
+
                 min="0"
                 placeholder="e.g., 50, 100, 250"
                 value={formData.value}

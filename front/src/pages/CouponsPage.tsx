@@ -541,8 +541,8 @@ function CouponForm({
                 required
                 className={
                   error &&
-                  (error.includes("code already exists") ||
-                    error.includes("Coupon code"))
+                    (error.includes("code already exists") ||
+                      error.includes("Coupon code"))
                     ? "border-destructive ring-1 ring-destructive"
                     : ""
                 }
@@ -637,7 +637,7 @@ function CouponForm({
                   name="minOrderAmount"
                   type="number"
                   min="0"
-                  step="0.01"
+
                   placeholder="500"
                   value={formData.minOrderAmount}
                   onChange={handleInputChange}

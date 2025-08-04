@@ -16,14 +16,12 @@ export const getUserCart = asyncHandler(async (req, res) => {
         include: {
           product: {
             include: {
-              images: {
-                where: { isPrimary: true },
-                take: 1,
-              },
+              images: true,
             },
           },
           flavor: true,
           weight: true,
+          images: true,
         },
       },
     },
@@ -38,6 +36,22 @@ export const getUserCart = asyncHandler(async (req, res) => {
     const itemTotal = parseFloat(price) * item.quantity;
     subtotal += itemTotal;
 
+    // Enhanced image handling with fallback logic
+    let imageUrl = null;
+
+    // Priority 1: Variant images
+    if (variant.images && variant.images.length > 0) {
+      const primaryImage = variant.images.find((img) => img.isPrimary);
+      imageUrl = primaryImage ? primaryImage.url : variant.images[0].url;
+    }
+    // Priority 2: Product images
+    else if (variant.product.images && variant.product.images.length > 0) {
+      const primaryImage = variant.product.images.find((img) => img.isPrimary);
+      imageUrl = primaryImage
+        ? primaryImage.url
+        : variant.product.images[0].url;
+    }
+
     // Format the response
     return {
       id: item.id,
@@ -47,16 +61,29 @@ export const getUserCart = asyncHandler(async (req, res) => {
       variant: {
         id: variant.id,
         sku: variant.sku,
-        flavor: variant.flavor,
-        weight: variant.weight,
+        flavor: variant.flavor
+          ? {
+              id: variant.flavor.id,
+              name: variant.flavor.name,
+              description: variant.flavor.description,
+              image: variant.flavor.image
+                ? getFileUrl(variant.flavor.image)
+                : null,
+            }
+          : null,
+        weight: variant.weight
+          ? {
+              id: variant.weight.id,
+              value: variant.weight.value,
+              unit: variant.weight.unit,
+            }
+          : null,
       },
       product: {
         id: variant.product.id,
         name: variant.product.name,
         slug: variant.product.slug,
-        image: variant.product.images[0]
-          ? getFileUrl(variant.product.images[0].url)
-          : null,
+        image: imageUrl ? getFileUrl(imageUrl) : null,
       },
     };
   });
@@ -145,14 +172,12 @@ export const addToCart = asyncHandler(async (req, res) => {
           include: {
             product: {
               include: {
-                images: {
-                  where: { isPrimary: true },
-                  take: 1,
-                },
+                images: true,
               },
             },
             flavor: true,
             weight: true,
+            images: true,
           },
         },
       },
@@ -170,14 +195,12 @@ export const addToCart = asyncHandler(async (req, res) => {
           include: {
             product: {
               include: {
-                images: {
-                  where: { isPrimary: true },
-                  take: 1,
-                },
+                images: true,
               },
             },
             flavor: true,
             weight: true,
+            images: true,
           },
         },
       },

@@ -80,7 +80,7 @@ export default function LoginPage() {
                   <ShoppingBag className="h-6 w-6 text-white" />
                 </div>
                 <span className="text-2xl font-bold text-gray-800">
-                  Power Fitness
+                  Natural Supps
                 </span>
               </div>
             </Link>
@@ -190,7 +190,7 @@ export default function LoginPage() {
                 <div className="my-6 flex items-center">
                   <div className="flex-1 border-t border-gray-200"></div>
                   <span className="px-4 text-sm text-gray-500 bg-white">
-                    New to Power Fitness?
+                    New to Natural Supps?
                   </span>
                   <div className="flex-1 border-t border-gray-200"></div>
                 </div>

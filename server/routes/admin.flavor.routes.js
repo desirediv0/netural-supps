@@ -27,7 +27,20 @@ const upload = multer({
 // Get all flavors
 router.get("/flavors", isAdmin, async (req, res) => {
   try {
+    const { search } = req.query;
+    let where = {};
+
+    if (search) {
+      where = {
+        name: {
+          contains: search,
+          mode: "insensitive",
+        },
+      };
+    }
+
     const flavors = await prisma.flavor.findMany({
+      where,
       orderBy: { name: "asc" },
     });
 

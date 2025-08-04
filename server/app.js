@@ -20,6 +20,7 @@ import couponRoutes from "./routes/coupon.routes.js";
 import contentRoutes from "./routes/content.routes.js";
 import faqRoutes from "./routes/faq.routes.js";
 import { trackPageView } from "./middlewares/tracking.middleware.js";
+import adminBrandRoutes from "./routes/admin.brand.routes.js";
 
 const app = express();
 
@@ -108,6 +109,7 @@ app.use("/api/public", publicRoutes);
 app.use("/api/coupons", couponRoutes);
 app.use("/api/content", contentRoutes);
 app.use("/api/faqs", faqRoutes);
+app.use("/api/admin", adminBrandRoutes);
 
 // Health check endpoint
 app.get("/health", (req, res) => {

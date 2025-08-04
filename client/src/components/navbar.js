@@ -16,6 +16,10 @@ import {
   MapPin,
   LogIn,
   ShoppingBag,
+  Star,
+  Package,
+  Truck,
+  Shield,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -157,92 +161,112 @@ export function Navbar() {
         style={{ maxHeight: "100vh" }}
       >
         <div className="flex flex-col h-full">
-          <div className="sticky top-0 bg-gradient-to-r from-yellow-500 to-yellow-600 border-b border-yellow-400 flex justify-between items-center px-4 py-4 z-10">
+          {/* Header */}
+          <div className="sticky top-0 bg-[#CE801F] border-b border-[#CE801F]/20 flex justify-between items-center px-6 py-6 z-10">
             <Link
               href="/"
               className="flex items-center"
               onClick={() => setIsMenuOpen(false)}
             >
-              <div className="flex items-center space-x-2">
-                <div className="bg-white/20 p-2 rounded-lg">
-                  <ShoppingBag className="h-6 w-6 text-white" />
+              <div className="flex items-center space-x-4">
+                <div className="bg-white/20 p-3 rounded-2xl shadow-lg">
+                  <ShoppingBag className="h-7 w-7 text-white" />
                 </div>
-                <span className="text-xl font-bold text-white">
-                  Power Fitness
-                </span>
+                <div>
+                  <span className="text-2xl font-bold text-white">
+                    Natural Supps
+                  </span>
+                  <div className="text-xs text-white/80">
+                    Premium Supplements
+                  </div>
+                </div>
               </div>
             </Link>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setIsMenuOpen(false)}
-                className="p-2 text-white hover:bg-white/20 rounded-lg focus:outline-none transition-colors"
-                aria-label="Close menu"
-              >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
+            <button
+              onClick={() => setIsMenuOpen(false)}
+              className="p-3 text-white hover:bg-white/20 rounded-2xl focus:outline-none transition-all duration-300 hover:scale-110"
+              aria-label="Close menu"
+            >
+              <X className="h-7 w-7" />
+            </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6 bg-gradient-to-b from-yellow-50 to-white">
-            <form onSubmit={handleMobileSearch} className="relative mb-6">
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <Input
-                  ref={mobileSearchInputRef}
-                  type="text"
-                  placeholder="Search products..."
-                  className="w-full pl-12 pr-12 py-4 text-base border-2 border-yellow-200 focus:border-yellow-500 focus:ring-yellow-500 rounded-xl bg-white"
-                  value={searchQuery}
-                  onChange={handleSearchInputChange}
-                  autoComplete="off"
-                  onClick={(e) => e.stopPropagation()}
-                />
-                {searchQuery && (
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto px-6 py-8 space-y-6 bg-gray-50">
+            {/* Search */}
+            <div className="bg-white rounded-3xl p-6 shadow-lg border border-gray-100">
+              <form onSubmit={handleMobileSearch} className="relative">
+                <div className="relative">
+                  <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    ref={mobileSearchInputRef}
+                    type="text"
+                    placeholder="Search premium products..."
+                    className="w-full pl-14 pr-16 py-5 text-lg border-2 border-gray-200 bg-white text-gray-900 placeholder-gray-500 focus:border-[#CE801F] focus:ring-[#CE801F] rounded-2xl"
+                    value={searchQuery}
+                    onChange={handleSearchInputChange}
+                    autoComplete="off"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      className="absolute right-16 top-1/2 transform -translate-y-1/2 p-2 text-gray-400 hover:text-gray-600"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSearchQuery("");
+                        if (mobileSearchInputRef.current) {
+                          mobileSearchInputRef.current.focus();
+                        }
+                      }}
+                      aria-label="Clear search"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
                   <button
-                    type="button"
-                    className="absolute right-12 top-1/2 transform -translate-y-1/2 p-2 text-gray-400 hover:text-gray-600"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSearchQuery("");
-                      if (mobileSearchInputRef.current) {
-                        mobileSearchInputRef.current.focus();
-                      }
-                    }}
-                    aria-label="Clear search"
+                    type="submit"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 p-3 rounded-2xl bg-[#CE801F] text-white hover:bg-[#CE801F]/90 transition-all duration-300 hover:scale-105 shadow-lg"
+                    aria-label="Search"
                   >
-                    <X className="h-5 w-5" />
+                    <Search className="h-5 w-5" />
                   </button>
-                )}
-                <button
-                  type="submit"
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-yellow-500 text-white hover:bg-yellow-600 transition-colors"
-                  aria-label="Search"
-                >
-                  <Search className="h-4 w-4" />
-                </button>
-              </div>
-            </form>
+                </div>
+              </form>
+            </div>
 
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+            {/* Quick Actions */}
+            <div className="grid grid-cols-2 gap-4">
               <Link
                 href="/products"
-                className="block py-3 text-lg font-semibold hover:text-yellow-500 transition-colors"
+                className="bg-white rounded-3xl p-6 text-center hover:scale-105 transition-all duration-300 shadow-lg border border-gray-100"
                 onClick={() => setIsMenuOpen(false)}
               >
-                All Products
+                <Package className="h-8 w-8 text-[#CE801F] mx-auto mb-3" />
+                <div className="text-gray-800 font-semibold">All Products</div>
+              </Link>
+              <Link
+                href="/wishlist"
+                className="bg-white rounded-3xl p-6 text-center hover:scale-105 transition-all duration-300 shadow-lg border border-gray-100"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Heart className="h-8 w-8 text-[#CE801F] mx-auto mb-3" />
+                <div className="text-gray-800 font-semibold">Wishlist</div>
               </Link>
             </div>
 
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-              <h3 className="font-bold text-lg mb-3 text-gray-800">
+            {/* Categories */}
+            <div className="bg-white rounded-3xl p-6 shadow-lg border border-gray-100">
+              <h3 className="font-bold text-xl mb-6 text-gray-800 flex items-center">
+                <Star className="h-4 w-4 mr-3 text-[#CE801F]" />
                 Categories
               </h3>
-              <div className="space-y-2 pl-2">
+              <div className="space-y-3">
                 {categories.map((category) => (
-                  <div key={category.id} className="py-1">
+                  <div key={category.id} className="py-2">
                     <Link
                       href={`/category/${category.slug}`}
-                      className="block hover:text-yellow-500 text-base transition-colors py-2"
+                      className="block hover:text-[#CE801F] text-gray-700 text-lg transition-all duration-300 py-3 px-4 rounded-2xl hover:bg-[#CE801F]/5"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       {category.name}
@@ -252,34 +276,38 @@ export function Navbar() {
               </div>
             </div>
 
-            <div className="space-y-3">
+            {/* Navigation Links */}
+            <div className="space-y-4">
               {[
-                { href: "/blog", label: "Blog" },
-                { href: "/about", label: "About Us" },
-                { href: "/shipping", label: "Shipping Policy" },
-                { href: "/contact", label: "Contact Us" },
+                { href: "/blog", label: "Blog", icon: Star },
+                { href: "/about", label: "About Us", icon: Shield },
+                { href: "/shipping", label: "Shipping Policy", icon: Truck },
+                { href: "/contact", label: "Contact Us", icon: Phone },
               ].map((item) => (
                 <div
                   key={item.href}
-                  className="bg-white rounded-xl p-4 shadow-sm border border-gray-100"
+                  className="bg-white rounded-3xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300"
                 >
                   <Link
                     href={item.href}
-                    className="block py-2 text-lg font-semibold hover:text-yellow-500 transition-colors"
+                    className="flex items-center py-2 text-lg font-semibold text-gray-800 hover:text-[#CE801F] transition-all duration-300"
                     onClick={() => setIsMenuOpen(false)}
                   >
+                    <item.icon className="h-4 w-4 mr-4 text-[#CE801F]" />
                     {item.label}
                   </Link>
                 </div>
               ))}
             </div>
 
+            {/* Account Section */}
             {isAuthenticated ? (
-              <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-                <h3 className="font-bold text-lg mb-3 text-gray-800">
+              <div className="bg-white rounded-3xl p-6 shadow-lg border border-gray-100">
+                <h3 className="font-bold text-xl mb-6 text-gray-800 flex items-center">
+                  <User className="h-4 w-4 mr-3 text-[#CE801F]" />
                   My Account
                 </h3>
-                <div className="space-y-2 pl-2">
+                <div className="space-y-3">
                   {[
                     { href: "/account", label: "Profile" },
                     { href: "/account/orders", label: "My Orders" },
@@ -288,7 +316,7 @@ export function Navbar() {
                     <Link
                       key={item.href}
                       href={item.href}
-                      className="block py-2 hover:text-yellow-500 transition-colors"
+                      className="block py-3 px-4 hover:text-[#CE801F] text-gray-700 transition-all duration-300 rounded-2xl hover:bg-[#CE801F]/5"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       {item.label}
@@ -299,38 +327,57 @@ export function Navbar() {
                       handleLogout();
                       setIsMenuOpen(false);
                     }}
-                    className="block py-2 text-red-600 hover:text-red-800 w-full text-left transition-colors"
+                    className="block py-3 px-4 text-red-600 hover:text-red-700 w-full text-left transition-all duration-300 rounded-2xl hover:bg-red-50 mt-4"
                   >
                     Logout
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="flex flex-col space-y-3">
+              <div className="space-y-4">
                 <Link href="/login" onClick={() => setIsMenuOpen(false)}>
                   <Button
                     variant="outline"
-                    className="w-full py-6 text-base border-2 border-yellow-200 text-yellow-600 hover:bg-yellow-50 rounded-xl"
+                    className="w-full py-6 text-lg border-2 border-[#CE801F] text-[#CE801F] hover:bg-[#CE801F]/5 rounded-3xl"
                   >
+                    <LogIn className="h-4 w-4 mr-3" />
                     Login
                   </Button>
                 </Link>
                 <Link href="/register" onClick={() => setIsMenuOpen(false)}>
-                  <Button className="w-full py-6 text-base bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 rounded-xl">
+                  <Button className="w-full py-6 text-lg bg-[#CE801F] hover:bg-[#CE801F]/90 rounded-3xl shadow-xl hover:scale-105 transition-all duration-300">
+                    <User className="h-4 w-4 mr-3" />
                     Register
                   </Button>
                 </Link>
               </div>
             )}
 
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-              <div className="flex items-center gap-3 mb-4">
-                <Phone className="h-5 w-5 text-yellow-500" />
-                <span className="font-medium">+91 98765 43210</span>
+            {/* Contact Info */}
+            <div className="bg-white rounded-3xl p-6 shadow-lg border border-gray-100">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="bg-[#CE801F] p-3 rounded-2xl">
+                  <Phone className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <span className="font-medium text-gray-800">
+                    +91 98765 43210
+                  </span>
+                  <div className="text-sm text-gray-500">24/7 Support</div>
+                </div>
               </div>
-              <div className="flex items-center gap-3">
-                <MapPin className="h-5 w-5 text-yellow-500" />
-                <span className="font-medium">Store Locator</span>
+              <div className="flex items-center gap-4">
+                <div className="bg-[#CE801F] p-3 rounded-2xl">
+                  <MapPin className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <span className="font-medium text-gray-800">
+                    Store Locator
+                  </span>
+                  <div className="text-sm text-gray-500">
+                    Find nearest store
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -340,41 +387,60 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white shadow-sm" ref={navbarRef}>
+    <header
+      className="sticky top-0 z-50 bg-white shadow-lg border-b border-gray-100"
+      ref={navbarRef}
+    >
       <Toaster position="top-center" />
 
       {/* Top bar */}
-      <div className="bg-gradient-to-r from-[#ce801f] to-[#ce801f] text-white py-2 md:py-1.5 text-center text-xs md:text-sm font-medium">
-        Free shipping on all orders over ₹999
+      <div className="bg-[#CE801F] text-white py-3 text-center text-sm font-medium relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse"></div>
+        <div className="relative z-10 flex items-center justify-center gap-4">
+          <Truck className="h-5 w-5 animate-bounce" />
+          <span>
+            Shop for ₹999+ and receive a scratch card with exciting rewards!
+          </span>
+          <Shield className="h-5 w-5" />
+        </div>
       </div>
 
       {/* Main navbar */}
-      <div className="border-b border-gray-200 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center h-16 md:h-20">
+      <div className="bg-white">
+        <div className="container mx-auto px-6">
+          <div className="flex justify-between items-center h-20">
             {/* Menu toggle for mobile */}
-            <div className="flex items-center md:hidden gap-2">
+            <div className="flex items-center md:hidden gap-3">
               <button
-                className="p-2 text-gray-600 hover:text-yellow-500 transition-colors focus:outline-none"
+                className="p-3 text-gray-600 hover:text-[#CE801F] transition-all duration-300 focus:outline-none hover:scale-110 bg-gray-100 rounded-2xl hover:bg-[#CE801F]/10"
                 onClick={() => setIsMenuOpen(true)}
                 aria-label="Open menu"
               >
-                <Menu className="h-6 w-6" />
+                <Menu className="h-4 w-4" />
               </button>
             </div>
 
             {/* Logo */}
-            <Link href="/" className="flex items-center">
-              <Image src="/logo (2).png" width={64} height={64} alt="Logo" className="h-16" />
+            <Link href="/" className="flex items-center group">
+              <div className="relative">
+                <Image
+                  src="/logo.png"
+                  width={200}
+                  height={200}
+                  alt="Logo"
+                  className="h-14 transition-all duration-300 group-hover:scale-110 object-contain"
+                />
+              </div>
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-8">
+            <nav className="hidden md:flex items-center space-x-12">
               <Link
                 href="/products"
-                className="font-medium text-gray-700 hover:text-yellow-500 transition-colors"
+                className="font-semibold text-gray-700 hover:text-[#CE801F] transition-all duration-300 hover:scale-105 relative group"
               >
                 All Products
+                <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#CE801F] group-hover:w-full transition-all duration-300"></div>
               </Link>
 
               {/* Categories dropdown */}
@@ -384,46 +450,57 @@ export function Navbar() {
                 onMouseLeave={handleDropdownLeave}
               >
                 <button
-                  className={`font-medium ${
+                  className={`font-semibold ${
                     activeDropdown === "categories"
-                      ? "text-yellow-500"
+                      ? "text-[#CE801F]"
                       : "text-gray-700"
-                  } hover:text-yellow-500 transition-all duration-200 flex items-center focus:outline-none group`}
+                  } hover:text-[#CE801F] transition-all duration-300 flex items-center focus:outline-none group relative`}
                   onClick={() => toggleDropdown("categories")}
                   aria-expanded={activeDropdown === "categories"}
                 >
                   Categories
                   <ChevronDown
-                    className={`ml-1 h-4 w-4 transition-transform duration-200 ${
+                    className={`ml-2 h-5 w-5 transition-all duration-300 ${
                       activeDropdown === "categories" ? "rotate-180" : ""
                     } group-hover:rotate-180`}
                   />
+                  <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#CE801F] group-hover:w-full transition-all duration-300"></div>
                 </button>
                 <div
-                  className={`absolute left-0 top-full mt-1 w-64 bg-white shadow-lg rounded-xl py-2 border border-gray-100 z-50 transition-all duration-300 ease-in-out transform origin-top ${
+                  className={`absolute left-0 top-full mt-3 w-80 bg-white shadow-2xl rounded-3xl py-4 border border-gray-100 z-50 transition-all duration-500 ease-in-out transform origin-top ${
                     activeDropdown === "categories"
                       ? "opacity-100 scale-100 translate-y-0"
-                      : "opacity-0 scale-95 -translate-y-2 pointer-events-none"
+                      : "opacity-0 scale-95 -translate-y-4 pointer-events-none"
                   }`}
                 >
-                  {categories.map((category) => (
-                    <div key={category.id}>
-                      <Link
-                        href={`/category/${category.slug}`}
-                        className="block px-4 py-2.5 hover:bg-yellow-50 hover:text-yellow-500 transition-all duration-200"
-                        onClick={() => setActiveDropdown(null)}
-                      >
-                        {category.name}
-                      </Link>
-                    </div>
-                  ))}
-                  <div className="pt-2 mt-2 border-t border-gray-100">
+                  <div className="px-6 py-3 border-b border-gray-100">
+                    <h3 className="font-bold text-lg text-gray-800">
+                      Categories
+                    </h3>
+                  </div>
+                  <div className="max-h-96 overflow-y-auto">
+                    {categories.map((category) => (
+                      <div key={category.id}>
+                        <Link
+                          href={`/category/${category.slug}`}
+                          className="block px-6 py-4 hover:bg-[#CE801F]/5 hover:text-[#CE801F] transition-all duration-300 group"
+                          onClick={() => setActiveDropdown(null)}
+                        >
+                          <div className="flex items-center">
+                            <div className="w-2 h-2 bg-[#CE801F] rounded-full mr-4 group-hover:scale-150 transition-transform duration-300"></div>
+                            <span className="font-medium">{category.name}</span>
+                          </div>
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="px-6 py-3 border-t border-gray-100">
                     <Link
                       href="/categories"
-                      className="block px-4 py-2.5 text-yellow-500 font-medium hover:bg-yellow-50 transition-all duration-200"
+                      className="block text-[#CE801F] font-semibold hover:text-[#CE801F]/80 transition-colors duration-300"
                       onClick={() => setActiveDropdown(null)}
                     >
-                      View All Categories
+                      View All Categories →
                     </Link>
                   </div>
                 </div>
@@ -437,50 +514,51 @@ export function Navbar() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="font-medium text-gray-700 hover:text-yellow-500 transition-colors"
+                  className="font-semibold text-gray-700 hover:text-[#CE801F] transition-all duration-300 hover:scale-105 relative group"
                 >
                   {item.label}
+                  <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#CE801F] group-hover:w-full transition-all duration-300"></div>
                 </Link>
               ))}
             </nav>
 
             {/* Search, Cart, Account */}
-            <div className="flex items-center space-x-1 md:space-x-4">
+            <div className="flex items-center space-x-4 md:space-x-8">
               {/* Search button/form */}
               <div className="relative">
                 {isSearchExpanded ? (
                   <>
                     <div
-                      className="fixed inset-0 bg-black/50 z-40"
+                      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
                       onClick={() => setIsSearchExpanded(false)}
                     />
-                    <div className="fixed inset-x-0 top-0 z-50 w-full animate-in slide-in-from-top duration-300 p-2">
+                    <div className="fixed inset-x-0 top-0 z-50 w-full animate-in slide-in-from-top duration-500 p-4">
                       <form
                         onSubmit={handleSearch}
-                        className="relative bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden max-h-[90vh] md:max-w-[600px] mx-auto"
+                        className="relative bg-white rounded-3xl shadow-2xl border border-gray-200 overflow-hidden max-h-[70vh] md:max-w-[500px] mx-auto"
                       >
-                        <div className="flex items-center px-4 py-4 border-b border-gray-100 bg-gradient-to-r from-yellow-500 to-yellow-600">
-                          <h3 className="text-lg font-semibold text-white">
-                            Search Products
+                        <div className="flex items-center px-6 py-4 border-b border-gray-100 bg-[#CE801F]">
+                          <h3 className="text-lg font-bold text-white">
+                            Search Premium Products
                           </h3>
                           <button
                             type="button"
-                            className="ml-auto p-2 rounded-full hover:bg-white/20 transition-all duration-200"
+                            className="ml-auto p-2 rounded-2xl hover:bg-white/20 transition-all duration-300 hover:scale-110"
                             onClick={() => setIsSearchExpanded(false)}
                             aria-label="Close search"
                           >
-                            <X className="h-6 w-6 text-white" />
+                            <X className="h-4 w-4 text-white" />
                           </button>
                         </div>
 
-                        <div className="p-5">
+                        <div className="p-6">
                           <div className="relative">
                             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                             <Input
                               ref={searchInputRef}
                               type="search"
-                              placeholder="Search for products..."
-                              className="w-full pl-12 pr-12 py-3 border-2 border-gray-200 focus:border-yellow-500 focus:ring-yellow-500 rounded-xl text-base"
+                              placeholder="Search for premium supplements..."
+                              className="w-full pl-12 pr-20 py-4 border-2 border-gray-200 focus:border-[#CE801F] focus:ring-[#CE801F] rounded-2xl text-base bg-gray-50"
                               value={searchQuery}
                               onChange={(e) => setSearchQuery(e.target.value)}
                               autoComplete="off"
@@ -496,45 +574,19 @@ export function Navbar() {
                               </button>
                             )}
                           </div>
-
-                          <div className="mt-4">
-                            <h4 className="text-sm font-medium text-gray-500 mb-2">
-                              Popular Searches
-                            </h4>
-                            <div className="flex flex-wrap gap-2">
-                              {[
-                                "Protein Powder",
-                                "Dumbbells",
-                                "Resistance Bands",
-                                "Pre-Workout",
-                              ].map((term) => (
-                                <button
-                                  key={term}
-                                  type="button"
-                                  onClick={() => {
-                                    setSearchQuery(term);
-                                    handleSearch({ preventDefault: () => {} });
-                                  }}
-                                  className="px-3 py-1.5 text-sm bg-yellow-50 hover:bg-yellow-100 text-yellow-600 hover:text-yellow-700 rounded-full transition-all duration-200"
-                                >
-                                  {term}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
                         </div>
 
-                        <div className="px-5 py-3 bg-gray-50 border-t border-gray-100 flex justify-between">
+                        <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-between">
                           <button
                             type="button"
                             onClick={() => setIsSearchExpanded(false)}
-                            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-200 font-medium text-sm"
+                            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-all duration-300 font-medium"
                           >
                             Cancel
                           </button>
                           <button
                             type="submit"
-                            className="px-4 py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-all duration-200 flex items-center gap-2 font-medium text-sm"
+                            className="px-6 py-2 bg-[#CE801F] text-white rounded-xl hover:bg-[#CE801F]/90 transition-all duration-300 flex items-center gap-2 font-semibold shadow-lg hover:scale-105"
                           >
                             <Search className="h-4 w-4" />
                             Search
@@ -546,10 +598,10 @@ export function Navbar() {
                 ) : (
                   <button
                     onClick={() => setIsSearchExpanded(true)}
-                    className="p-2 text-gray-600 hover:text-yellow-500 transition-all duration-200 focus:outline-none hover:scale-110"
+                    className="p-3 text-gray-600 hover:text-[#CE801F] transition-all duration-300 focus:outline-none hover:scale-110 bg-gray-100 rounded-2xl hover:bg-[#CE801F]/10"
                     aria-label="Search"
                   >
-                    <Search className="h-5 w-5" />
+                    <Search className="h-4 w-4" />
                   </button>
                 )}
               </div>
@@ -557,20 +609,20 @@ export function Navbar() {
               {/* Wishlist */}
               <Link
                 href="/wishlist"
-                className="p-2 text-gray-600 hover:text-yellow-500 transition-colors relative"
+                className="p-3 text-gray-600 hover:text-[#CE801F] transition-all duration-300 relative bg-gray-100 rounded-2xl hover:bg-[#CE801F]/10 hover:scale-110"
               >
-                <Heart className="h-5 w-5" />
+                <Heart className="h-4 w-4" />
               </Link>
 
               {/* Cart */}
               <ClientOnly>
                 <Link
                   href="/cart"
-                  className="p-2 text-gray-600 hover:text-yellow-500 transition-colors relative"
+                  className="p-3 text-gray-600 hover:text-[#CE801F] transition-all duration-300 relative bg-gray-100 rounded-2xl hover:bg-[#CE801F]/10 hover:scale-110"
                 >
-                  <ShoppingCart className="h-5 w-5" />
+                  <ShoppingCart className="h-4 w-4" />
                   {cart && cart.items?.length > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-yellow-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
+                    <span className="absolute -top-2 -right-2 bg-[#CE801F] text-white rounded-full text-xs w-6 h-6 flex items-center justify-center font-bold shadow-lg">
                       {cart.items.reduce((acc, item) => acc + item.quantity, 0)}
                     </span>
                   )}
@@ -585,82 +637,94 @@ export function Navbar() {
               >
                 <ClientOnly>
                   <button
-                    className={`p-2 ${
+                    className={`p-3 ${
                       activeDropdown === "account"
-                        ? "text-yellow-500"
-                        : "text-gray-600"
-                    } hover:text-yellow-500 transition-all duration-200 flex items-center focus:outline-none group`}
+                        ? "text-[#CE801F] bg-[#CE801F]/10"
+                        : "text-gray-600 bg-gray-100"
+                    } hover:text-[#CE801F] hover:bg-[#CE801F]/10 transition-all duration-300 flex items-center focus:outline-none rounded-2xl hover:scale-110`}
                     onClick={() => toggleDropdown("account")}
                     aria-expanded={activeDropdown === "account"}
                   >
                     {isAuthenticated ? (
-                      <User className="h-5 w-5" />
+                      <User className="h-4 w-4" />
                     ) : (
-                      <LogIn className="h-5 w-5" />
+                      <LogIn className="h-4 w-4" />
                     )}
                     <ChevronDown
-                      className={`ml-1 h-4 w-4 transition-transform duration-200 ${
+                      className={`ml-2 h-5 w-5 transition-all duration-300 ${
                         activeDropdown === "account" ? "rotate-180" : ""
-                      } group-hover:rotate-180`}
+                      }`}
                     />
                   </button>
 
                   <div
-                    className={`absolute right-0 top-full mt-1 w-64 bg-white shadow-lg rounded-xl py-2 border border-gray-100 z-50 transition-all duration-300 ease-in-out transform origin-top ${
+                    className={`absolute right-0 top-full mt-3 w-80 bg-white shadow-2xl rounded-3xl py-4 border border-gray-100 z-50 transition-all duration-500 ease-in-out transform origin-top ${
                       activeDropdown === "account"
                         ? "opacity-100 scale-100 translate-y-0"
-                        : "opacity-0 scale-95 -translate-y-2 pointer-events-none"
+                        : "opacity-0 scale-95 -translate-y-4 pointer-events-none"
                     }`}
                   >
                     {isAuthenticated ? (
                       <>
-                        <div className="px-4 py-3 border-b border-gray-100 mb-2 bg-yellow-50">
-                          <p className="font-medium text-gray-800">
+                        <div className="px-6 py-4 border-b border-gray-100 mb-2 bg-[#CE801F]/5 rounded-t-3xl">
+                          <p className="font-bold text-gray-800 text-lg">
                             Hi, {user?.name || "User"}
                           </p>
-                          <p className="text-xs text-gray-500 truncate">
+                          <p className="text-sm text-gray-500 truncate">
                             {user?.email}
                           </p>
                         </div>
-                        <Link
-                          href="/account"
-                          className="block px-4 py-2 hover:bg-yellow-50 hover:text-yellow-500 transition-all duration-200"
-                          onClick={() => setActiveDropdown(null)}
-                        >
-                          My Account
-                        </Link>
-                        <Link
-                          href="/account/orders"
-                          className="block px-4 py-2 hover:bg-yellow-50 hover:text-yellow-500 transition-all duration-200"
-                          onClick={() => setActiveDropdown(null)}
-                        >
-                          My Orders
-                        </Link>
-                        <Link
-                          href="/wishlist"
-                          className="block px-4 py-2 hover:bg-yellow-50 hover:text-yellow-500 transition-all duration-200"
-                          onClick={() => setActiveDropdown(null)}
-                        >
-                          My Wishlist
-                        </Link>
-                        <button
-                          onClick={() => {
-                            handleLogout();
-                            setActiveDropdown(null);
-                          }}
-                          className="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 transition-all duration-200 mt-2 border-t border-gray-100"
-                        >
-                          Logout
-                        </button>
+                        <div className="space-y-2">
+                          {[
+                            {
+                              href: "/account",
+                              label: "My Account",
+                              icon: User,
+                            },
+                            {
+                              href: "/account/orders",
+                              label: "My Orders",
+                              icon: Package,
+                            },
+                            {
+                              href: "/wishlist",
+                              label: "My Wishlist",
+                              icon: Heart,
+                            },
+                          ].map((item) => (
+                            <Link
+                              key={item.href}
+                              href={item.href}
+                              className="flex items-center px-6 py-4 hover:bg-[#CE801F]/5 hover:text-[#CE801F] transition-all duration-300"
+                              onClick={() => setActiveDropdown(null)}
+                            >
+                              <item.icon className="h-5 w-5 mr-4 text-gray-400" />
+                              <span className="font-medium">{item.label}</span>
+                            </Link>
+                          ))}
+                        </div>
+                        <div className="px-6 py-3 border-t border-gray-100 mt-2">
+                          <button
+                            onClick={() => {
+                              handleLogout();
+                              setActiveDropdown(null);
+                            }}
+                            className="flex items-center w-full text-left text-red-600 hover:text-red-700 transition-all duration-300 font-medium"
+                          >
+                            <LogIn className="h-5 w-5 mr-4 rotate-180" />
+                            Logout
+                          </button>
+                        </div>
                       </>
                     ) : (
-                      <>
-                        <div className="px-4 py-3">
+                      <div className="px-6 py-6">
+                        <div className="space-y-6">
                           <Link
                             href="/login"
                             onClick={() => setActiveDropdown(null)}
                           >
-                            <Button className="w-full mb-2 hover:scale-[1.02] transition-transform duration-200 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 rounded-xl">
+                            <Button className="w-full py-4 hover:scale-105 transition-transform duration-300 bg-[#CE801F] hover:bg-[#CE801F]/90 rounded-2xl shadow-lg font-semibold">
+                              <LogIn className="h-5 w-5 mr-3" />
                               Login
                             </Button>
                           </Link>
@@ -670,13 +734,14 @@ export function Navbar() {
                           >
                             <Button
                               variant="outline"
-                              className="w-full hover:scale-[1.02] transition-transform duration-200 text-yellow-500 border-yellow-200 hover:bg-yellow-50 rounded-xl"
+                              className="w-full py-4 mt-2 hover:scale-105 transition-transform duration-300 text-[#CE801F] border-[#CE801F] hover:bg-[#CE801F]/5 rounded-2xl font-semibold"
                             >
+                              <User className="h-5 w-5 mr-3" />
                               Register
                             </Button>
                           </Link>
                         </div>
-                      </>
+                      </div>
                     )}
                   </div>
                 </ClientOnly>

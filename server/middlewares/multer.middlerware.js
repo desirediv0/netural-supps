@@ -13,44 +13,69 @@ export const uploadFiles = multer({
 
 // Function to process and upload image
 export const processAndUploadImage = async (file, subfolder = "images") => {
-  const { originalname, buffer } = file;
-
-  // Sanitize filename and add timestamp
-  const timestamp = Date.now();
-  const sanitizedName = originalname.toLowerCase().replace(/[^a-z0-9.]/g, "-");
-  const fileExtension = originalname.split(".").pop().toLowerCase();
-
-  // Use UPLOAD_FOLDER from environment variables for consistency
-  const uploadFolder = process.env.UPLOAD_FOLDER || "ecom-uploads";
-  const filename = `${uploadFolder}/${subfolder}/${timestamp}-${sanitizedName}`;
-
   try {
+    console.log(`🔧 Processing image: ${file.originalname}`);
+    console.log(
+      `🔧 File buffer size: ${file.buffer?.length || "undefined"} bytes`
+    );
+
+    const { originalname, buffer } = file;
+
+    if (!buffer) {
+      throw new Error("File buffer is missing");
+    }
+
+    // Sanitize filename and add timestamp
+    const timestamp = Date.now();
+    const sanitizedName = originalname
+      .toLowerCase()
+      .replace(/[^a-z0-9.]/g, "-");
+    const fileExtension = originalname.split(".").pop().toLowerCase();
+
+    // Use UPLOAD_FOLDER from environment variables for consistency
+    const uploadFolder = process.env.UPLOAD_FOLDER || "ecom-uploads";
+    const filename = `${uploadFolder}/${subfolder}/${timestamp}-${sanitizedName}`;
+
+    console.log(`🔧 Target filename: ${filename}`);
+
     // Process image with sharp to optimize
+    console.log(`🔧 Starting Sharp processing...`);
     const processedBuffer = await sharp(buffer)
       .resize(1200, null, { withoutEnlargement: true })
       .toBuffer();
 
-    // Upload to S3 with proper content type
-    await s3client.send(
-      new PutObjectCommand({
-        Bucket: process.env.SPACES_BUCKET,
-        Key: filename,
-        Body: processedBuffer,
-        ACL: "public-read",
-        ContentType: `image/${
-          fileExtension === "png"
-            ? "png"
-            : fileExtension === "gif"
-            ? "gif"
-            : "jpeg"
-        }`,
-      })
+    console.log(
+      `🔧 Sharp processing complete. Processed size: ${processedBuffer.length} bytes`
     );
 
-    console.log(`Successfully uploaded image to S3: ${filename}`);
+    // Upload to S3 with proper content type
+    console.log(`🔧 Starting S3 upload...`);
+    const putCommand = new PutObjectCommand({
+      Bucket: process.env.SPACES_BUCKET,
+      Key: filename,
+      Body: processedBuffer,
+      ACL: "public-read",
+      ContentType: `image/${
+        fileExtension === "png"
+          ? "png"
+          : fileExtension === "gif"
+          ? "gif"
+          : "jpeg"
+      }`,
+    });
+
+    await s3client.send(putCommand);
+
+    console.log(`✅ Successfully uploaded image to S3: ${filename}`);
     return filename;
   } catch (error) {
-    console.error("Image processing/upload failed:", error);
+    console.error("❌ Image processing/upload failed:", error);
+    console.error("❌ Error details:", {
+      message: error.message,
+      stack: error.stack,
+      bucketName: process.env.SPACES_BUCKET,
+      endpoint: process.env.SPACES_ENDPOINT,
+    });
     throw error;
   }
 };
@@ -146,7 +171,8 @@ export const processFiles = async (req, res, next) => {
 // Get file URL from filename
 export const getFileUrl = (filename) => {
   if (!filename) return null;
-  return `https://${process.env.SPACES_BUCKET}.${process.env.SPACES_REGION}.digitaloceanspaces.com/${filename}`;
+  // Use CDN URL for better performance
+  return `https://desirediv-storage.blr1.cdn.digitaloceanspaces.com/${filename}`;
 };
 
 // Delete file from S3/DigitalOcean Spaces

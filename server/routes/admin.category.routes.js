@@ -29,8 +29,11 @@ router.get("/categories", isAdmin, async (req, res) => {
   try {
     const categories = await prisma.category.findMany({
       include: {
-        parent: true,
-        children: true,
+        _count: {
+          select: {
+            products: true,
+          },
+        },
       },
       orderBy: { name: "asc" },
     });
@@ -64,8 +67,11 @@ router.get("/categories/:id", isAdmin, async (req, res) => {
     const category = await prisma.category.findUnique({
       where: { id },
       include: {
-        parent: true,
-        children: true,
+        _count: {
+          select: {
+            products: true,
+          },
+        },
       },
     });
 
@@ -104,7 +110,7 @@ router.post(
   upload.single("image"),
   async (req, res) => {
     try {
-      const { name, description, parentId } = req.body;
+      const { name, description } = req.body;
 
       if (!name) {
         return res.status(400).json({
@@ -136,20 +142,6 @@ router.post(
         });
       }
 
-      // Check if parent category exists if parentId is provided
-      if (parentId) {
-        const parentCategory = await prisma.category.findUnique({
-          where: { id: parentId },
-        });
-
-        if (!parentCategory) {
-          return res.status(400).json({
-            success: false,
-            message: "Parent category not found",
-          });
-        }
-      }
-
       let imageKey = null;
 
       // Upload image to S3 if provided
@@ -175,7 +167,6 @@ router.post(
           name,
           description,
           slug,
-          parentId: parentId || null,
           image: imageKey,
         },
       });
@@ -209,7 +200,7 @@ router.patch(
   async (req, res) => {
     try {
       const { id } = req.params;
-      const { name, description, parentId } = req.body;
+      const { name, description } = req.body;
 
       // Check if category exists
       const existingCategory = await prisma.category.findUnique({
@@ -272,35 +263,7 @@ router.patch(
         updateData.description = description;
       }
 
-      // Update parentId if provided
-      if (parentId !== undefined) {
-        // If parentId is null, clear the parent
-        if (parentId === null || parentId === "null" || parentId === "") {
-          updateData.parentId = null;
-        } else {
-          // Check if parent category exists
-          const parentCategory = await prisma.category.findUnique({
-            where: { id: parentId },
-          });
-
-          if (!parentCategory) {
-            return res.status(400).json({
-              success: false,
-              message: "Parent category not found",
-            });
-          }
-
-          // Make sure we're not creating a cycle
-          if (parentId === id) {
-            return res.status(400).json({
-              success: false,
-              message: "A category cannot be its own parent",
-            });
-          }
-
-          updateData.parentId = parentId;
-        }
-      }
+      // Parent-child relationships removed for simplicity
 
       // Handle image update
       let imageKey = existingCategory.image;
@@ -334,8 +297,11 @@ router.patch(
         where: { id },
         data: updateData,
         include: {
-          parent: true,
-          children: true,
+          _count: {
+            select: {
+              products: true,
+            },
+          },
         },
       });
 
@@ -372,7 +338,7 @@ router.delete("/categories/:id", isAdmin, async (req, res) => {
     const category = await prisma.category.findUnique({
       where: { id },
       include: {
-        children: true,
+        products: true,
       },
     });
 
@@ -396,14 +362,7 @@ router.delete("/categories/:id", isAdmin, async (req, res) => {
       });
     }
 
-    // Check if category has children
-    if (category.children.length > 0) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Cannot delete category with subcategories. Please delete subcategories first.",
-      });
-    }
+    // Parent-child relationships removed for simplicity
 
     // Check if products are associated with this category using the ProductCategory relation
     const productsCount = await prisma.productCategory.count({

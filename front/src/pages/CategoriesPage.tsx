@@ -56,7 +56,6 @@ function CategoriesList() {
       try {
         setIsLoading(true);
         const response = await categories.getCategories();
-        console.log("Categories response:", response);
 
         if (response.data.success) {
           setCategoriesList(response.data.data?.categories || []);
@@ -111,9 +110,7 @@ function CategoriesList() {
       // If the error indicates the category is in use
       if (
         errorMessage.includes("Cannot delete category with products") ||
-        errorMessage.includes("has products") ||
-        errorMessage.includes("Cannot delete category with subcategories") ||
-        errorMessage.includes("has subcategories")
+        errorMessage.includes("has products")
       ) {
         // Show force delete dialog
         setCategoryToDelete(categoryId);
@@ -182,8 +179,8 @@ function CategoriesList() {
       <DeleteProductDialog
         open={isForceDeleteDialogOpen}
         setOpen={setIsForceDeleteDialogOpen}
-        title="Category Has Products or Subcategories"
-        description="This category cannot be deleted because it has products or subcategories.\n\nYou can force delete it (this will reassign all products to the default category and remove subcategories), but this is not recommended."
+        title="Category Has Products"
+        description="This category cannot be deleted because it has products.\n\nYou can force delete it (this will reassign all products to the default category), but this is not recommended."
         onConfirm={() => {
           if (categoryToDelete) {
             handleDeleteCategory(categoryToDelete, true);
@@ -222,9 +219,6 @@ function CategoriesList() {
                     Name
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-medium">
-                    Parent
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium">
                     Image
                   </th>
                   <th className="px-4 py-3 text-right text-sm font-medium">
@@ -236,7 +230,7 @@ function CategoriesList() {
                 {categoriesList.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={4}
+                      colSpan={3}
                       className="px-4 py-8 text-center text-muted-foreground"
                     >
                       No categories found
@@ -250,9 +244,6 @@ function CategoriesList() {
                           <Tags className="h-5 w-5 text-muted-foreground" />
                           <span>{category.name}</span>
                         </div>
-                      </td>
-                      <td className="px-4 py-3 text-sm">
-                        {category.parent?.name || "-"}
                       </td>
                       <td className="px-4 py-3">
                         {category.image ? (
@@ -308,30 +299,15 @@ function CategoryForm({
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [formLoading, setFormLoading] = useState(mode === "edit");
-  const [allCategories, setAllCategories] = useState<any[]>([]);
+
   const [category, setCategory] = useState<any>({
     name: "",
     description: "",
-    parentId: "",
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
 
-  // Fetch all categories for parent selection
-  useEffect(() => {
-    const fetchAllCategories = async () => {
-      try {
-        const response = await categories.getCategories();
-        if (response.data.success) {
-          setAllCategories(response.data.data?.categories || []);
-        }
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-      }
-    };
-
-    fetchAllCategories();
-  }, []);
+  // Parent category functionality removed for simplicity
 
   // Fetch category data if editing
   useEffect(() => {
@@ -346,7 +322,6 @@ function CategoryForm({
             setCategory({
               name: categoryData.name || "",
               description: categoryData.description || "",
-              parentId: categoryData.parentId || "",
             });
             if (categoryData.image) {
               setImagePreview(categoryData.image);
@@ -405,12 +380,6 @@ function CategoryForm({
 
       if (category.description) {
         formData.append("description", category.description);
-      }
-
-      if (category.parentId) {
-        formData.append("parentId", category.parentId);
-      } else {
-        formData.append("parentId", "");
       }
 
       if (imageFile) {
@@ -475,38 +444,16 @@ function CategoryForm({
       <Card className="overflow-hidden">
         <form onSubmit={handleSubmit} className="space-y-6 p-6">
           <div className="space-y-4">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="name">Category Name *</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  value={category.name}
-                  onChange={handleChange}
-                  placeholder="Enter category name"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="parentId">Parent Category</Label>
-                <select
-                  id="parentId"
-                  name="parentId"
-                  value={category.parentId}
-                  onChange={handleChange}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                >
-                  <option value="">None (Top Level)</option>
-                  {allCategories
-                    .filter((cat) => cat.id !== categoryId) // Prevent selecting self as parent
-                    .map((cat) => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </option>
-                    ))}
-                </select>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="name">Category Name *</Label>
+              <Input
+                id="name"
+                name="name"
+                value={category.name}
+                onChange={handleChange}
+                placeholder="Enter category name"
+                required
+              />
             </div>
 
             <div className="space-y-2">

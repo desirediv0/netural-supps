@@ -174,17 +174,12 @@ export const products = {
   getFeaturedProducts: (limit: number = 8) => {
     return api.get(`/api/public/products?featured=true&limit=${limit}`);
   },
+  getProductsByType: (productType: string, limit: number = 8) => {
+    return api.get(`/api/admin/products/type/${productType}?limit=${limit}`);
+  },
   createProduct: (data: ProductData) => {
     // Check if data is already FormData
     if (data instanceof FormData) {
-      for (const [key, value] of (data as FormData).entries()) {
-        const displayValue =
-          value instanceof File
-            ? `File: ${value.name} (${value.size} bytes)`
-            : value;
-        console.log(`${key}: ${displayValue}`);
-      }
-
       return api.post("/api/admin/products", data, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -206,14 +201,6 @@ export const products = {
       }
     });
 
-    for (const [key, value] of formData.entries()) {
-      const displayValue =
-        value instanceof File
-          ? `File: ${value.name} (${value.size} bytes)`
-          : value;
-      console.log(`${key}: ${displayValue}`);
-    }
-
     return api.post("/api/admin/products", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
@@ -223,14 +210,6 @@ export const products = {
   updateProduct: (productId: string, data: ProductData) => {
     // Check if data is already FormData
     if (data instanceof FormData) {
-      for (const [key, value] of (data as FormData).entries()) {
-        const displayValue =
-          value instanceof File
-            ? `File: ${value.name} (${value.size} bytes)`
-            : value;
-        console.log(`${key}: ${displayValue}`);
-      }
-
       return api.patch(`/api/admin/products/${productId}`, data, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -251,14 +230,6 @@ export const products = {
         }
       }
     });
-
-    for (const [key, value] of formData.entries()) {
-      const displayValue =
-        value instanceof File
-          ? `File: ${value.name} (${value.size} bytes)`
-          : value;
-      console.log(`${key}: ${displayValue}`);
-    }
 
     return api.patch(`/api/admin/products/${productId}`, formData, {
       headers: {
@@ -314,12 +285,47 @@ export const products = {
   getVariantsByProductId: (productId: string) => {
     return api.get(`/api/admin/products/${productId}/variants`);
   },
+  // Variant Images
+  uploadVariantImage: (
+    variantId: string,
+    imageFile: File,
+    isPrimary?: boolean
+  ) => {
+    const formData = new FormData();
+    formData.append("image", imageFile);
+
+    // Only append isPrimary if it's explicitly set (true or false)
+    // If undefined, let backend handle the decision
+    if (isPrimary !== undefined) {
+      formData.append("isPrimary", isPrimary.toString());
+    }
+
+    return api.post(`/api/admin/variants/${variantId}/images`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+  },
+  deleteVariantImage: (imageId: string) => {
+    return api.delete(`/api/admin/variants/images/${imageId}`);
+  },
+  setVariantImageAsPrimary: (imageId: string) => {
+    return api.patch(`/api/admin/variants/images/${imageId}/set-primary`);
+  },
+  reorderVariantImages: (
+    variantId: string,
+    imageOrders: Array<{ imageId: string; order: number }>
+  ) => {
+    return api.patch(`/api/admin/variants/${variantId}/images/reorder`, {
+      imageOrders,
+    });
+  },
 };
 
 // Flavors Management
 export const flavors = {
-  getFlavors: () => {
-    return api.get("/api/admin/flavors");
+  getFlavors: (params = {}) => {
+    return api.get("/api/admin/flavors", { params });
   },
   getFlavorById: (flavorId: string) => {
     return api.get(`/api/admin/flavors/${flavorId}`);
@@ -426,8 +432,8 @@ export const inventory = {
 
 // Weights Management
 export const weights = {
-  getWeights: () => {
-    return api.get("/api/admin/weights");
+  getWeights: (params = {}) => {
+    return api.get("/api/admin/weights", { params });
   },
   getWeightById: (weightId: string) => {
     return api.get(`/api/admin/weights/${weightId}`);
@@ -444,8 +450,10 @@ export const weights = {
   ) => {
     return api.patch(`/api/admin/weights/${weightId}`, data);
   },
-  deleteWeight: (weightId: string) => {
-    return api.delete(`/api/admin/weights/${weightId}`);
+  deleteWeight: (weightId: string, force: boolean = false) => {
+    return api.delete(
+      `/api/admin/weights/${weightId}${force ? "?force=true" : ""}`
+    );
   },
 };
 
@@ -499,10 +507,8 @@ export const orders = {
     return api.patch(`/api/admin/orders/${orderId}/status`, data);
   },
   getOrderStats: async () => {
-    console.log("Calling order stats API endpoint");
     try {
       const response = await api.get("/api/admin/orders-stats");
-      console.log("Raw order stats API response:", response);
 
       // Check if data is nested in a success response wrapper
       if (response.data.success && response.data.data) {
@@ -693,5 +699,39 @@ export const settings = {
         message: "Settings updated successfully",
       },
     });
+  },
+};
+
+// Brands Management
+export const brands = {
+  getBrands: (params: any = {}) => {
+    return api.get("/api/admin/brands", { params });
+  },
+  createBrand: (data: { name: string; image: File; tags?: string[] }) => {
+    const formData = new FormData();
+    formData.append("name", data.name);
+    formData.append("image", data.image);
+    if (data.tags) data.tags.forEach((tag) => formData.append("tags", tag));
+    return api.post("/api/admin/brands", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  },
+  updateBrand: (
+    brandId: string,
+    data: { name?: string; image?: File; tags?: string[] }
+  ) => {
+    const formData = new FormData();
+    if (data.name) formData.append("name", data.name);
+    if (data.image) formData.append("image", data.image);
+    if (data.tags) data.tags.forEach((tag) => formData.append("tags", tag));
+    return api.patch(`/api/admin/brands/${brandId}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  },
+  deleteBrand: (brandId: string) => {
+    return api.delete(`/api/admin/brands/${brandId}`);
+  },
+  removeProductFromBrand: (brandId: string, productId: string) => {
+    return api.delete(`/api/admin/brands/${brandId}/products/${productId}`);
   },
 };

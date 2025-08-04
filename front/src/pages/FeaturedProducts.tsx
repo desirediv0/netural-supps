@@ -3,7 +3,15 @@ import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { products } from "@/api/adminService";
-import { Loader2, ArrowUpRight, Plus } from "lucide-react";
+import {
+  Loader2,
+  ArrowUpRight,
+  Plus,
+  Star,
+  TrendingUp,
+  Zap,
+  Clock,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -15,6 +23,7 @@ import {
 } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Product {
   id: string;
@@ -33,6 +42,7 @@ interface Product {
   slug?: string;
   isActive?: boolean;
   featured?: boolean;
+  productType?: string[];
   categories?: any[];
   category?: {
     id: string;
@@ -45,12 +55,27 @@ interface Product {
   hasSale?: boolean;
 }
 
+const PRODUCT_TYPES = [
+  { key: "featured", label: "Featured", icon: Star, color: "bg-yellow-500" },
+  {
+    key: "bestseller",
+    label: "Bestseller",
+    icon: TrendingUp,
+    color: "bg-green-500",
+  },
+  { key: "trending", label: "Trending", icon: Zap, color: "bg-purple-500" },
+  { key: "new", label: "New Arrivals", icon: Clock, color: "bg-blue-500" },
+];
+
 export default function FeaturedProductsPage() {
-  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [productsByType, setProductsByType] = useState<
+    Record<string, Product[]>
+  >({});
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [updateLoading, setUpdateLoading] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("featured");
 
   useEffect(() => {
     fetchProducts();
@@ -60,8 +85,25 @@ export default function FeaturedProductsPage() {
     try {
       setLoading(true);
 
-      // Fetch featured products
-      const featuredResponse = await products.getFeaturedProducts(50);
+      // Fetch products for each type
+      const typePromises = PRODUCT_TYPES.map(async (type) => {
+        try {
+          const response = await products.getProductsByType(type.key, 50);
+          return {
+            type: type.key,
+            products: response.data.data.products || [],
+          };
+        } catch (error) {
+          console.error(`Error fetching ${type.key} products:`, error);
+          return { type: type.key, products: [] };
+        }
+      });
+
+      const typeResults = await Promise.all(typePromises);
+      const productsByTypeMap: Record<string, Product[]> = {};
+      typeResults.forEach(({ type, products }) => {
+        productsByTypeMap[type] = products;
+      });
 
       // Fetch all products
       const allResponse = await products.getProducts({
@@ -70,11 +112,8 @@ export default function FeaturedProductsPage() {
         order: "desc",
       });
 
-      console.log("Featured products response:", featuredResponse.data);
-      console.log("All products response:", allResponse.data);
-
-      if (featuredResponse.data.success && allResponse.data.success) {
-        setFeaturedProducts(featuredResponse.data.data.products || []);
+      if (allResponse.data.success) {
+        setProductsByType(productsByTypeMap);
         setAllProducts(allResponse.data.data.products || []);
       } else {
         setError("Failed to fetch products");
@@ -87,20 +126,45 @@ export default function FeaturedProductsPage() {
     }
   };
 
-  const toggleFeatured = async (productId: string, featured: boolean) => {
+  const toggleProductType = async (
+    productId: string,
+    productType: string,
+    isAdding: boolean
+  ) => {
     try {
       setUpdateLoading(productId);
 
+      // Get current product to see existing types
+      const product = allProducts.find((p) => p.id === productId);
+      if (!product) {
+        toast.error("Product not found");
+        return;
+      }
+
+      // Get current product types
+      const currentTypes = product.productType || [];
+      let newTypes: string[];
+
+      if (isAdding) {
+        // Add the new type if not already present
+        newTypes = currentTypes.includes(productType)
+          ? currentTypes
+          : [...currentTypes, productType];
+      } else {
+        // Remove the type
+        newTypes = currentTypes.filter((type) => type !== productType);
+      }
+
       // Create form data
       const formData = new FormData();
-      formData.append("featured", String(featured));
+      formData.append("productType", JSON.stringify(newTypes));
 
       // Update product
       const response = await products.updateProduct(productId, formData as any);
 
       if (response.data.success) {
         toast.success(
-          `Product ${featured ? "marked as featured" : "removed from featured"}`
+          `Product ${isAdding ? "added to" : "removed from"} ${productType}`
         );
         // Refresh product lists
         fetchProducts();
@@ -116,17 +180,29 @@ export default function FeaturedProductsPage() {
   };
 
   const getProductImage = (product: Product) => {
-    // Handle case where image is directly available
+    // Priority 1: Direct image field
     if (product.image) return product.image;
 
-    // Handle case where images are in an array
+    // Priority 2: Product images array
     if (product.images && product.images.length > 0) {
-      // Try to find primary image first
       const primaryImage = product.images.find((img) => img.isPrimary);
       if (primaryImage) return primaryImage.url;
-
-      // If no primary image, return first image
       return product.images[0].url;
+    }
+
+    // Priority 3: Any variant images from any variant
+    if (product.variants && product.variants.length > 0) {
+      const variantWithImages = product.variants.find(
+        (variant) => variant.images && variant.images.length > 0
+      );
+      if (variantWithImages && variantWithImages.images) {
+        const primaryImage = variantWithImages.images.find(
+          (img: any) => img.isPrimary
+        );
+        return primaryImage
+          ? primaryImage.url
+          : variantWithImages.images[0].url;
+      }
     }
 
     // No image available
@@ -184,6 +260,10 @@ export default function FeaturedProductsPage() {
     return 0;
   };
 
+  const hasProductType = (product: Product, type: string) => {
+    return product.productType?.includes(type) || false;
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-[calc(100vh-200px)]">
@@ -205,10 +285,11 @@ export default function FeaturedProductsPage() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">
-            Featured Products
+            Product Categories Management
           </h2>
           <p className="text-muted-foreground">
-            Manage products that are highlighted on the homepage
+            Manage products for different categories like Featured, Bestseller,
+            Trending, and New Arrivals
           </p>
         </div>
         <Link to="/products/new">
@@ -219,189 +300,245 @@ export default function FeaturedProductsPage() {
         </Link>
       </div>
 
-      {/* Featured Products */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Currently Featured Products</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {featuredProducts.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No featured products found. Use the toggle below to feature
-              products.
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Product</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Variants</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Featured</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {featuredProducts.map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-3">
-                        {getProductImage(product) ? (
-                          <img
-                            src={getProductImage(product)}
-                            alt={product.name}
-                            className="h-10 w-10 rounded-md object-cover"
-                          />
-                        ) : (
-                          <div className="h-10 w-10 rounded-md bg-gray-100 flex items-center justify-center">
-                            <span className="text-xs text-gray-500">
-                              No img
-                            </span>
-                          </div>
-                        )}
-                        <span className="max-w-[200px] truncate">
-                          {product.name}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{getCategoryName(product)}</TableCell>
-                    <TableCell>₹{getProductPrice(product)}</TableCell>
-                    <TableCell>
-                      {getVariantCount(product) > 0 ? (
-                        <Badge variant="outline">
-                          {getVariantCount(product)} variants
-                        </Badge>
-                      ) : (
-                        <span>
-                          {product.hasVariants ? "Multiple" : "Simple"}
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {product.isActive !== false ? (
-                        <Badge variant="default" className="bg-green-500">
-                          Active
-                        </Badge>
-                      ) : (
-                        <Badge variant="secondary">Inactive</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Switch
-                        checked={!!product.featured}
-                        disabled={updateLoading === product.id}
-                        onCheckedChange={(checked) =>
-                          toggleFeatured(product.id, checked)
-                        }
-                      />
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Link to={`/products/${product.id}`}>
-                        <Button variant="ghost" size="sm">
-                          <ArrowUpRight className="h-4 w-4" />
-                        </Button>
-                      </Link>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-4"
+      >
+        <TabsList className="grid w-full grid-cols-4">
+          {PRODUCT_TYPES.map((type) => {
+            const IconComponent = type.icon;
+            return (
+              <TabsTrigger
+                key={type.key}
+                value={type.key}
+                className="flex items-center gap-2"
+              >
+                <IconComponent className="h-4 w-4" />
+                {type.label}
+                <Badge variant="secondary" className="ml-1">
+                  {productsByType[type.key]?.length || 0}
+                </Badge>
+              </TabsTrigger>
+            );
+          })}
+        </TabsList>
 
-      {/* All Products */}
-      <Card>
-        <CardHeader>
-          <CardTitle>All Products</CardTitle>
-          <p className="text-muted-foreground">
-            Toggle products to feature them on the homepage
-          </p>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Product</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Price</TableHead>
-                <TableHead>Variants</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Featured</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {allProducts
-                .filter((p) => !featuredProducts.some((fp) => fp.id === p.id))
-                .map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-3">
-                        {getProductImage(product) ? (
-                          <img
-                            src={getProductImage(product)}
-                            alt={product.name}
-                            className="h-10 w-10 rounded-md object-cover"
-                          />
-                        ) : (
-                          <div className="h-10 w-10 rounded-md bg-gray-100 flex items-center justify-center">
-                            <span className="text-xs text-gray-500">
-                              No img
-                            </span>
-                          </div>
-                        )}
-                        <span className="max-w-[200px] truncate">
-                          {product.name}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{getCategoryName(product)}</TableCell>
-                    <TableCell>₹{getProductPrice(product)}</TableCell>
-                    <TableCell>
-                      {getVariantCount(product) > 0 ? (
-                        <Badge variant="outline">
-                          {getVariantCount(product)} variants
-                        </Badge>
-                      ) : (
-                        <span>
-                          {product.hasVariants ? "Multiple" : "Simple"}
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {product.isActive !== false ? (
-                        <Badge variant="default" className="bg-green-500">
-                          Active
-                        </Badge>
-                      ) : (
-                        <Badge variant="secondary">Inactive</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Switch
-                        checked={!!product.featured}
-                        disabled={updateLoading === product.id}
-                        onCheckedChange={(checked) =>
-                          toggleFeatured(product.id, checked)
-                        }
-                      />
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Link to={`/products/${product.id}`}>
-                        <Button variant="ghost" size="sm">
-                          <ArrowUpRight className="h-4 w-4" />
-                        </Button>
-                      </Link>
-                    </TableCell>
-                  </TableRow>
-                ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+        {PRODUCT_TYPES.map((type) => {
+          const IconComponent = type.icon;
+          const typeProducts = productsByType[type.key] || [];
+
+          return (
+            <TabsContent key={type.key} value={type.key} className="space-y-4">
+              {/* Products of this type */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <IconComponent className="h-5 w-5" />
+                    {type.label} Products
+                  </CardTitle>
+                  <p className="text-muted-foreground">
+                    Products currently marked as {type.label.toLowerCase()}
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  {typeProducts.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No {type.label.toLowerCase()} products found. Use the
+                      toggle below to add products.
+                    </div>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Product</TableHead>
+                          <TableHead>Category</TableHead>
+                          <TableHead>Price</TableHead>
+                          <TableHead>Variants</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>{type.label}</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {typeProducts.map((product) => (
+                          <TableRow key={product.id}>
+                            <TableCell className="font-medium">
+                              <div className="flex items-center gap-3">
+                                {getProductImage(product) ? (
+                                  <img
+                                    src={getProductImage(product)}
+                                    alt={product.name}
+                                    className="h-10 w-10 rounded-md object-cover"
+                                  />
+                                ) : (
+                                  <div className="h-10 w-10 rounded-md bg-gray-100 flex items-center justify-center">
+                                    <span className="text-xs text-gray-500">
+                                      No img
+                                    </span>
+                                  </div>
+                                )}
+                                <span className="max-w-[200px] truncate">
+                                  {product.name}
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell>{getCategoryName(product)}</TableCell>
+                            <TableCell>₹{getProductPrice(product)}</TableCell>
+                            <TableCell>
+                              {getVariantCount(product) > 0 ? (
+                                <Badge variant="outline">
+                                  {getVariantCount(product)} variants
+                                </Badge>
+                              ) : (
+                                <span>
+                                  {product.hasVariants ? "Multiple" : "Simple"}
+                                </span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {product.isActive !== false ? (
+                                <Badge
+                                  variant="default"
+                                  className="bg-green-500"
+                                >
+                                  Active
+                                </Badge>
+                              ) : (
+                                <Badge variant="secondary">Inactive</Badge>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <Switch
+                                checked={hasProductType(product, type.key)}
+                                disabled={updateLoading === product.id}
+                                onCheckedChange={(checked) =>
+                                  toggleProductType(
+                                    product.id,
+                                    type.key,
+                                    checked
+                                  )
+                                }
+                              />
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Link to={`/products/${product.id}`}>
+                                <Button variant="ghost" size="sm">
+                                  <ArrowUpRight className="h-4 w-4" />
+                                </Button>
+                              </Link>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* All Products */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>All Products</CardTitle>
+                  <p className="text-muted-foreground">
+                    Toggle products to mark them as {type.label.toLowerCase()}
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Product</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>Price</TableHead>
+                        <TableHead>Variants</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>{type.label}</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {allProducts
+                        .filter(
+                          (p) => !typeProducts.some((tp) => tp.id === p.id)
+                        )
+                        .map((product) => (
+                          <TableRow key={product.id}>
+                            <TableCell className="font-medium">
+                              <div className="flex items-center gap-3">
+                                {getProductImage(product) ? (
+                                  <img
+                                    src={getProductImage(product)}
+                                    alt={product.name}
+                                    className="h-10 w-10 rounded-md object-cover"
+                                  />
+                                ) : (
+                                  <div className="h-10 w-10 rounded-md bg-gray-100 flex items-center justify-center">
+                                    <span className="text-xs text-gray-500">
+                                      No img
+                                    </span>
+                                  </div>
+                                )}
+                                <span className="max-w-[200px] truncate">
+                                  {product.name}
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell>{getCategoryName(product)}</TableCell>
+                            <TableCell>₹{getProductPrice(product)}</TableCell>
+                            <TableCell>
+                              {getVariantCount(product) > 0 ? (
+                                <Badge variant="outline">
+                                  {getVariantCount(product)} variants
+                                </Badge>
+                              ) : (
+                                <span>
+                                  {product.hasVariants ? "Multiple" : "Simple"}
+                                </span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {product.isActive !== false ? (
+                                <Badge
+                                  variant="default"
+                                  className="bg-green-500"
+                                >
+                                  Active
+                                </Badge>
+                              ) : (
+                                <Badge variant="secondary">Inactive</Badge>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <Switch
+                                checked={hasProductType(product, type.key)}
+                                disabled={updateLoading === product.id}
+                                onCheckedChange={(checked) =>
+                                  toggleProductType(
+                                    product.id,
+                                    type.key,
+                                    checked
+                                  )
+                                }
+                              />
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Link to={`/products/${product.id}`}>
+                                <Button variant="ghost" size="sm">
+                                  <ArrowUpRight className="h-4 w-4" />
+                                </Button>
+                              </Link>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          );
+        })}
+      </Tabs>
     </div>
   );
 }

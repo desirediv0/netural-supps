@@ -228,7 +228,7 @@ export default function AnalyticsDashboard() {
         {/* User Carts Tab */}
         <TabsContent value="carts">
           <Card>
-            <CardHeader className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20">
+            <CardHeader className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20">
               <CardTitle className="flex items-center gap-2">
                 <ShoppingCart className="h-5 w-5 text-primary" />
                 Users with Products in Cart
