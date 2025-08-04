@@ -18,8 +18,6 @@ import {
   ShoppingCart,
   CheckCircle,
   AlertCircle,
-  Heart,
-  Share2,
 } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 
@@ -116,8 +114,22 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
                   setSelectedVariant(matchingVariant.variant);
                 }
               }
+            } else if (
+              productData.weightOptions?.length > 0 &&
+              combinations.length > 0
+            ) {
+              // No flavors, but weights and variants exist
+              const firstWeight = productData.weightOptions[0];
+              setSelectedWeight(firstWeight);
+              // Find the variant for this weight
+              const matchingVariant = combinations.find(
+                (combo) => combo.weightId === firstWeight.id
+              );
+              if (matchingVariant) {
+                setSelectedVariant(matchingVariant.variant);
+              }
             } else if (productData.variants.length > 0) {
-              // If no flavor/weight options but variants exist, use the first variant
+              // Fallback: just pick the first variant
               setSelectedVariant(productData.variants[0]);
             }
           }
@@ -214,13 +226,9 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
   const handleWeightChange = (weight) => {
     setSelectedWeight(weight);
 
-    // Find available flavors for this weight
-    const availableFlavorIds = getAvailableFlavorsForWeight(weight.id);
-
-    if (
-      productDetails?.flavorOptions?.length > 0 &&
-      availableFlavorIds.length > 0
-    ) {
+    if (productDetails?.flavorOptions?.length > 0) {
+      // Find available flavors for this weight
+      const availableFlavorIds = getAvailableFlavorsForWeight(weight.id);
       // Use currently selected flavor if it's compatible with the new weight
       if (selectedFlavor && availableFlavorIds.includes(selectedFlavor.id)) {
         // Current flavor is compatible, keep it selected
@@ -228,7 +236,6 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
           (combo) =>
             combo.weightId === weight.id && combo.flavorId === selectedFlavor.id
         );
-
         if (matchingVariant) {
           setSelectedVariant(matchingVariant.variant);
         }
@@ -237,25 +244,27 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
         const firstAvailableFlavor = productDetails.flavorOptions.find(
           (flavor) => availableFlavorIds.includes(flavor.id)
         );
-
         if (firstAvailableFlavor) {
           setSelectedFlavor(firstAvailableFlavor);
-
           // Find the corresponding variant
           const matchingVariant = availableCombinations.find(
             (combo) =>
               combo.weightId === weight.id &&
               combo.flavorId === firstAvailableFlavor.id
           );
-
           if (matchingVariant) {
             setSelectedVariant(matchingVariant.variant);
           }
         }
       }
     } else {
-      setSelectedFlavor(null);
-      setSelectedVariant(null);
+      // No flavors, just pick the variant for this weight
+      const matchingVariant = availableCombinations.find(
+        (combo) => combo.weightId === weight.id
+      );
+      if (matchingVariant) {
+        setSelectedVariant(matchingVariant.variant);
+      }
     }
   };
 
@@ -307,11 +316,74 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
     }
   };
 
+  // Get the appropriate image to display (variant image or product image)
+  const getDisplayImage = () => {
+    // Priority 1: Selected variant images
+    if (
+      selectedVariant &&
+      selectedVariant.images &&
+      selectedVariant.images.length > 0
+    ) {
+      const primaryImage = selectedVariant.images.find((img) => img.isPrimary);
+      const imageUrl = primaryImage
+        ? primaryImage.url
+        : selectedVariant.images[0]?.url;
+
+      if (imageUrl && imageUrl.startsWith("http")) return imageUrl;
+      if (imageUrl)
+        return `https://desirediv-storage.blr1.cdn.digitaloceanspaces.com/${imageUrl}`;
+    }
+
+    // Priority 2: Product images
+    if (displayProduct?.images && displayProduct.images.length > 0) {
+      const primaryImage = displayProduct.images.find((img) => img.isPrimary);
+      const imageUrl = primaryImage
+        ? primaryImage.url
+        : displayProduct.images[0]?.url;
+
+      if (imageUrl && imageUrl.startsWith("http")) return imageUrl;
+      if (imageUrl)
+        return `https://desirediv-storage.blr1.cdn.digitaloceanspaces.com/${imageUrl}`;
+    }
+
+    // Priority 3: Any variant images from any variant
+    if (displayProduct?.variants && displayProduct.variants.length > 0) {
+      const variantWithImages = displayProduct.variants.find(
+        (variant) => variant.images && variant.images.length > 0
+      );
+      if (variantWithImages) {
+        const primaryImage = variantWithImages.images.find(
+          (img) => img.isPrimary
+        );
+        const imageUrl = primaryImage
+          ? primaryImage.url
+          : variantWithImages.images[0]?.url;
+
+        if (imageUrl && imageUrl.startsWith("http")) return imageUrl;
+        if (imageUrl)
+          return `https://desirediv-storage.blr1.cdn.digitaloceanspaces.com/${imageUrl}`;
+      }
+    }
+
+    // Priority 4: Check product.image property (from API response)
+    if (displayProduct?.image) {
+      const imageUrl = displayProduct.image;
+      if (imageUrl && imageUrl.startsWith("http")) return imageUrl;
+      if (imageUrl)
+        return `https://desirediv-storage.blr1.cdn.digitaloceanspaces.com/${imageUrl}`;
+    }
+
+    // Final fallback
+    return imgSrc || "/placeholder.jpg";
+  };
+
   // Format price display
   const getPriceDisplay = () => {
     // Show loading state while initial data is being fetched
     if (initialLoading || loading) {
-      return <div className="h-8 w-32 bg-gray-200 animate-pulse rounded"></div>;
+      return (
+        <div className="h-8 w-32 bg-gray-200 animate-pulse rounded-lg"></div>
+      );
     }
 
     // If we have a selected variant, show its price
@@ -387,29 +459,13 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto p-0 bg-white">
+      <DialogContent className="sm:max-w-[1000px] max-h-[95vh] overflow-hidden p-0 bg-white rounded-2xl shadow-2xl border-0">
         {/* Header */}
-        <DialogHeader className="px-6 py-4 border-b border-gray-100">
+        <DialogHeader className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-2xl font-bold text-[#2C3E50] pr-8">
+            <DialogTitle className="text-xl sm:text-2xl font-bold text-[#2C3E50] pr-8 line-clamp-1">
               {displayProduct.name}
             </DialogTitle>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-10 h-10 p-0 hover:bg-gray-100 rounded-full"
-              >
-                <Heart className="h-5 w-5 text-gray-600" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-10 h-10 p-0 hover:bg-gray-100 rounded-full"
-              >
-                <Share2 className="h-5 w-5 text-gray-600" />
-              </Button>
-            </div>
           </div>
         </DialogHeader>
 
@@ -418,31 +474,40 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
             <div className="w-12 h-12 border-4 border-[#F47C20] border-t-transparent rounded-full animate-spin"></div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6">
-            {/* Product Image */}
-            <div className="relative">
-              <div className="relative h-96 lg:h-[500px] rounded-xl overflow-hidden bg-gray-50 shadow-sm">
+          <div className="flex flex-col lg:flex-row h-full">
+            {/* Product Image - Mobile: Full width, Desktop: Left side */}
+            <div className="w-full lg:w-1/2 p-4 lg:p-6">
+              <div className="relative h-64 sm:h-80 lg:h-[500px] rounded-2xl overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 shadow-lg">
                 <Image
-                  src={imgSrc || "/placeholder.svg"}
+                  src={getDisplayImage()}
                   alt={displayProduct.name}
                   fill
-                  className="object-contain p-6"
-                  sizes="(max-width: 768px) 100vw, 450px"
+                  className="object-contain p-4"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 500px"
                   onError={() => setImgSrc("/product-placeholder.jpg")}
                 />
                 {displayProduct.hasSale && (
-                  <div className="absolute top-4 left-4 bg-[#F47C20] text-white text-sm font-bold px-3 py-2 rounded-lg shadow-lg">
+                  <div className="absolute top-4 left-4 bg-gradient-to-r from-[#F47C20] to-[#E06A1A] text-white text-sm font-bold px-4 py-2 rounded-full shadow-lg">
                     SALE
+                  </div>
+                )}
+                {/* Rating badge */}
+                {displayProduct.avgRating > 0 && (
+                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-sm font-medium px-3 py-1 rounded-full shadow-md flex items-center gap-1">
+                    <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+                    <span className="text-gray-800">
+                      {displayProduct.avgRating?.toFixed(1)}
+                    </span>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Product Info */}
-            <div className="flex flex-col space-y-6">
+            {/* Product Info - Mobile: Below image, Desktop: Right side */}
+            <div className="w-full lg:w-1/2 p-4 lg:p-6 flex flex-col space-y-6 overflow-y-auto max-h-[60vh] lg:max-h-none">
               {/* Success Message */}
               {success && (
-                <div className="p-4 bg-green-50 border border-green-200 text-green-700 text-sm rounded-lg flex items-center">
+                <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 text-green-700 text-sm rounded-xl flex items-center shadow-sm">
                   <CheckCircle className="h-5 w-5 mr-3 flex-shrink-0" />
                   <span className="font-medium">
                     Item added to cart successfully!
@@ -452,7 +517,7 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
 
               {/* Error message */}
               {error && (
-                <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg flex items-center">
+                <div className="p-4 bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 text-red-700 text-sm rounded-xl flex items-center shadow-sm">
                   <AlertCircle className="h-5 w-5 mr-3 flex-shrink-0" />
                   <span className="font-medium">{error}</span>
                 </div>
@@ -463,9 +528,9 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
                 {getPriceDisplay()}
               </div>
 
-              {/* Rating */}
+              {/* Rating - Desktop only (mobile shows in image) */}
               {displayProduct.avgRating > 0 && (
-                <div className="flex items-center space-x-3">
+                <div className="hidden lg:flex items-center space-x-3">
                   <div className="flex">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <Star
@@ -505,12 +570,12 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
                             type="button"
                             onClick={() => handleFlavorChange(flavor)}
                             disabled={!isAvailable}
-                            className={`px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all ${
+                            className={`px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all duration-200 ${
                               selectedFlavor?.id === flavor.id
-                                ? "border-[#F47C20] bg-[#F47C20] text-white shadow-md"
+                                ? "border-[#F47C20] bg-gradient-to-r from-[#F47C20] to-[#E06A1A] text-white shadow-lg transform scale-105"
                                 : isAvailable
-                                ? "border-gray-300 hover:border-[#F47C20] hover:text-[#F47C20]"
-                                : "border-gray-200 text-gray-400 cursor-not-allowed"
+                                ? "border-gray-200 hover:border-[#F47C20] hover:text-[#F47C20] hover:bg-gray-50"
+                                : "border-gray-100 text-gray-400 cursor-not-allowed bg-gray-50"
                             }`}
                           >
                             {flavor.name}
@@ -547,12 +612,12 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
                             type="button"
                             onClick={() => handleWeightChange(weight)}
                             disabled={!isAvailable}
-                            className={`px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all ${
+                            className={`px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all duration-200 ${
                               selectedWeight?.id === weight.id
-                                ? "border-[#F47C20] bg-[#F47C20] text-white shadow-md"
+                                ? "border-[#F47C20] bg-gradient-to-r from-[#F47C20] to-[#E06A1A] text-white shadow-lg transform scale-105"
                                 : isAvailable
-                                ? "border-gray-300 hover:border-[#F47C20] hover:text-[#F47C20]"
-                                : "border-gray-200 text-gray-400 cursor-not-allowed"
+                                ? "border-gray-200 hover:border-[#F47C20] hover:text-[#F47C20] hover:bg-gray-50"
+                                : "border-gray-100 text-gray-400 cursor-not-allowed bg-gray-50"
                             }`}
                           >
                             {weight.value} {weight.unit}
@@ -565,17 +630,24 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
 
               {/* Stock Availability */}
               {selectedVariant && (
-                <div className="bg-gray-50 p-3 rounded-lg">
+                <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-xl border border-gray-200">
                   <span
-                    className={`text-sm font-medium ${
+                    className={`text-sm font-medium flex items-center gap-2 ${
                       selectedVariant.quantity > 0
                         ? "text-green-600"
                         : "text-red-600"
                     }`}
                   >
+                    <div
+                      className={`w-2 h-2 rounded-full ${
+                        selectedVariant.quantity > 0
+                          ? "bg-green-500"
+                          : "bg-red-500"
+                      }`}
+                    ></div>
                     {selectedVariant.quantity > 0
-                      ? `✓ In Stock (${selectedVariant.quantity} available)`
-                      : "✗ Out of Stock"}
+                      ? `In Stock (${selectedVariant.quantity} available)`
+                      : "Out of Stock"}
                   </span>
                 </div>
               )}
@@ -586,20 +658,20 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
                   Quantity
                 </label>
                 <div className="flex items-center space-x-4">
-                  <div className="flex items-center border-2 border-gray-300 rounded-lg overflow-hidden">
+                  <div className="flex items-center border-2 border-gray-200 rounded-xl overflow-hidden shadow-sm">
                     <button
                       onClick={() => handleQuantityChange(-1)}
-                      className="p-3 bg-gray-50 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="p-4 bg-gray-50 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       disabled={quantity <= 1 || loading}
                     >
                       <Minus className="h-4 w-4" />
                     </button>
-                    <span className="px-6 py-3 bg-white font-semibold text-[#2C3E50] min-w-[4rem] text-center">
+                    <span className="px-6 py-4 bg-white font-semibold text-[#2C3E50] min-w-[4rem] text-center">
                       {quantity}
                     </span>
                     <button
                       onClick={() => handleQuantityChange(1)}
-                      className="p-3 bg-gray-50 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="p-4 bg-gray-50 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       disabled={
                         loading ||
                         (selectedVariant &&
@@ -614,10 +686,10 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
               </div>
 
               {/* Actions */}
-              <div className="flex space-x-3 pt-4">
+              <div className="flex flex-col sm:flex-row gap-3 pt-4">
                 <Button
                   onClick={handleAddToCart}
-                  className="flex-1 py-4 bg-[#F47C20] hover:bg-[#E06A1A] text-white font-semibold text-lg rounded-lg shadow-lg hover:shadow-xl transition-all"
+                  className="flex-1 py-4 bg-gradient-to-r from-[#F47C20] to-[#E06A1A] hover:from-[#E06A1A] hover:to-[#D45A0A] text-white font-semibold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                   disabled={
                     loading ||
                     addingToCart ||
@@ -646,7 +718,7 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
                 >
                   <Button
                     variant="outline"
-                    className="w-full py-4 border-2 border-[#2C3E50] text-[#2C3E50] hover:bg-[#2C3E50] hover:text-white font-semibold text-lg rounded-lg transition-all"
+                    className="w-full py-4 border-2 border-[#2C3E50] text-[#2C3E50] hover:bg-[#2C3E50] hover:text-white font-semibold text-lg rounded-xl transition-all duration-200 transform hover:scale-105 shadow-sm"
                   >
                     View Full Details
                   </Button>

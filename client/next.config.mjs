@@ -8,6 +8,10 @@ const nextConfig = {
       },
       {
         protocol: "https",
+        hostname: "desirediv-storage.blr1.cdn.digitaloceanspaces.com",
+      },
+      {
+        protocol: "https",
         hostname: "images.unsplash.com",
       },
     ],
