@@ -25,7 +25,7 @@ const poppinsFont = localFont({
 export const metadata = {
   title: "Natural Supps - Premium Supplements for Your Fitness Journey",
   description:
-    "Get high-quality supplements at the best prices. Free shipping on orders over ₹999.",
+    "Get high-quality supplements at the best prices. Get a Scratch Card on orders over ₹999!.",
 };
 
 export default function RootLayout({ children }) {
