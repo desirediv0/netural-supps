@@ -352,7 +352,7 @@ export function Navbar() {
       {/* Top bar */}
       <div className="bg-[#CE801F] text-white py-3 text-center text-sm font-medium relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse"></div>
-        <div className="relative z-10 flex items-center justify-center gap-4">
+        <div className="relative z-10 flex items-center justify-center gap-4 capitalize">
           <Truck className="h-5 w-5 animate-bounce" />
           <span>
             Shop for ₹999+ and receive a scratch card with exciting rewards!

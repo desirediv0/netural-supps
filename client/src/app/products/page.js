@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { fetchApi, formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +21,7 @@ import {
   ShoppingCart,
 } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
+import { useAuth } from "@/lib/auth-context";
 import ProductQuickView from "@/components/ProductQuickView";
 import { toast } from "sonner";
 
@@ -46,8 +47,28 @@ function ProductCardSkeleton() {
 
 function ProductsContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const searchQuery = searchParams.get("search") || "";
   const categorySlug = searchParams.get("category") || "";
+  const flavorId = searchParams.get("flavor") || "";
+  const weightId = searchParams.get("weight") || "";
+  const minPrice = searchParams.get("minPrice") || "";
+  const maxPrice = searchParams.get("maxPrice") || "";
+  const sortParam = searchParams.get("sort") || "createdAt";
+  const orderParam = searchParams.get("order") || "desc";
+
+  // Determine which section should be open based on URL params
+  const getInitialActiveSection = () => {
+    if (searchQuery) return "search";
+    if (categorySlug) return "categories";
+    if (flavorId) return "flavors";
+    if (weightId) return "weights";
+    return "search"; // default to search if no filters are active
+  };
+
+  const [activeFilterSection, setActiveFilterSection] = useState(
+    getInitialActiveSection()
+  );
 
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -58,46 +79,100 @@ function ProductsContent() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [quickViewProduct, setQuickViewProduct] = useState(null);
   const [quickViewOpen, setQuickViewOpen] = useState(false);
+  const [wishlistItems, setWishlistItems] = useState({});
+  const [isAddingToWishlist, setIsAddingToWishlist] = useState({});
+  const [isAddingToCart, setIsAddingToCart] = useState({});
 
-  const [priceRange, setPriceRange] = useState([0, 1000]);
+  // Initialize selected filters from URL params
+  const [selectedFlavors, setSelectedFlavors] = useState(
+    flavorId ? [flavorId] : []
+  );
+  const [selectedWeights, setSelectedWeights] = useState(
+    weightId ? [weightId] : []
+  );
+
+  // Restore the price range states
+  const [priceRange, setPriceRange] = useState([
+    minPrice ? parseInt(minPrice) : 0,
+    maxPrice ? parseInt(maxPrice) : 1000,
+  ]);
   const [maxPossiblePrice, setMaxPossiblePrice] = useState(1000);
 
   const [filters, setFilters] = useState({
     search: searchQuery,
     category: categorySlug,
-    flavor: "",
-    weight: "",
-    minPrice: "",
-    maxPrice: "",
-    sort: "createdAt",
-    order: "desc",
+    flavor: flavorId,
+    weight: weightId,
+    minPrice: minPrice,
+    maxPrice: maxPrice,
+    sort: sortParam,
+    order: orderParam,
   });
 
   const [pagination, setPagination] = useState({
     page: 1,
-    limit: 12,
+    limit: 15,
     total: 0,
     pages: 0,
   });
 
   const { addToCart } = useCart();
-  const [debugMode, setDebugMode] = useState(false);
-  const [selectedFlavors, setSelectedFlavors] = useState([]);
-  const [selectedWeights, setSelectedWeights] = useState([]);
+  const { isAuthenticated } = useAuth();
 
-  // Fetch products based on filters
+  // Add a state for tracking debug mode
+  const [debugMode, setDebugMode] = useState(false);
+
+  // Add a function to apply all filters at once
+  const applyAllFilters = () => {
+    // Force a re-fetch by resetting the page
+    setPagination((prev) => ({ ...prev, page: 1 }));
+    setLoading(true);
+  };
+
+  // Add function to handle filter section toggle
+  const toggleFilterSection = (section) => {
+    setActiveFilterSection(activeFilterSection === section ? null : section);
+  };
+
+  // Function to update URL with current filters
+  const updateURL = (newFilters) => {
+    const params = new URLSearchParams();
+
+    // Only add parameters that have values
+    if (newFilters.search) params.set("search", newFilters.search);
+    if (newFilters.category) params.set("category", newFilters.category);
+    if (newFilters.flavor) params.set("flavor", newFilters.flavor);
+    if (newFilters.weight) params.set("weight", newFilters.weight);
+    if (newFilters.minPrice) params.set("minPrice", newFilters.minPrice);
+    if (newFilters.maxPrice) params.set("maxPrice", newFilters.maxPrice);
+    if (newFilters.sort !== "createdAt" || newFilters.order !== "desc") {
+      params.set("sort", newFilters.sort);
+      params.set("order", newFilters.order);
+    }
+
+    // Update URL without refreshing the page
+    const newURL = params.toString()
+      ? `?${params.toString()}`
+      : window.location.pathname;
+    router.push(newURL, { scroll: false });
+  };
+
+  // Fetch products based on filters useEffect
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
+        // Build query params from filters
         const queryParams = new URLSearchParams();
 
         queryParams.append("page", pagination.page);
         queryParams.append("limit", pagination.limit);
 
+        // Ensure sort is a valid field in the backend
         const validSortFields = ["createdAt", "updatedAt", "name", "featured"];
         let sortField = filters.sort;
 
+        // Default to createdAt if the sort field is not valid
         if (!validSortFields.includes(sortField)) {
           sortField = "createdAt";
           console.warn(
@@ -108,11 +183,14 @@ function ProductsContent() {
         queryParams.append("sort", sortField);
         queryParams.append("order", filters.order);
 
+        // Add other non-variant filters
         if (filters.search) queryParams.append("search", filters.search);
         if (filters.category) queryParams.append("category", filters.category);
         if (filters.minPrice) queryParams.append("minPrice", filters.minPrice);
         if (filters.maxPrice) queryParams.append("maxPrice", filters.maxPrice);
 
+        // Add flavor and weight filters individually
+        // The server should return any product that has at least one matching flavor OR weight
         if (selectedFlavors.length > 0) {
           queryParams.append("flavor", selectedFlavors[0]);
         }
@@ -127,20 +205,25 @@ function ProductsContent() {
 
         let filteredProducts = response.data.products || [];
 
+        // If both flavor AND weight filters are active, we need to do client-side filtering
+        // to ensure we only show products that have variants with BOTH the selected flavor AND weight
         if (
           selectedFlavors.length > 0 &&
           selectedWeights.length > 0 &&
           filteredProducts.length > 0
         ) {
+          // For each product, check if it has any variant that matches both flavor and weight
           const productsWithExactMatch = [];
 
           for (const product of filteredProducts) {
             try {
+              // Fetch detailed product info including all variants
               const detailResponse = await fetchApi(
                 `/public/products/${product.slug}`
               );
               const detailedProduct = detailResponse.data.product;
 
+              // Check if any variant has both the selected flavor AND weight
               const hasMatchingVariant = detailedProduct.variants.some(
                 (variant) =>
                   variant.flavor?.id === selectedFlavors[0] &&
@@ -158,12 +241,14 @@ function ProductsContent() {
             }
           }
 
+          // Update the filtered list and pagination count
           filteredProducts = productsWithExactMatch;
           setPagination({
             ...response.data.pagination,
             total: productsWithExactMatch.length,
           });
         } else {
+          // Just use the server response directly
           setPagination(response.data.pagination || {});
         }
 
@@ -234,21 +319,57 @@ function ProductsContent() {
     }
   }, [error]);
 
+  // Fetch wishlist status for all products
+  useEffect(() => {
+    const fetchWishlistStatus = async () => {
+      if (!isAuthenticated || typeof window === "undefined") return;
+
+      try {
+        const response = await fetchApi("/users/wishlist", {
+          credentials: "include",
+        });
+        const items = response.data.wishlistItems.reduce((acc, item) => {
+          acc[item.productId] = true;
+          return acc;
+        }, {});
+        setWishlistItems(items);
+      } catch (error) {
+        console.error("Error fetching wishlist:", error);
+      }
+    };
+
+    fetchWishlistStatus();
+  }, [isAuthenticated]);
+
+  // Add useEffect to handle scroll on page change
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, [pagination.page]); // This will trigger whenever the page changes
+
+  // Modify handleFilterChange to update URL
   const handleFilterChange = (name, value) => {
+    // For number inputs, ensure we're handling empty strings and non-numeric values
     if ((name === "minPrice" || name === "maxPrice") && value !== "") {
-      const numValue = Number.parseFloat(value);
+      const numValue = parseFloat(value);
       if (isNaN(numValue)) {
-        return;
+        return; // Don't update if not a valid number
       }
       value = numValue.toString();
     }
 
-    setFilters((prev) => ({ ...prev, [name]: value }));
+    const newFilters = { ...filters, [name]: value };
+    setFilters(newFilters);
+    updateURL(newFilters);
 
+    // Reset to page 1 when filters change
     if (pagination.page !== 1) {
       setPagination((prev) => ({ ...prev, page: 1 }));
     }
 
+    // Close mobile filters after selecting a filter on mobile
     if (
       mobileFiltersOpen &&
       window.innerWidth < 768 &&
@@ -258,42 +379,61 @@ function ProductsContent() {
     ) {
       setMobileFiltersOpen(false);
     }
+
+    // Open the corresponding section when a filter is applied
+    switch (name) {
+      case "search":
+        if (value) setActiveFilterSection("search");
+        break;
+      case "category":
+        if (value) setActiveFilterSection("categories");
+        break;
+      case "flavor":
+        if (value) setActiveFilterSection("flavors");
+        break;
+      case "weight":
+        if (value) setActiveFilterSection("weights");
+        break;
+    }
   };
 
+  // Modify handleFlavorChange
   const handleFlavorChange = (flavorId) => {
     const isAlreadySelected = selectedFlavors.includes(flavorId);
+    let updatedFlavors;
 
     if (isAlreadySelected) {
-      const updatedFlavors = selectedFlavors.filter((id) => id !== flavorId);
+      updatedFlavors = selectedFlavors.filter((id) => id !== flavorId);
       setSelectedFlavors(updatedFlavors);
-      handleFilterChange(
-        "flavor",
-        updatedFlavors.length > 0 ? updatedFlavors[0] : ""
-      );
     } else {
-      setSelectedFlavors([flavorId]);
-      handleFilterChange("flavor", flavorId);
+      updatedFlavors = [flavorId];
+      setSelectedFlavors(updatedFlavors);
     }
+
+    const newFlavorValue = updatedFlavors.length > 0 ? updatedFlavors[0] : "";
+    handleFilterChange("flavor", newFlavorValue);
   };
 
+  // Modify handleWeightChange
   const handleWeightChange = (weightId) => {
     const isAlreadySelected = selectedWeights.includes(weightId);
+    let updatedWeights;
 
     if (isAlreadySelected) {
-      const updatedWeights = selectedWeights.filter((id) => id !== weightId);
+      updatedWeights = selectedWeights.filter((id) => id !== weightId);
       setSelectedWeights(updatedWeights);
-      handleFilterChange(
-        "weight",
-        updatedWeights.length > 0 ? updatedWeights[0] : ""
-      );
     } else {
-      setSelectedWeights([weightId]);
-      handleFilterChange("weight", weightId);
+      updatedWeights = [weightId];
+      setSelectedWeights(updatedWeights);
     }
+
+    const newWeightValue = updatedWeights.length > 0 ? updatedWeights[0] : "";
+    handleFilterChange("weight", newWeightValue);
   };
 
+  // Modify clearFilters to also clear URL
   const clearFilters = () => {
-    setFilters({
+    const clearedFilters = {
       search: "",
       category: "",
       flavor: "",
@@ -302,13 +442,16 @@ function ProductsContent() {
       maxPrice: "",
       sort: "createdAt",
       order: "desc",
-    });
-
+    };
+    setFilters(clearedFilters);
     setSelectedFlavors([]);
     setSelectedWeights([]);
+    updateURL(clearedFilters);
     setPagination((prev) => ({ ...prev, page: 1 }));
+    setActiveFilterSection("search");
   };
 
+  // Handle sort change
   const handleSortChange = (e) => {
     const value = e.target.value;
 
@@ -322,10 +465,14 @@ function ProductsContent() {
         handleFilterChange("order", "asc");
         break;
       case "price-low":
+        // Looking at the backend code, we need to use a field that exists in the product model
+        // Using createdAt as a fallback since price doesn't exist on the product model
         handleFilterChange("sort", "createdAt");
         handleFilterChange("order", "asc");
         break;
       case "price-high":
+        // Looking at the backend code, we need to use a field that exists in the product model
+        // Using createdAt as a fallback since price doesn't exist on the product model
         handleFilterChange("sort", "createdAt");
         handleFilterChange("order", "desc");
         break;
@@ -342,15 +489,39 @@ function ProductsContent() {
     }
   };
 
+  // Add this function to handle scrolling
+  const scrollToTop = () => {
+    const mainContent = document.getElementById("products-main");
+    if (mainContent) {
+      mainContent.scrollIntoView({ behavior: "smooth" });
+    } else {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  // Update handlePageChange to use the scroll function
   const handlePageChange = (newPage) => {
     if (newPage < 1 || newPage > pagination.pages) return;
     setPagination((prev) => ({ ...prev, page: newPage }));
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    scrollToTop();
   };
 
+  // Handle add to cart click
   const handleAddToCart = async (product) => {
+    setIsAddingToCart((prev) => ({ ...prev, [product.id]: true }));
     try {
+      if (!isAuthenticated) {
+        router.push(
+          `/login?redirect=${encodeURIComponent(window.location.pathname)}`
+        );
+        return;
+      }
+      // If product has no variants, show error
       if (!product || !product.variants || product.variants.length === 0) {
+        // Try to get default variant from backend
         const response = await fetchApi(
           `/public/products/${product.id}/variants`
         );
@@ -361,10 +532,12 @@ function ProductsContent() {
           return;
         }
 
+        // Use first variant as default
         const variantId = variants[0].id;
         await addToCart(variantId, 1);
         toast.success(`${product.name} added to cart`);
       } else {
+        // Get the first variant (default)
         const variantId = product.variants[0].id;
         await addToCart(variantId, 1);
         toast.success(`${product.name} added to cart`);
@@ -372,12 +545,60 @@ function ProductsContent() {
     } catch (err) {
       console.error("Error adding to cart:", err);
       toast.error("Failed to add product to cart");
+    } finally {
+      setIsAddingToCart((prev) => ({ ...prev, [product.id]: false }));
     }
   };
 
+  // Handle opening quick view
   const handleQuickView = (product) => {
     setQuickViewProduct(product);
     setQuickViewOpen(true);
+  };
+
+  const handleAddToWishlist = async (product, e) => {
+    e.preventDefault(); // Prevent navigation
+    if (!isAuthenticated) {
+      router.push(`/login?redirect=/products/${product.slug}`);
+      return;
+    }
+
+    setIsAddingToWishlist((prev) => ({ ...prev, [product.id]: true }));
+
+    try {
+      if (wishlistItems[product.id]) {
+        // Get wishlist to find the item ID
+        const wishlistResponse = await fetchApi("/users/wishlist", {
+          credentials: "include",
+        });
+
+        const wishlistItem = wishlistResponse.data.wishlistItems.find(
+          (item) => item.productId === product.id
+        );
+
+        if (wishlistItem) {
+          await fetchApi(`/users/wishlist/${wishlistItem.id}`, {
+            method: "DELETE",
+            credentials: "include",
+          });
+
+          setWishlistItems((prev) => ({ ...prev, [product.id]: false }));
+        }
+      } else {
+        // Add to wishlist
+        await fetchApi("/users/wishlist", {
+          method: "POST",
+          credentials: "include",
+          body: JSON.stringify({ productId: product.id }),
+        });
+
+        setWishlistItems((prev) => ({ ...prev, [product.id]: true }));
+      }
+    } catch (error) {
+      console.error("Error updating wishlist:", error);
+    } finally {
+      setIsAddingToWishlist((prev) => ({ ...prev, [product.id]: false }));
+    }
   };
 
   if (loading && products.length === 0) {
@@ -391,7 +612,7 @@ function ProductsContent() {
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-gray-50 min-h-screen" id="products-main">
       <div className="container mx-auto px-4 py-8">
         {/* Hero Banner */}
         <div className="relative w-full h-[300px] mb-12 rounded-xl overflow-hidden shadow-lg">
@@ -484,158 +705,185 @@ function ProductsContent() {
 
               {/* Categories Filter */}
               <div className="p-6 border-b border-gray-100">
-                <div className="flex items-center justify-between mb-3">
+                <div
+                  className="flex items-center justify-between mb-3 cursor-pointer"
+                  onClick={() => toggleFilterSection("categories")}
+                >
                   <h3 className="text-sm font-semibold text-[#2C3E50] uppercase">
                     Categories
                   </h3>
-                  <ChevronDown className="h-4 w-4 text-gray-400" />
+                  {activeFilterSection === "categories" ? (
+                    <ChevronUp className="h-4 w-4 text-gray-400" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4 text-gray-400" />
+                  )}
                 </div>
-                <div className="space-y-3">
-                  <div
-                    className={`cursor-pointer hover:text-[#ce801f] transition-colors ${
-                      filters.category === ""
-                        ? "font-semibold text-[#ce801f]"
-                        : "text-gray-600"
-                    }`}
-                    onClick={() => handleFilterChange("category", "")}
-                  >
-                    All Categories
-                  </div>
-                  {categories.map((category) => (
-                    <div key={category.id} className="ml-3">
-                      <div
-                        className={`cursor-pointer hover:text-[#ce801f] flex items-center transition-colors ${
-                          filters.category === category.slug
-                            ? "font-semibold text-[#ce801f]"
-                            : "text-gray-600"
-                        }`}
-                        onClick={() =>
-                          handleFilterChange("category", category.slug)
-                        }
-                      >
-                        <ChevronRight className="h-4 w-4 mr-1" />
-                        {category.name}
-                      </div>
-                      {category.children && category.children.length > 0 && (
-                        <div className="ml-6 mt-2 space-y-2">
-                          {category.children.map((child) => (
-                            <div
-                              key={child.id}
-                              className={`cursor-pointer hover:text-[#ce801f] text-sm transition-colors ${
-                                filters.category === child.slug
-                                  ? "font-semibold text-[#ce801f]"
-                                  : "text-gray-600"
-                              }`}
-                              onClick={() =>
-                                handleFilterChange("category", child.slug)
-                              }
-                            >
-                              {child.name}
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                {activeFilterSection === "categories" && (
+                  <div className="space-y-3">
+                    <div
+                      className={`cursor-pointer hover:text-[#ce801f] transition-colors ${
+                        filters.category === ""
+                          ? "font-semibold text-[#ce801f]"
+                          : "text-gray-600"
+                      }`}
+                      onClick={() => handleFilterChange("category", "")}
+                    >
+                      All Categories
                     </div>
-                  ))}
-                </div>
+                    {categories.map((category) => (
+                      <div key={category.id} className="ml-3">
+                        <div
+                          className={`cursor-pointer hover:text-[#ce801f] flex items-center transition-colors ${
+                            filters.category === category.slug
+                              ? "font-semibold text-[#ce801f]"
+                              : "text-gray-600"
+                          }`}
+                          onClick={() =>
+                            handleFilterChange("category", category.slug)
+                          }
+                        >
+                          <ChevronRight className="h-4 w-4 mr-1" />
+                          {category.name}
+                        </div>
+                        {category.children && category.children.length > 0 && (
+                          <div className="ml-6 mt-2 space-y-2">
+                            {category.children.map((child) => (
+                              <div
+                                key={child.id}
+                                className={`cursor-pointer hover:text-[#ce801f] text-sm transition-colors ${
+                                  filters.category === child.slug
+                                    ? "font-semibold text-[#ce801f]"
+                                    : "text-gray-600"
+                                }`}
+                                onClick={() =>
+                                  handleFilterChange("category", child.slug)
+                                }
+                              >
+                                {child.name}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Flavors Filter */}
               <div className="p-6 border-b border-gray-100">
-                <div className="flex items-center justify-between mb-3">
+                <div
+                  className="flex items-center justify-between mb-3 cursor-pointer"
+                  onClick={() => toggleFilterSection("flavors")}
+                >
                   <h3 className="text-sm font-semibold text-[#2C3E50] uppercase">
                     Flavor
                   </h3>
-                  <ChevronDown className="h-4 w-4 text-gray-400" />
+                  {activeFilterSection === "flavors" ? (
+                    <ChevronUp className="h-4 w-4 text-gray-400" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4 text-gray-400" />
+                  )}
                 </div>
-                <div className="space-y-3">
-                  <div
-                    className={`cursor-pointer hover:text-[#ce801f] transition-colors ${
-                      selectedFlavors.length === 0
-                        ? "font-semibold text-[#ce801f]"
-                        : "text-gray-600"
-                    }`}
-                    onClick={() => {
-                      setSelectedFlavors([]);
-                      handleFilterChange("flavor", "");
-                    }}
-                  >
-                    All Flavors
-                  </div>
-
-                  {flavors.map((flavor) => (
+                {activeFilterSection === "flavors" && (
+                  <div className="space-y-3">
                     <div
-                      key={flavor.id}
-                      className={`cursor-pointer hover:text-[#ce801f] ml-3 flex items-center transition-colors ${
-                        selectedFlavors.includes(flavor.id)
+                      className={`cursor-pointer hover:text-[#ce801f] transition-colors ${
+                        selectedFlavors.length === 0
                           ? "font-semibold text-[#ce801f]"
                           : "text-gray-600"
                       }`}
-                      onClick={() => handleFlavorChange(flavor.id)}
+                      onClick={() => {
+                        setSelectedFlavors([]);
+                        handleFilterChange("flavor", "");
+                      }}
                     >
-                      <div className="w-4 h-4 border-2 border-gray-300 rounded mr-3 flex items-center justify-center">
-                        {selectedFlavors.includes(flavor.id) && (
-                          <div className="w-2 h-2 rounded-sm bg-[#ce801f]"></div>
-                        )}
-                      </div>
-                      {flavor.image && (
-                        <div className="w-4 h-4 rounded-full overflow-hidden mr-2">
-                          <Image
-                            src={flavor.image || "/placeholder.svg"}
-                            alt={flavor.name}
-                            width={16}
-                            height={16}
-                          />
-                        </div>
-                      )}
-                      {flavor.name}
+                      All Flavors
                     </div>
-                  ))}
-                </div>
+
+                    {flavors.map((flavor) => (
+                      <div
+                        key={flavor.id}
+                        className={`cursor-pointer hover:text-[#ce801f] ml-3 flex items-center transition-colors ${
+                          selectedFlavors.includes(flavor.id)
+                            ? "font-semibold text-[#ce801f]"
+                            : "text-gray-600"
+                        }`}
+                        onClick={() => handleFlavorChange(flavor.id)}
+                      >
+                        <div className="w-4 h-4 border-2 border-gray-300 rounded mr-3 flex items-center justify-center">
+                          {selectedFlavors.includes(flavor.id) && (
+                            <div className="w-2 h-2 rounded-sm bg-[#ce801f]"></div>
+                          )}
+                        </div>
+                        {flavor.image && (
+                          <div className="w-4 h-4 rounded-full overflow-hidden mr-2">
+                            <Image
+                              src={flavor.image || "/placeholder.svg"}
+                              alt={flavor.name}
+                              width={16}
+                              height={16}
+                            />
+                          </div>
+                        )}
+                        {flavor.name}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Weights Filter */}
               <div className="p-6">
-                <div className="flex items-center justify-between mb-3">
+                <div
+                  className="flex items-center justify-between mb-3 cursor-pointer"
+                  onClick={() => toggleFilterSection("weights")}
+                >
                   <h3 className="text-sm font-semibold text-[#2C3E50] uppercase">
                     Weight
                   </h3>
-                  <ChevronDown className="h-4 w-4 text-gray-400" />
+                  {activeFilterSection === "weights" ? (
+                    <ChevronUp className="h-4 w-4 text-gray-400" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4 text-gray-400" />
+                  )}
                 </div>
-                <div className="space-y-3">
-                  <div
-                    className={`cursor-pointer hover:text-[#ce801f] transition-colors ${
-                      selectedWeights.length === 0
-                        ? "font-semibold text-[#ce801f]"
-                        : "text-gray-600"
-                    }`}
-                    onClick={() => {
-                      setSelectedWeights([]);
-                      handleFilterChange("weight", "");
-                    }}
-                  >
-                    All Weights
-                  </div>
-
-                  {weights.map((weight) => (
+                {activeFilterSection === "weights" && (
+                  <div className="space-y-3">
                     <div
-                      key={weight.id}
-                      className={`cursor-pointer hover:text-[#ce801f] ml-3 flex items-center transition-colors ${
-                        selectedWeights.includes(weight.id)
+                      className={`cursor-pointer hover:text-[#ce801f] transition-colors ${
+                        selectedWeights.length === 0
                           ? "font-semibold text-[#ce801f]"
                           : "text-gray-600"
                       }`}
-                      onClick={() => handleWeightChange(weight.id)}
+                      onClick={() => {
+                        setSelectedWeights([]);
+                        handleFilterChange("weight", "");
+                      }}
                     >
-                      <div className="w-4 h-4 border-2 border-gray-300 rounded mr-3 flex items-center justify-center">
-                        {selectedWeights.includes(weight.id) && (
-                          <div className="w-2 h-2 rounded-sm bg-[#ce801f]"></div>
-                        )}
-                      </div>
-                      {weight.display}
+                      All Weights
                     </div>
-                  ))}
-                </div>
+
+                    {weights.map((weight) => (
+                      <div
+                        key={weight.id}
+                        className={`cursor-pointer hover:text-[#ce801f] ml-3 flex items-center transition-colors ${
+                          selectedWeights.includes(weight.id)
+                            ? "font-semibold text-[#ce801f]"
+                            : "text-gray-600"
+                        }`}
+                        onClick={() => handleWeightChange(weight.id)}
+                      >
+                        <div className="w-4 h-4 border-2 border-gray-300 rounded mr-3 flex items-center justify-center">
+                          {selectedWeights.includes(weight.id) && (
+                            <div className="w-2 h-2 rounded-sm bg-[#ce801f]"></div>
+                          )}
+                        </div>
+                        {weight.display}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -843,9 +1091,20 @@ function ProductsContent() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="w-10 h-10 p-0 bg-white/90 hover:bg-[#ce801f] hover:text-white rounded-full shadow-sm"
+                          className={`w-10 h-10 p-0 bg-white/90 hover:bg-[#ce801f] hover:text-white rounded-full shadow-sm ${
+                            wishlistItems[product.id] ? "text-[#ce801f]" : ""
+                          }`}
+                          onClick={(e) => handleAddToWishlist(product, e)}
+                          disabled={isAddingToWishlist[product.id]}
                         >
-                          <Heart className="h-4 w-4" />
+                          <Heart
+                            className="h-4 w-4"
+                            fill={
+                              wishlistItems[product.id]
+                                ? "currentColor"
+                                : "none"
+                            }
+                          />
                         </Button>
                         <Button
                           variant="ghost"
@@ -919,9 +1178,16 @@ function ProductsContent() {
                           e.preventDefault();
                           handleAddToCart(product);
                         }}
+                        disabled={isAddingToCart[product.id]}
                       >
-                        <ShoppingCart className="h-4 w-4 mr-2" />
-                        Add to Cart
+                        {isAddingToCart[product.id] ? (
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                        ) : (
+                          <ShoppingCart className="h-4 w-4 mr-2" />
+                        )}
+                        {isAddingToCart[product.id]
+                          ? "Adding..."
+                          : "Add to Cart"}
                       </Button>
                     </div>
                   </div>

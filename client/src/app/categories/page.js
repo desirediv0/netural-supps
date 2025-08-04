@@ -5,16 +5,19 @@ import Link from "next/link";
 import Image from "next/image";
 import { fetchApi } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { AlertCircle, ShoppingBag } from "lucide-react";
+import { AlertCircle, ShoppingBag, Package, Star } from "lucide-react";
 
 // Category card component
 const CategoryCard = ({ category, index }) => {
-  // Function to get image URL
+  // Function to get image URL with better fallback handling
   const getImageUrl = (image) => {
     if (!image) return "/placeholder.svg?height=300&width=400";
     if (image.startsWith("http")) return image;
     return `https://desirediv-storage.blr1.digitaloceanspaces.com/${image}`;
   };
+
+  // Get product count with proper fallback
+  const productCount = category._count?.products || 0;
 
   return (
     <motion.div
@@ -26,19 +29,22 @@ const CategoryCard = ({ category, index }) => {
     >
       <div className="relative">
         <motion.div
-          className="relative w-full h-[420px] rounded-[30px] overflow-hidden bg-gradient-to-br from-white to-gray-50 shadow-2xl"
+          className="relative w-full h-[420px] rounded-[30px] overflow-hidden bg-gradient-to-br from-white to-gray-50 shadow-2xl border border-gray-100"
           whileHover={{ y: -10 }}
           transition={{ type: "spring", stiffness: 300 }}
         >
           {/* Main Image Container with Overlay */}
           <div className="relative h-[250px] overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent z-10" />
             <Image
               src={getImageUrl(category.image)}
               alt={category.name}
               width={800}
               height={800}
               className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
+              onError={(e) => {
+                e.target.src = "/placeholder.svg?height=300&width=400";
+              }}
             />
 
             {/* Floating Elements */}
@@ -47,13 +53,22 @@ const CategoryCard = ({ category, index }) => {
               initial={{ scale: 0.8 }}
               whileHover={{ scale: 1.1 }}
             >
-              <div className="bg-white px-4 py-2 rounded-full shadow-lg flex items-center space-x-2">
-                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              <div className="bg-white/95 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg flex items-center space-x-2">
+                <Package className="w-4 h-4 text-yellow-600" />
                 <span className="text-sm font-semibold bg-gradient-to-r from-yellow-500 to-[#ce801f] bg-clip-text text-transparent">
-                  {category._count?.products || 0} Products
+                  {productCount} {productCount === 1 ? "Product" : "Products"}
                 </span>
               </div>
             </motion.div>
+
+            {/* Category Badge */}
+            <div className="absolute top-4 left-4 z-20">
+              <div className="bg-yellow-500/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-lg">
+                <span className="text-xs font-medium text-white">
+                  {category.isDefault ? "Default" : "Category"}
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* Content Section */}
@@ -65,8 +80,24 @@ const CategoryCard = ({ category, index }) => {
 
             {/* Description */}
             <p className="text-gray-600 text-sm mb-6 line-clamp-2">
-              {category.description || "Explore our collection"}
+              {category.description ||
+                `Explore our ${category.name} collection with premium quality products`}
             </p>
+
+            {/* Product Count Display */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-2">
+                <Star className="w-4 h-4 text-yellow-500" />
+                <span className="text-sm text-gray-500">
+                  {productCount} {productCount === 1 ? "item" : "items"}{" "}
+                  available
+                </span>
+              </div>
+              <div className="text-xs text-gray-400">
+                {category.createdAt &&
+                  new Date(category.createdAt).toLocaleDateString()}
+              </div>
+            </div>
 
             {/* Interactive Footer */}
             <div className="absolute bottom-6 left-6 right-6">
@@ -77,7 +108,9 @@ const CategoryCard = ({ category, index }) => {
               >
                 <span className="absolute inset-0 bg-white/30 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                 <span className="relative flex items-center space-x-2">
-                  <span className="font-medium">Explore Category</span>
+                  <span className="font-medium">
+                    {productCount > 0 ? "Explore Category" : "Coming Soon"}
+                  </span>
                   <svg
                     className="w-5 h-5 transform group-hover:translate-x-1 transition-transform"
                     fill="none"
@@ -115,6 +148,10 @@ const CategoryCardSkeleton = () => {
           <div className="h-8 bg-gray-300 rounded-lg w-3/4 mb-3" />
           <div className="h-4 bg-gray-300 rounded w-full mb-2" />
           <div className="h-4 bg-gray-300 rounded w-2/3 mb-6" />
+          <div className="flex justify-between mb-4">
+            <div className="h-4 bg-gray-300 rounded w-1/3" />
+            <div className="h-4 bg-gray-300 rounded w-1/4" />
+          </div>
           <div className="absolute bottom-6 left-6 right-6">
             <div className="h-12 bg-gray-300 rounded-2xl w-full" />
           </div>
@@ -134,7 +171,11 @@ export default function CategoriesPage() {
       setLoading(true);
       try {
         const response = await fetchApi("/public/categories");
-        setCategories(response.data.categories || []);
+        if (response.success && response.data?.categories) {
+          setCategories(response.data.categories);
+        } else {
+          setError("Invalid response format");
+        }
       } catch (err) {
         console.error("Error fetching categories:", err);
         setError(err.message || "Failed to load categories");
@@ -145,6 +186,12 @@ export default function CategoriesPage() {
 
     fetchCategories();
   }, []);
+
+  // Calculate total products across all categories
+  const totalProducts = categories.reduce(
+    (sum, category) => sum + (category._count?.products || 0),
+    0
+  );
 
   return (
     <section className="min-h-screen py-24 bg-gradient-to-b from-yellow-50 via-white to-pink-50 overflow-hidden">
@@ -164,16 +211,38 @@ export default function CategoriesPage() {
               All Categories
             </h1>
             <div className="flex items-center justify-center text-sm text-gray-600 mb-6">
-              <Link href="/" className="hover:text-yellow-600 transition-colors">
+              <Link
+                href="/"
+                className="hover:text-yellow-600 transition-colors"
+              >
                 Home
               </Link>
               <span className="mx-2">•</span>
               <span className="text-yellow-600 font-medium">Categories</span>
             </div>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-4">
               Discover our complete range of premium fitness supplements and
               equipment
             </p>
+
+            {/* Stats Display */}
+            {!loading && categories.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="flex items-center justify-center space-x-8 text-sm text-gray-600"
+              >
+                <div className="flex items-center space-x-2">
+                  <Package className="w-4 h-4 text-yellow-600" />
+                  <span>{categories.length} Categories</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <ShoppingBag className="w-4 h-4 text-yellow-600" />
+                  <span>{totalProducts} Total Products</span>
+                </div>
+              </motion.div>
+            )}
           </motion.div>
 
           {/* Decorative Background Elements */}
@@ -202,7 +271,7 @@ export default function CategoriesPage() {
           <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-pink-300/10 rounded-full blur-3xl" />
 
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-8">
               {[...Array(6)].map((_, index) => (
                 <CategoryCardSkeleton key={index} />
               ))}
@@ -234,7 +303,7 @@ export default function CategoriesPage() {
               </Link>
             </motion.div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-8">
               {categories.map((category, index) => (
                 <Link key={category.id} href={`/category/${category.slug}`}>
                   <CategoryCard category={category} index={index} />
