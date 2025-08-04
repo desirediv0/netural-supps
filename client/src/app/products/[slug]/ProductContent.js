@@ -595,14 +595,14 @@ export default function ProductContent({ slug }) {
 
   // Updated render code for the product image carousel
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 bg-gradient-to-br from-orange-50 via-white to-orange-50 min-h-screen">
       {/* Breadcrumbs */}
-      <div className="flex items-center text-sm mb-8">
-        <Link href="/" className="text-gray-500 hover:text-primary">
+      <div className="flex items-center text-sm mb-8 bg-white rounded-2xl shadow-lg border border-gray-100 p-4">
+        <Link href="/" className="text-gray-600 hover:text-orange-600 transition-colors">
           Home
         </Link>
         <ChevronRight className="h-4 w-4 mx-2 text-gray-400" />
-        <Link href="/products" className="text-gray-500 hover:text-primary">
+        <Link href="/products" className="text-gray-600 hover:text-orange-600 transition-colors">
           Products
         </Link>
         {(product?.category || product?.categories?.[0]?.category) && (
@@ -612,14 +612,14 @@ export default function ProductContent({ slug }) {
               href={`/category/${
                 product.category?.slug || product.categories[0]?.category?.slug
               }`}
-              className="text-gray-500 hover:text-primary"
+              className="text-gray-600 hover:text-orange-600 transition-colors"
             >
               {product.category?.name || product.categories[0]?.category?.name}
             </Link>
           </>
         )}
         <ChevronRight className="h-4 w-4 mx-2 text-gray-400" />
-        <span className="text-primary">{product?.name}</span>
+        <span className="text-orange-600 font-semibold">{product?.name}</span>
       </div>
 
       {/* Product Info */}

@@ -32,7 +32,7 @@ export default function LoginPage() {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/login`,
+        `${process.env.NEXT_PUBLIC_API_URL}/users/login`,
         {
           method: "POST",
           headers: {
