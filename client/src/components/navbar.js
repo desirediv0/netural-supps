@@ -157,44 +157,24 @@ export function Navbar() {
 
     return (
       <div
-        className="md:hidden fixed inset-0 z-50 bg-white overflow-y-auto"
-        style={{ maxHeight: "100vh" }}
+        className="md:hidden fixed inset-0 z-50 bg-white overflow-y-auto rounded-b-md"
+        style={{ maxHeight: "85vh" }}
       >
         <div className="flex flex-col h-full">
-          {/* Header */}
-          <div className="sticky top-0 bg-[#CE801F] border-b border-[#CE801F]/20 flex justify-between items-center px-6 py-6 z-10">
-            <Link
-              href="/"
-              className="flex items-center"
+          <button
+            className="p-3 text-black  w-full flex items-center justify-end cursor-auto"
+            aria-label="Close menu"
+          >
+            <X
+              className="h-7 w-7 cursor-pointer"
               onClick={() => setIsMenuOpen(false)}
-            >
-              <div className="flex items-center space-x-4">
-                <div className="bg-white/20 p-3 rounded-2xl shadow-lg">
-                  <ShoppingBag className="h-7 w-7 text-white" />
-                </div>
-                <div>
-                  <span className="text-2xl font-bold text-white">
-                    Natural Supps
-                  </span>
-                  <div className="text-xs text-white/80">
-                    Premium Supplements
-                  </div>
-                </div>
-              </div>
-            </Link>
-            <button
-              onClick={() => setIsMenuOpen(false)}
-              className="p-3 text-white hover:bg-white/20 rounded-2xl focus:outline-none transition-all duration-300 hover:scale-110"
-              aria-label="Close menu"
-            >
-              <X className="h-7 w-7" />
-            </button>
-          </div>
+            />
+          </button>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto px-6 py-8 space-y-6 bg-gray-50">
+          <div className="flex-1 overflow-y-auto px-3 py-5 space-y-6 bg-gray-50">
             {/* Search */}
-            <div className="bg-white rounded-3xl p-6 shadow-lg border border-gray-100">
+            <div className="bg-white rounded-xl p-4 shadow-lg border border-gray-100">
               <form onSubmit={handleMobileSearch} className="relative">
                 <div className="relative">
                   <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -236,29 +216,33 @@ export function Navbar() {
             </div>
 
             {/* Quick Actions */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-4">
               <Link
                 href="/products"
-                className="bg-white rounded-3xl p-6 text-center hover:scale-105 transition-all duration-300 shadow-lg border border-gray-100"
+                className="bg-white rounded p-2 shadow-lg border border-gray-100 hover:shadow transition-all duration-300 flex w-full  items-center justify-start gap-2"
                 onClick={() => setIsMenuOpen(false)}
               >
-                <Package className="h-8 w-8 text-[#CE801F] mx-auto mb-3" />
-                <div className="text-gray-800 font-semibold">All Products</div>
+                <Package className="h-5 w-5 text-[#CE801F]  " />
+                <div className="flex items-center py-2 text-lg font-semibold text-gray-800 hover:text-[#CE801F] transition-all duration-300">
+                  All Products
+                </div>
               </Link>
               <Link
                 href="/wishlist"
-                className="bg-white rounded-3xl p-6 text-center hover:scale-105 transition-all duration-300 shadow-lg border border-gray-100"
+                className="bg-white rounded p-2 shadow-lg border border-gray-100 hover:shadow transition-all duration-300 flex w-full  items-center justify-start gap-2"
                 onClick={() => setIsMenuOpen(false)}
               >
-                <Heart className="h-8 w-8 text-[#CE801F] mx-auto mb-3" />
-                <div className="text-gray-800 font-semibold">Wishlist</div>
+                <Heart className="h-5 w-5 text-[#CE801F]  " />
+                <div className="flex items-center py-2 text-lg font-semibold text-gray-800 hover:text-[#CE801F] transition-all duration-300">
+                  Wishlist
+                </div>
               </Link>
             </div>
 
             {/* Categories */}
-            <div className="bg-white rounded-3xl p-6 shadow-lg border border-gray-100">
-              <h3 className="font-bold text-xl mb-6 text-gray-800 flex items-center">
-                <Star className="h-4 w-4 mr-3 text-[#CE801F]" />
+            <div className="bg-white rounded p-2 shadow-lg border border-gray-100">
+              <h3 className="font-bold text-xl py-3 text-gray-800 flex items-center">
+                <Star className="h-5 w-5 mr-3 text-[#CE801F]" />
                 Categories
               </h3>
               <div className="space-y-3">
@@ -286,7 +270,7 @@ export function Navbar() {
               ].map((item) => (
                 <div
                   key={item.href}
-                  className="bg-white rounded-3xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300"
+                  className="bg-white rounded p-2 shadow-lg border border-gray-100 hover:shadow transition-all duration-300"
                 >
                   <Link
                     href={item.href}
@@ -345,41 +329,13 @@ export function Navbar() {
                   </Button>
                 </Link>
                 <Link href="/register" onClick={() => setIsMenuOpen(false)}>
-                  <Button className="w-full py-6 text-lg bg-[#CE801F] hover:bg-[#CE801F]/90 rounded-3xl shadow-xl hover:scale-105 transition-all duration-300">
+                  <Button className="w-full mt-2 py-6 text-lg bg-[#CE801F] hover:bg-[#CE801F]/90 rounded-3xl shadow-xl hover:scale-105 transition-all duration-300">
                     <User className="h-4 w-4 mr-3" />
                     Register
                   </Button>
                 </Link>
               </div>
             )}
-
-            {/* Contact Info */}
-            <div className="bg-white rounded-3xl p-6 shadow-lg border border-gray-100">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="bg-[#CE801F] p-3 rounded-2xl">
-                  <Phone className="h-4 w-4 text-white" />
-                </div>
-                <div>
-                  <span className="font-medium text-gray-800">
-                    +91 98765 43210
-                  </span>
-                  <div className="text-sm text-gray-500">24/7 Support</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="bg-[#CE801F] p-3 rounded-2xl">
-                  <MapPin className="h-4 w-4 text-white" />
-                </div>
-                <div>
-                  <span className="font-medium text-gray-800">
-                    Store Locator
-                  </span>
-                  <div className="text-sm text-gray-500">
-                    Find nearest store
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -524,8 +480,8 @@ export function Navbar() {
 
             {/* Search, Cart, Account */}
             <div className="flex items-center space-x-4 md:space-x-8">
-              {/* Search button/form */}
-              <div className="relative">
+              {/* Search button/form - hidden on mobile */}
+              <div className="relative hidden md:block">
                 {isSearchExpanded ? (
                   <>
                     <div
@@ -605,14 +561,6 @@ export function Navbar() {
                   </button>
                 )}
               </div>
-
-              {/* Wishlist */}
-              <Link
-                href="/wishlist"
-                className="p-3 text-gray-600 hover:text-[#CE801F] transition-all duration-300 relative bg-gray-100 rounded-2xl hover:bg-[#CE801F]/10 hover:scale-110"
-              >
-                <Heart className="h-4 w-4" />
-              </Link>
 
               {/* Cart */}
               <ClientOnly>
