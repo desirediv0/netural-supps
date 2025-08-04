@@ -210,8 +210,8 @@ const AnnouncementBanner = () => {
               🔥
             </div>
             <span className="text-sm md:text-base font-medium">
-              USE CODE{" "}
-              <strong className="text-[#ce801f]">FIT10</strong> FOR 10% OFF
+              USE CODE <strong className="text-[#ce801f]">FIT10</strong> FOR 10%
+              OFF
             </span>
           </motion.div>
         </div>
@@ -219,8 +219,6 @@ const AnnouncementBanner = () => {
     </div>
   );
 };
-
-
 
 // Testimonials Section
 const TestimonialsSection = () => {
@@ -413,7 +411,6 @@ export default function Home() {
         </section>
       )}
 
-      <GymSupplementShowcase />
       <BenefitsSec />
       <TestimonialsSection />
     </div>
