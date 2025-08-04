@@ -365,7 +365,7 @@ export default function AddressForm({
               onClick={onCancel}
               variant="outline"
               disabled={loading}
-              className="px-6 py-3 border-2 border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl font-semibold"
+              className="px-6 py-3 border-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-black rounded-xl font-semibold"
             >
               Cancel
             </Button>

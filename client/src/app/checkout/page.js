@@ -461,7 +461,7 @@ export default function CheckoutPage() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-orange-600 hover:bg-orange-50 rounded-xl"
+                  className="text-orange-600 hover:bg-orange-50 hover:text-black rounded-xl"
                   onClick={() => setShowAddressForm(!showAddressForm)}
                 >
                   <Plus className="h-4 w-4 mr-1" />
