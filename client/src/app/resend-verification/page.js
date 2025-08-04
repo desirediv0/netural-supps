@@ -6,8 +6,16 @@ import Link from "next/link";
 import { ClientOnly } from "@/components/client-only";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Mail, ArrowRight, CheckCircle, ShoppingBag } from "lucide-react";
+import {
+  Mail,
+  ArrowRight,
+  CheckCircle,
+  Sparkles,
+  Shield,
+  Clock,
+} from "lucide-react";
 
 export default function ResendVerificationPage() {
   const { resendVerification } = useAuth();
@@ -55,132 +63,170 @@ export default function ResendVerificationPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-50">
-      {/* Header with logo */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-4">
-          <Link href="/" className="flex items-center justify-center">
-            <div className="flex items-center space-x-2">
-              <div className="bg-yellow-500 p-2 rounded-lg">
-                <ShoppingBag className="h-6 w-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold text-gray-800">
-                Natural Supps
-              </span>
-            </div>
-          </Link>
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-100 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        {/* Logo and Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl mb-4 shadow-lg">
+            <Mail className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Resend Verification
+          </h1>
+          <p className="text-gray-600">
+            Get a new verification link sent to your email
+          </p>
         </div>
-      </div>
 
-      <div className="flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md">
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-            {/* Header Section */}
-            <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 px-8 py-8 text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-4">
-                <Mail className="h-8 w-8 text-white" />
+        {/* Verification Card */}
+        <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+          <ClientOnly
+            fallback={
+              <div className="flex flex-col items-center justify-center py-12">
+                <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                <p className="text-gray-600">Loading...</p>
               </div>
-              <h1 className="text-2xl font-bold text-white mb-2">
-                Resend Verification
-              </h1>
-              <p className="text-yellow-100">
-                Get a new verification link sent to your email
-              </p>
-            </div>
+            }
+          >
+            {(status === "idle" || status === "error") && (
+              <div>
+                <p className="mb-6 text-gray-600 text-center">
+                  Enter your email address below and we&apos;ll send you a new
+                  verification link.
+                </p>
 
-            {/* Content Section */}
-            <div className="px-8 py-8">
-              <ClientOnly
-                fallback={<div className="py-8 text-center">Loading...</div>}
-              >
-                {(status === "idle" || status === "error") && (
-                  <div>
-                    <p className="mb-6 text-gray-600 text-center">
-                      Enter your email address below and we&apos;ll send you a
-                      new verification link.
-                    </p>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="email"
+                      className="text-sm font-medium text-gray-700"
+                    >
+                      Email Address
+                    </Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                      <Input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="Enter your email address"
+                        className="pl-10 h-12 border-gray-200 focus:border-orange-500 focus:ring-orange-500 rounded-xl"
+                        required
+                      />
+                    </div>
+                  </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                      <div>
-                        <label
-                          htmlFor="email"
-                          className="block text-sm font-semibold text-gray-700 mb-2"
-                        >
-                          Email Address
-                        </label>
-                        <Input
-                          id="email"
-                          type="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          placeholder="Enter your email"
-                          className="w-full h-12 px-4 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-yellow-500 transition-colors"
-                          required
-                        />
+                  <Button
+                    type="submit"
+                    className="w-full h-12 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
+                    disabled={status === "submitting"}
+                  >
+                    {status === "submitting" ? (
+                      <div className="flex items-center justify-center">
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                        Sending...
                       </div>
-                      <Button
-                        type="submit"
-                        className="w-full h-12 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white font-semibold rounded-xl transition-all duration-200 transform hover:scale-[1.02]"
-                        disabled={status === "submitting"}
-                      >
-                        {status === "submitting" ? (
-                          <div className="flex items-center space-x-2">
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                            <span>Sending...</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center space-x-2">
-                            <Mail className="h-4 w-4" />
-                            <span>Send Verification Email</span>
-                          </div>
-                        )}
-                      </Button>
-                    </form>
+                    ) : (
+                      <div className="flex items-center justify-center">
+                        <Mail className="h-4 w-4 mr-2" />
+                        Send Verification Email
+                      </div>
+                    )}
+                  </Button>
+                </form>
 
-                    <div className="mt-6 text-center">
-                      <Link
-                        href="/login"
-                        className="text-yellow-600 hover:text-yellow-700 font-medium transition-colors"
-                      >
-                        Back to Login
-                      </Link>
-                    </div>
-                  </div>
-                )}
+                <div className="mt-6 pt-6 border-t border-gray-200 text-center">
+                  <Link
+                    href="/login"
+                    className="text-orange-600 hover:text-orange-700 font-medium transition-colors"
+                  >
+                    Back to Login
+                  </Link>
+                </div>
+              </div>
+            )}
 
-                {status === "submitting" && (
-                  <div className="flex flex-col items-center justify-center py-8">
-                    <div className="w-12 h-12 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                    <p className="text-gray-600">
-                      Sending verification email...
-                    </p>
-                  </div>
-                )}
+            {status === "submitting" && (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mb-6"></div>
+                <h2 className="text-xl font-bold text-gray-900 mb-2">
+                  Sending Email
+                </h2>
+                <p className="text-gray-600 mb-4">
+                  Please wait while we send the verification email...
+                </p>
+                <div className="flex items-center space-x-2 text-sm text-gray-500">
+                  <Clock className="w-4 h-4" />
+                  <span>This may take a few seconds</span>
+                </div>
+              </div>
+            )}
 
-                {status === "success" && (
-                  <div className="flex flex-col items-center justify-center py-8 text-center">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-6">
-                      <CheckCircle className="h-8 w-8 text-green-500" />
-                    </div>
-                    <h2 className="text-xl font-bold mb-2 text-gray-800">
-                      Email Sent Successfully!
-                    </h2>
-                    <p className="text-green-600 font-medium mb-2">
-                      Verification email sent successfully!
-                    </p>
-                    <p className="text-gray-600 mb-8">
-                      Please check your email and click on the verification
-                      link.
-                    </p>
-                    <Link href="/login">
-                      <Button className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105">
-                        Back to Login
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </Link>
+            {status === "success" && (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-6 shadow-lg">
+                  <CheckCircle className="h-10 w-10 text-green-500" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                  Email Sent Successfully!
+                </h2>
+                <p className="text-green-600 font-medium mb-3">
+                  Verification email sent successfully!
+                </p>
+                <p className="text-gray-600 mb-6">
+                  Please check your email and click on the verification link.
+                </p>
+
+                <div className="bg-orange-50 rounded-lg p-4 mb-6 w-full">
+                  <div className="flex items-center space-x-2 text-sm text-gray-700">
+                    <Sparkles className="w-4 h-4 text-orange-600" />
+                    <span>Don't forget to check your spam folder</span>
                   </div>
-                )}
-              </ClientOnly>
+                </div>
+
+                <Link href="/login">
+                  <Button className="w-full h-12 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5">
+                    Back to Login
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </ClientOnly>
+        </div>
+
+        {/* Help Section */}
+        <div className="mt-8 grid grid-cols-1 gap-4">
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-gray-100">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                <Shield className="w-4 h-4 text-orange-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 text-sm">
+                  Secure Process
+                </h3>
+                <p className="text-gray-600 text-xs">
+                  Your email is protected and verification links are secure
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-gray-100">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                <Clock className="w-4 h-4 text-orange-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 text-sm">
+                  Quick Delivery
+                </h3>
+                <p className="text-gray-600 text-xs">
+                  Verification emails are sent instantly
+                </p>
+              </div>
             </div>
           </div>
         </div>

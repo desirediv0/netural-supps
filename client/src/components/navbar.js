@@ -18,6 +18,8 @@ import {
   Package,
   Truck,
   Shield,
+  Sparkles,
+  Home,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -104,16 +106,18 @@ export function Navbar() {
 
   const handleDropdownHover = (dropdown) => {
     setIsHoveringDropdown(dropdown);
-    if (dropdown) {
+    if (dropdown === "categories" || dropdown === "account") {
       setActiveDropdown(dropdown);
     }
   };
 
   const handleDropdownLeave = () => {
     setIsHoveringDropdown(null);
-    if (!navbarRef.current?.contains(document.activeElement)) {
-      setActiveDropdown(null);
-    }
+    setTimeout(() => {
+      if (!isHoveringDropdown) {
+        setActiveDropdown(null);
+      }
+    }, 100);
   };
 
   const MobileMenu = ({
@@ -122,23 +126,12 @@ export function Navbar() {
     categories,
     searchQuery,
     setSearchQuery,
+    handleSearch,
     isAuthenticated,
+    user,
+    cart,
     handleLogout,
   }) => {
-    const mobileSearchInputRef = useRef(null);
-
-    useEffect(() => {
-      if (isMenuOpen) {
-        const timer = setTimeout(() => {
-          if (mobileSearchInputRef.current) {
-            mobileSearchInputRef.current.focus();
-          }
-        }, 300);
-
-        return () => clearTimeout(timer);
-      }
-    }, [isMenuOpen]);
-
     const handleMobileSearch = (e) => {
       e.preventDefault();
       if (searchQuery.trim()) {
@@ -149,193 +142,181 @@ export function Navbar() {
     };
 
     const handleSearchInputChange = (e) => {
-      e.stopPropagation();
       setSearchQuery(e.target.value);
     };
 
     if (!isMenuOpen) return null;
 
     return (
-      <div
-        className="md:hidden fixed inset-0 z-50 bg-white overflow-y-auto rounded-b-md"
-        style={{ maxHeight: "85vh" }}
-      >
-        <div className="flex flex-col h-full">
-          <button
-            className="p-3 text-black  w-full flex items-center justify-end cursor-auto"
-            aria-label="Close menu"
-          >
-            <X
-              className="h-7 w-7 cursor-pointer"
-              onClick={() => setIsMenuOpen(false)}
-            />
-          </button>
+      <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm h-[85vh] rounded-b-md">
+        <div className="fixed inset-y-0 left-0 w-full max-w-sm bg-white shadow-2xl overflow-y-auto">
+          <div className="flex flex-col h-full">
+            {/* Header */}
+            <div className=" px-6 py-6">
+              <div className="flex items-center justify-between mb-6">
+                <Image
+                  src="/logo.png"
+                  alt="Natural Supps"
+                  width={150}
+                  height={60}
+                  className="h-10 object-contain"
+                />
+                <button
+                  onClick={() => setIsMenuOpen(false)}
+                  className="p-2 text-black hover:bg-white/20 rounded-xl transition-all duration-300"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
 
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto px-3 py-5 space-y-6 bg-gray-50">
-            {/* Search */}
-            <div className="bg-white rounded-xl p-4 shadow-lg border border-gray-100">
+              {/* Search */}
               <form onSubmit={handleMobileSearch} className="relative">
-                <div className="relative">
-                  <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    ref={mobileSearchInputRef}
-                    type="text"
-                    placeholder="Search premium products..."
-                    className="w-full pl-14 pr-16 py-5 text-lg border-2 border-gray-200 bg-white text-gray-900 placeholder-gray-500 focus:border-[#CE801F] focus:ring-[#CE801F] rounded-2xl"
-                    value={searchQuery}
-                    onChange={handleSearchInputChange}
-                    autoComplete="off"
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                  {searchQuery && (
-                    <button
-                      type="button"
-                      className="absolute right-16 top-1/2 transform -translate-y-1/2 p-2 text-gray-400 hover:text-gray-600"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSearchQuery("");
-                        if (mobileSearchInputRef.current) {
-                          mobileSearchInputRef.current.focus();
-                        }
-                      }}
-                      aria-label="Clear search"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  )}
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Input
+                  type="search"
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={handleSearchInputChange}
+                  className="w-full pl-12 pr-4 py-3 bg-white/90 backdrop-blur-sm border rounded-xl text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-white/50"
+                />
+                {searchQuery && (
                   <button
-                    type="submit"
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 p-3 rounded-2xl bg-[#CE801F] text-white hover:bg-[#CE801F]/90 transition-all duration-300 hover:scale-105 shadow-lg"
-                    aria-label="Search"
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
-                    <Search className="h-5 w-5" />
+                    <X className="w-4 h-4" />
                   </button>
-                </div>
+                )}
               </form>
             </div>
 
-            {/* Quick Actions */}
-            <div className="grid gap-4">
-              <Link
-                href="/products"
-                className="bg-white rounded p-2 shadow-lg border border-gray-100 hover:shadow transition-all duration-300 flex w-full  items-center justify-start gap-2"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <Package className="h-5 w-5 text-[#CE801F]  " />
-                <div className="flex items-center py-2 text-lg font-semibold text-gray-800 hover:text-[#CE801F] transition-all duration-300">
-                  All Products
-                </div>
-              </Link>
-              <Link
-                href="/wishlist"
-                className="bg-white rounded p-2 shadow-lg border border-gray-100 hover:shadow transition-all duration-300 flex w-full  items-center justify-start gap-2"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <Heart className="h-5 w-5 text-[#CE801F]  " />
-                <div className="flex items-center py-2 text-lg font-semibold text-gray-800 hover:text-[#CE801F] transition-all duration-300">
-                  Wishlist
-                </div>
-              </Link>
-            </div>
+            {/* Content */}
+            <div className="flex-1 px-6 py-6 space-y-6">
+              {/* Quick Actions */}
+              <div className="grid gap-3">
+                <Link
+                  href="/"
+                  className="flex items-center space-x-3 p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl border border-orange-200 hover:shadow-lg transition-all duration-300"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <Home className="h-5 w-5 text-orange-600" />
+                  <span className="font-semibold text-gray-800">Home</span>
+                </Link>
 
-            {/* Categories */}
-            <div className="bg-white rounded p-2 shadow-lg border border-gray-100">
-              <h3 className="font-bold text-xl py-3 text-gray-800 flex items-center">
-                <Star className="h-5 w-5 mr-3 text-[#CE801F]" />
-                Categories
-              </h3>
-              <div className="space-y-3">
-                {categories.map((category) => (
-                  <div key={category.id} className="py-2">
+                <Link
+                  href="/products"
+                  className="flex items-center space-x-3 p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl border border-orange-200 hover:shadow-lg transition-all duration-300"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <Package className="h-5 w-5 text-orange-600" />
+                  <span className="font-semibold text-gray-800">
+                    All Products
+                  </span>
+                </Link>
+
+                <Link
+                  href="/wishlist"
+                  className="flex items-center space-x-3 p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl border border-orange-200 hover:shadow-lg transition-all duration-300"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <Heart className="h-5 w-5 text-orange-600" />
+                  <span className="font-semibold text-gray-800">Wishlist</span>
+                </Link>
+              </div>
+
+              {/* Categories */}
+              <div className="bg-white rounded-xl border border-gray-200 p-4">
+                <h3 className="font-bold text-lg text-gray-800 mb-4 flex items-center">
+                  <Star className="h-5 w-5 mr-2 text-orange-500" />
+                  Categories
+                </h3>
+                <div className="space-y-2">
+                  {categories.map((category) => (
                     <Link
+                      key={category.id}
                       href={`/category/${category.slug}`}
-                      className="block hover:text-[#CE801F] text-gray-700 text-lg transition-all duration-300 py-3 px-4 rounded-2xl hover:bg-[#CE801F]/5"
+                      className="block py-3 px-4 rounded-lg hover:bg-orange-50 hover:text-orange-600 text-gray-700 transition-all duration-300"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       {category.name}
                     </Link>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {/* Navigation Links */}
-            <div className="space-y-4">
-              {[
-                { href: "/blog", label: "Blog", icon: Star },
-                { href: "/about", label: "About Us", icon: Shield },
-                { href: "/shipping", label: "Shipping Policy", icon: Truck },
-                { href: "/contact", label: "Contact Us", icon: Phone },
-              ].map((item) => (
-                <div
-                  key={item.href}
-                  className="bg-white rounded p-2 shadow-lg border border-gray-100 hover:shadow transition-all duration-300"
-                >
+              {/* Navigation Links */}
+              <div className="space-y-2">
+                {[
+                  { href: "/blog", label: "Health Blog", icon: Star },
+                  { href: "/about", label: "About Us", icon: Shield },
+                  { href: "/shipping", label: "Shipping Policy", icon: Truck },
+                  { href: "/contact", label: "Contact Us", icon: Phone },
+                ].map((item) => (
                   <Link
+                    key={item.href}
                     href={item.href}
-                    className="flex items-center py-2 text-lg font-semibold text-gray-800 hover:text-[#CE801F] transition-all duration-300"
+                    className="flex items-center space-x-3 p-4 rounded-xl hover:bg-gray-50 transition-all duration-300"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    <item.icon className="h-4 w-4 mr-4 text-[#CE801F]" />
-                    {item.label}
+                    <item.icon className="h-5 w-5 text-orange-500" />
+                    <span className="font-medium text-gray-800">
+                      {item.label}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+
+              {/* Account Section */}
+              {isAuthenticated ? (
+                <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl p-6 border border-orange-200">
+                  <h3 className="font-bold text-lg mb-4 text-gray-800 flex items-center">
+                    <User className="h-5 w-5 mr-2 text-orange-500" />
+                    My Account
+                  </h3>
+                  <div className="space-y-2">
+                    {[
+                      { href: "/account", label: "Profile" },
+                      { href: "/account/orders", label: "My Orders" },
+                      { href: "/wishlist", label: "My Wishlist" },
+                    ].map((item) => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className="block py-3 px-4 rounded-lg hover:bg-orange-200/50 text-gray-700 transition-all duration-300"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsMenuOpen(false);
+                      }}
+                      className="block py-3 px-4 text-red-600 hover:text-red-700 w-full text-left transition-all duration-300 rounded-lg hover:bg-red-50 mt-4"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <Link href="/login" onClick={() => setIsMenuOpen(false)}>
+                    <Button className="w-full py-4 text-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+                      <LogIn className="h-5 w-5 mr-2" />
+                      Login
+                    </Button>
+                  </Link>
+                  <Link href="/register" onClick={() => setIsMenuOpen(false)}>
+                    <Button className="w-full py-4 text-lg bg-white border-2 border-orange-500 text-orange-600 hover:bg-orange-50 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+                      <User className="h-5 w-5 mr-2" />
+                      Register
+                    </Button>
                   </Link>
                 </div>
-              ))}
+              )}
             </div>
-
-            {/* Account Section */}
-            {isAuthenticated ? (
-              <div className="bg-white rounded-3xl p-6 shadow-lg border border-gray-100">
-                <h3 className="font-bold text-xl mb-6 text-gray-800 flex items-center">
-                  <User className="h-4 w-4 mr-3 text-[#CE801F]" />
-                  My Account
-                </h3>
-                <div className="space-y-3">
-                  {[
-                    { href: "/account", label: "Profile" },
-                    { href: "/account/orders", label: "My Orders" },
-                    { href: "/wishlist", label: "My Wishlist" },
-                  ].map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className="block py-3 px-4 hover:text-[#CE801F] text-gray-700 transition-all duration-300 rounded-2xl hover:bg-[#CE801F]/5"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
-                  <button
-                    onClick={() => {
-                      handleLogout();
-                      setIsMenuOpen(false);
-                    }}
-                    className="block py-3 px-4 text-red-600 hover:text-red-700 w-full text-left transition-all duration-300 rounded-2xl hover:bg-red-50 mt-4"
-                  >
-                    Logout
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <Link href="/login" onClick={() => setIsMenuOpen(false)}>
-                  <Button
-                    variant="outline"
-                    className="w-full py-6 text-lg border-2 border-[#CE801F] text-[#CE801F] hover:bg-[#CE801F]/5 hover:text-black rounded-3xl"
-                  >
-                    <LogIn className="h-4 w-4 mr-3" />
-                    Login
-                  </Button>
-                </Link>
-                <Link href="/register" onClick={() => setIsMenuOpen(false)}>
-                  <Button className="w-full mt-2 py-6 text-lg bg-[#CE801F] hover:bg-[#CE801F]/90 rounded-3xl shadow-xl hover:scale-105 transition-all duration-300">
-                    <User className="h-4 w-4 mr-3" />
-                    Register
-                  </Button>
-                </Link>
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -350,11 +331,11 @@ export function Navbar() {
       <Toaster position="top-center" />
 
       {/* Top bar */}
-      <div className="bg-[#CE801F] text-white py-3 text-center text-sm font-medium relative overflow-hidden">
+      <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white py-3 text-center text-sm font-medium relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse"></div>
         <div className="relative z-10 flex items-center justify-center gap-4 capitalize">
           <Truck className="h-5 w-5 animate-bounce" />
-          <span>
+          <span className="font-semibold">
             Shop for ₹999+ and receive a scratch card with exciting rewards!
           </span>
           <Shield className="h-5 w-5" />
@@ -368,11 +349,11 @@ export function Navbar() {
             {/* Menu toggle for mobile */}
             <div className="flex items-center md:hidden gap-3">
               <button
-                className="p-3 text-gray-600 hover:text-[#CE801F] transition-all duration-300 focus:outline-none hover:scale-110 bg-gray-100 rounded-2xl hover:bg-[#CE801F]/10"
+                className="p-3 text-gray-600 hover:text-orange-500 transition-all duration-300 focus:outline-none hover:scale-110 bg-gray-100 rounded-xl hover:bg-orange-50"
                 onClick={() => setIsMenuOpen(true)}
                 aria-label="Open menu"
               >
-                <Menu className="h-4 w-4" />
+                <Menu className="h-5 w-5" />
               </button>
             </div>
 
@@ -383,20 +364,20 @@ export function Navbar() {
                   src="/logo.png"
                   width={200}
                   height={200}
-                  alt="Logo"
+                  alt="Natural Supps"
                   className="h-14 transition-all duration-300 group-hover:scale-110 object-contain"
                 />
               </div>
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-12">
+            <nav className="hidden md:flex items-center space-x-8">
               <Link
                 href="/products"
-                className="font-semibold text-gray-700 hover:text-[#CE801F] transition-all duration-300 hover:scale-105 relative group"
+                className="font-semibold text-gray-700 hover:text-orange-500 transition-all duration-300 hover:scale-105 relative group px-3 py-2 rounded-lg hover:bg-orange-50"
               >
                 All Products
-                <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#CE801F] group-hover:w-full transition-all duration-300"></div>
+                <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300"></div>
               </Link>
 
               {/* Categories dropdown */}
@@ -406,31 +387,32 @@ export function Navbar() {
                 onMouseLeave={handleDropdownLeave}
               >
                 <button
-                  className={`font-semibold ${
+                  className={`font-semibold px-3 py-2 rounded-lg transition-all duration-300 flex items-center focus:outline-none group relative ${
                     activeDropdown === "categories"
-                      ? "text-[#CE801F]"
-                      : "text-gray-700"
-                  } hover:text-[#CE801F] transition-all duration-300 flex items-center focus:outline-none group relative`}
+                      ? "text-orange-500 bg-orange-50"
+                      : "text-gray-700 hover:text-orange-500 hover:bg-orange-50"
+                  }`}
                   onClick={() => toggleDropdown("categories")}
                   aria-expanded={activeDropdown === "categories"}
                 >
                   Categories
                   <ChevronDown
-                    className={`ml-2 h-5 w-5 transition-all duration-300 ${
+                    className={`ml-2 h-4 w-4 transition-all duration-300 ${
                       activeDropdown === "categories" ? "rotate-180" : ""
                     } group-hover:rotate-180`}
                   />
-                  <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#CE801F] group-hover:w-full transition-all duration-300"></div>
+                  <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300"></div>
                 </button>
                 <div
-                  className={`absolute left-0 top-full mt-3 w-80 bg-white shadow-2xl rounded-3xl py-4 border border-gray-100 z-50 transition-all duration-500 ease-in-out transform origin-top ${
+                  className={`absolute left-0 top-full mt-2 w-80 bg-white shadow-2xl rounded-2xl py-4 border border-gray-100 z-50 transition-all duration-300 ease-in-out transform origin-top ${
                     activeDropdown === "categories"
                       ? "opacity-100 scale-100 translate-y-0"
                       : "opacity-0 scale-95 -translate-y-4 pointer-events-none"
                   }`}
                 >
                   <div className="px-6 py-3 border-b border-gray-100">
-                    <h3 className="font-bold text-lg text-gray-800">
+                    <h3 className="font-bold text-lg text-gray-800 flex items-center">
+                      <Star className="h-5 w-5 mr-2 text-orange-500" />
                       Categories
                     </h3>
                   </div>
@@ -439,11 +421,11 @@ export function Navbar() {
                       <div key={category.id}>
                         <Link
                           href={`/category/${category.slug}`}
-                          className="block px-6 py-4 hover:bg-[#CE801F]/5 hover:text-[#CE801F] transition-all duration-300 group"
+                          className="block px-6 py-4 hover:bg-orange-50 hover:text-orange-600 transition-all duration-300 group"
                           onClick={() => setActiveDropdown(null)}
                         >
                           <div className="flex items-center">
-                            <div className="w-2 h-2 bg-[#CE801F] rounded-full mr-4 group-hover:scale-150 transition-transform duration-300"></div>
+                            <div className="w-2 h-2 bg-orange-500 rounded-full mr-4 group-hover:scale-150 transition-transform duration-300"></div>
                             <span className="font-medium">{category.name}</span>
                           </div>
                         </Link>
@@ -453,7 +435,7 @@ export function Navbar() {
                   <div className="px-6 py-3 border-t border-gray-100">
                     <Link
                       href="/categories"
-                      className="block text-[#CE801F] font-semibold hover:text-[#CE801F]/80 transition-colors duration-300"
+                      className="block text-orange-500 font-semibold hover:text-orange-600 transition-colors duration-300"
                       onClick={() => setActiveDropdown(null)}
                     >
                       View All Categories →
@@ -470,16 +452,16 @@ export function Navbar() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="font-semibold text-gray-700 hover:text-[#CE801F] transition-all duration-300 hover:scale-105 relative group"
+                  className="font-semibold text-gray-700 hover:text-orange-500 transition-all duration-300 hover:scale-105 relative group px-3 py-2 rounded-lg hover:bg-orange-50"
                 >
                   {item.label}
-                  <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#CE801F] group-hover:w-full transition-all duration-300"></div>
+                  <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300"></div>
                 </Link>
               ))}
             </nav>
 
             {/* Search, Cart, Account */}
-            <div className="flex items-center space-x-4 md:space-x-8">
+            <div className="flex items-center space-x-4 md:space-x-6">
               {/* Search button/form - hidden on mobile */}
               <div className="relative hidden md:block">
                 {isSearchExpanded ? (
@@ -491,15 +473,16 @@ export function Navbar() {
                     <div className="fixed inset-x-0 top-0 z-50 w-full animate-in slide-in-from-top duration-500 p-4">
                       <form
                         onSubmit={handleSearch}
-                        className="relative bg-white rounded-3xl shadow-2xl border border-gray-200 overflow-hidden max-h-[70vh] md:max-w-[500px] mx-auto"
+                        className="relative bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden max-h-[70vh] md:max-w-[500px] mx-auto"
                       >
-                        <div className="flex items-center px-6 py-4 border-b border-gray-100 bg-[#CE801F]">
-                          <h3 className="text-lg font-bold text-white">
+                        <div className="flex items-center px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-orange-500 to-orange-600">
+                          <h3 className="text-lg font-bold text-white flex items-center">
+                            <Search className="h-5 w-5 mr-2" />
                             Search Premium Products
                           </h3>
                           <button
                             type="button"
-                            className="ml-auto p-2 rounded-2xl hover:bg-white/20 transition-all duration-300 hover:scale-110"
+                            className="ml-auto p-2 rounded-xl hover:bg-white/20 transition-all duration-300 hover:scale-110"
                             onClick={() => setIsSearchExpanded(false)}
                             aria-label="Close search"
                           >
@@ -514,7 +497,7 @@ export function Navbar() {
                               ref={searchInputRef}
                               type="search"
                               placeholder="Search for premium supplements..."
-                              className="w-full pl-12 pr-20 py-4 border-2 border-gray-200 focus:border-[#CE801F] focus:ring-[#CE801F] rounded-2xl text-base bg-gray-50"
+                              className="w-full pl-12 pr-20 py-4 border-2 border-gray-200 focus:border-orange-500 focus:ring-orange-500 rounded-xl text-base bg-gray-50"
                               value={searchQuery}
                               onChange={(e) => setSearchQuery(e.target.value)}
                               autoComplete="off"
@@ -542,7 +525,7 @@ export function Navbar() {
                           </button>
                           <button
                             type="submit"
-                            className="px-6 py-2 bg-[#CE801F] text-white rounded-xl hover:bg-[#CE801F]/90 transition-all duration-300 flex items-center gap-2 font-semibold shadow-lg hover:scale-105"
+                            className="px-6 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all duration-300 flex items-center gap-2 font-semibold shadow-lg hover:scale-105"
                           >
                             <Search className="h-4 w-4" />
                             Search
@@ -554,10 +537,10 @@ export function Navbar() {
                 ) : (
                   <button
                     onClick={() => setIsSearchExpanded(true)}
-                    className="p-3 text-gray-600 hover:text-[#CE801F] transition-all duration-300 focus:outline-none hover:scale-110 bg-gray-100 rounded-2xl hover:bg-[#CE801F]/10"
+                    className="p-3 text-gray-600 hover:text-orange-500 transition-all duration-300 focus:outline-none hover:scale-110 bg-gray-100 rounded-xl hover:bg-orange-50"
                     aria-label="Search"
                   >
-                    <Search className="h-4 w-4" />
+                    <Search className="h-5 w-5" />
                   </button>
                 )}
               </div>
@@ -566,11 +549,11 @@ export function Navbar() {
               <ClientOnly>
                 <Link
                   href="/cart"
-                  className="p-3 text-gray-600 hover:text-[#CE801F] transition-all duration-300 relative bg-gray-100 rounded-2xl hover:bg-[#CE801F]/10 hover:scale-110"
+                  className="p-3 text-gray-600 hover:text-orange-500 transition-all duration-300 relative bg-gray-100 rounded-xl hover:bg-orange-50 hover:scale-110"
                 >
-                  <ShoppingCart className="h-4 w-4" />
+                  <ShoppingCart className="h-5 w-5" />
                   {cart && cart.items?.length > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-[#CE801F] text-white rounded-full text-xs w-6 h-6 flex items-center justify-center font-bold shadow-lg">
+                    <span className="absolute -top-2 -right-2 bg-orange-500 text-white rounded-full text-xs w-6 h-6 flex items-center justify-center font-bold shadow-lg animate-pulse">
                       {cart.items.reduce((acc, item) => acc + item.quantity, 0)}
                     </span>
                   )}
@@ -585,28 +568,28 @@ export function Navbar() {
               >
                 <ClientOnly>
                   <button
-                    className={`p-3 ${
+                    className={`p-3 rounded-xl transition-all duration-300 flex items-center focus:outline-none hover:scale-110 ${
                       activeDropdown === "account"
-                        ? "text-[#CE801F] bg-[#CE801F]/10"
-                        : "text-gray-600 bg-gray-100"
-                    } hover:text-[#CE801F] hover:bg-[#CE801F]/10 transition-all duration-300 flex items-center focus:outline-none rounded-2xl hover:scale-110`}
+                        ? "text-orange-500 bg-orange-50"
+                        : "text-gray-600 bg-gray-100 hover:text-orange-500 hover:bg-orange-50"
+                    }`}
                     onClick={() => toggleDropdown("account")}
                     aria-expanded={activeDropdown === "account"}
                   >
                     {isAuthenticated ? (
-                      <User className="h-4 w-4" />
+                      <User className="h-5 w-5" />
                     ) : (
-                      <LogIn className="h-4 w-4" />
+                      <LogIn className="h-5 w-5" />
                     )}
                     <ChevronDown
-                      className={`ml-2 h-5 w-5 transition-all duration-300 ${
+                      className={`ml-2 h-4 w-4 transition-all duration-300 ${
                         activeDropdown === "account" ? "rotate-180" : ""
                       }`}
                     />
                   </button>
 
                   <div
-                    className={`absolute right-0 top-full mt-3 w-80 bg-white shadow-2xl rounded-3xl py-4 border border-gray-100 z-50 transition-all duration-500 ease-in-out transform origin-top ${
+                    className={`absolute right-0 top-full mt-2 w-80 bg-white shadow-2xl rounded-2xl py-4 border border-gray-100 z-50 transition-all duration-300 ease-in-out transform origin-top ${
                       activeDropdown === "account"
                         ? "opacity-100 scale-100 translate-y-0"
                         : "opacity-0 scale-95 -translate-y-4 pointer-events-none"
@@ -614,7 +597,7 @@ export function Navbar() {
                   >
                     {isAuthenticated ? (
                       <>
-                        <div className="px-6 py-4 border-b border-gray-100 mb-2 bg-[#CE801F]/5 rounded-t-3xl">
+                        <div className="px-6 py-4 border-b border-gray-100 mb-2 bg-gradient-to-r from-orange-50 to-orange-100 rounded-t-2xl">
                           <p className="font-bold text-gray-800 text-lg">
                             Hi, {user?.name || "User"}
                           </p>
@@ -643,7 +626,7 @@ export function Navbar() {
                             <Link
                               key={item.href}
                               href={item.href}
-                              className="flex items-center px-6 py-4 hover:bg-[#CE801F]/5 hover:text-[#CE801F] transition-all duration-300"
+                              className="flex items-center px-6 py-4 hover:bg-orange-50 hover:text-orange-600 transition-all duration-300"
                               onClick={() => setActiveDropdown(null)}
                             >
                               <item.icon className="h-5 w-5 mr-4 text-gray-400" />
@@ -666,13 +649,13 @@ export function Navbar() {
                       </>
                     ) : (
                       <div className="px-6 py-6">
-                        <div className="space-y-6">
+                        <div className="space-y-4">
                           <Link
                             href="/login"
                             onClick={() => setActiveDropdown(null)}
                           >
-                            <Button className="w-full py-4 hover:scale-105 transition-transform duration-300 bg-[#CE801F] hover:bg-[#CE801F]/90 rounded-2xl shadow-lg font-semibold">
-                              <LogIn className="h-5 w-5 mr-3" />
+                            <Button className="w-full py-4 hover:scale-105 transition-transform duration-300 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-xl shadow-lg font-semibold">
+                              <LogIn className="h-5 w-5 mr-2" />
                               Login
                             </Button>
                           </Link>
@@ -682,9 +665,9 @@ export function Navbar() {
                           >
                             <Button
                               variant="outline"
-                              className="w-full py-4 mt-2 hover:scale-105 transition-transform duration-300 text-[#CE801F] border-[#CE801F] hover:bg-[#CE801F]/5 hover:text-black rounded-2xl font-semibold"
+                              className="w-full py-4 hover:scale-105 transition-transform duration-300 text-orange-500 border-orange-500 hover:bg-orange-50 hover:text-gray-800 rounded-xl font-semibold"
                             >
-                              <User className="h-5 w-5 mr-3" />
+                              <User className="h-5 w-5 mr-2" />
                               Register
                             </Button>
                           </Link>
@@ -717,17 +700,16 @@ export function Navbar() {
 
       {/* Enhanced Mobile Bottom Navigation */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200/50 z-50 shadow-2xl">
-        {/* Gradient overlay for better visual appeal */}
         <div className="absolute inset-0 bg-gradient-to-t from-white via-white/90 to-transparent pointer-events-none" />
 
         <div className="relative grid grid-cols-5 gap-1 px-2 py-3">
           {/* Home */}
           <Link
             href="/"
-            className={`flex flex-col items-center justify-center py-2 px-1 rounded-2xl transition-all duration-300 group ${
+            className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl transition-all duration-300 group ${
               pathname === "/"
-                ? "text-primary bg-primary/10 shadow-lg"
-                : "text-gray-600 hover:text-primary hover:bg-gray-50"
+                ? "text-orange-500 bg-orange-50 shadow-lg"
+                : "text-gray-600 hover:text-orange-500 hover:bg-gray-50"
             }`}
           >
             <div
@@ -735,22 +717,14 @@ export function Navbar() {
                 pathname === "/" ? "scale-110" : "group-hover:scale-110"
               } transition-transform duration-300`}
             >
-              <svg
-                className="h-6 w-6"
-                viewBox="0 0 24 24"
-                fill={pathname === "/" ? "currentColor" : "none"}
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
+              <Home className="h-6 w-6" />
               {pathname === "/" && (
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full animate-pulse" />
+                <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
               )}
             </div>
             <span
               className={`text-xs mt-1 font-medium ${
-                pathname === "/" ? "text-primary" : "text-gray-600"
+                pathname === "/" ? "text-orange-500" : "text-gray-600"
               }`}
             >
               Home
@@ -760,10 +734,10 @@ export function Navbar() {
           {/* Products */}
           <Link
             href="/products"
-            className={`flex flex-col items-center justify-center py-2 px-1 rounded-2xl transition-all duration-300 group ${
+            className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl transition-all duration-300 group ${
               pathname === "/products"
-                ? "text-primary bg-primary/10 shadow-lg"
-                : "text-gray-600 hover:text-primary hover:bg-gray-50"
+                ? "text-orange-500 bg-orange-50 shadow-lg"
+                : "text-gray-600 hover:text-orange-500 hover:bg-gray-50"
             }`}
           >
             <div
@@ -773,12 +747,12 @@ export function Navbar() {
             >
               <Package className="h-6 w-6" />
               {pathname === "/products" && (
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full animate-pulse" />
+                <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
               )}
             </div>
             <span
               className={`text-xs mt-1 font-medium ${
-                pathname === "/products" ? "text-primary" : "text-gray-600"
+                pathname === "/products" ? "text-orange-500" : "text-gray-600"
               }`}
             >
               Products
@@ -788,10 +762,10 @@ export function Navbar() {
           {/* Cart with badge */}
           <Link
             href="/cart"
-            className={`flex flex-col items-center justify-center py-2 px-1 rounded-2xl transition-all duration-300 group relative ${
+            className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl transition-all duration-300 group relative ${
               pathname === "/cart"
-                ? "text-primary bg-primary/10 shadow-lg"
-                : "text-gray-600 hover:text-primary hover:bg-gray-50"
+                ? "text-orange-500 bg-orange-50 shadow-lg"
+                : "text-gray-600 hover:text-orange-500 hover:bg-gray-50"
             }`}
           >
             <div
@@ -801,17 +775,17 @@ export function Navbar() {
             >
               <ShoppingCart className="h-6 w-6" />
               {cart && cart.items?.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center font-bold animate-bounce shadow-lg">
+                <span className="absolute -top-2 -right-2 bg-orange-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center font-bold animate-bounce shadow-lg">
                   {cart.items.reduce((acc, item) => acc + item.quantity, 0)}
                 </span>
               )}
               {pathname === "/cart" && (
-                <div className="absolute -bottom-1 -right-1 w-2 h-2 bg-primary rounded-full animate-pulse" />
+                <div className="absolute -bottom-1 -right-1 w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
               )}
             </div>
             <span
               className={`text-xs mt-1 font-medium ${
-                pathname === "/cart" ? "text-primary" : "text-gray-600"
+                pathname === "/cart" ? "text-orange-500" : "text-gray-600"
               }`}
             >
               Cart
@@ -821,10 +795,10 @@ export function Navbar() {
           {/* Account */}
           <Link
             href={isAuthenticated ? "/account" : "/login"}
-            className={`flex flex-col items-center justify-center py-2 px-1 rounded-2xl transition-all duration-300 group ${
+            className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl transition-all duration-300 group ${
               pathname.includes("/account") || pathname === "/login"
-                ? "text-primary bg-primary/10 shadow-lg"
-                : "text-gray-600 hover:text-primary hover:bg-gray-50"
+                ? "text-orange-500 bg-orange-50 shadow-lg"
+                : "text-gray-600 hover:text-orange-500 hover:bg-gray-50"
             }`}
           >
             <div
@@ -840,13 +814,13 @@ export function Navbar() {
                 <LogIn className="h-6 w-6" />
               )}
               {(pathname.includes("/account") || pathname === "/login") && (
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full animate-pulse" />
+                <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
               )}
             </div>
             <span
               className={`text-xs mt-1 font-medium ${
                 pathname.includes("/account") || pathname === "/login"
-                  ? "text-primary"
+                  ? "text-orange-500"
                   : "text-gray-600"
               }`}
             >
@@ -861,7 +835,7 @@ export function Navbar() {
             rel="noopener noreferrer"
             className="flex flex-col items-center justify-center p-1"
           >
-            <div className=" transition-transform duration-300">
+            <div className="transition-transform duration-300">
               <Image
                 src={logo}
                 alt="Genuine Nutrition"
@@ -874,7 +848,7 @@ export function Navbar() {
         </div>
 
         {/* Bottom safe area for devices with home indicator */}
-        <div className="h-1 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20" />
+        <div className="h-1 bg-gradient-to-r from-orange-500/20 via-orange-500/10 to-orange-500/20" />
       </div>
     </header>
   );

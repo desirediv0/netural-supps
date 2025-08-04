@@ -28,18 +28,18 @@ import { toast } from "sonner";
 // Product Card Skeleton
 function ProductCardSkeleton() {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse">
-      <div className="h-64 w-full bg-gray-200"></div>
+    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden animate-pulse">
+      <div className="h-64 w-full bg-gradient-to-br from-gray-100 to-gray-200"></div>
       <div className="p-6">
         <div className="flex justify-center mb-3">
-          <div className="h-4 w-24 bg-gray-200 rounded"></div>
+          <div className="h-4 w-24 bg-gray-200 rounded-lg"></div>
         </div>
-        <div className="h-4 w-full bg-gray-200 rounded mb-3"></div>
-        <div className="h-4 w-3/4 mx-auto bg-gray-200 rounded mb-4"></div>
+        <div className="h-4 w-full bg-gray-200 rounded-lg mb-3"></div>
+        <div className="h-4 w-3/4 mx-auto bg-gray-200 rounded-lg mb-4"></div>
         <div className="flex justify-center">
-          <div className="h-6 w-16 bg-gray-200 rounded"></div>
+          <div className="h-6 w-16 bg-gray-200 rounded-lg"></div>
         </div>
-        <div className="h-10 w-full bg-gray-200 rounded mt-4"></div>
+        <div className="h-12 w-full bg-gray-200 rounded-xl mt-4"></div>
       </div>
     </div>
   );
@@ -605,17 +605,20 @@ function ProductsContent() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-center items-center h-64">
-          <div className="w-12 h-12 border-4 border-[#ce801f] border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen" id="products-main">
+    <div
+      className="bg-gradient-to-br from-orange-50 via-white to-orange-50 min-h-screen"
+      id="products-main"
+    >
       <div className="container mx-auto px-4 py-8">
         {/* Hero Banner */}
-        <div className="relative w-full h-[300px] mb-12 rounded-xl overflow-hidden shadow-lg">
+        <div className="relative w-full h-[300px] mb-12 rounded-2xl overflow-hidden shadow-2xl">
           <Image
             src="/banner-background.jpg"
             alt="Premium Supplements"
@@ -623,7 +626,7 @@ function ProductsContent() {
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#2C3E50]/90 to-transparent flex flex-col justify-center px-8 md:px-12">
+          <div className="absolute inset-0 bg-gradient-to-r from-gray-900/80 via-gray-800/70 to-orange-600/60 flex flex-col justify-center px-8 md:px-12">
             <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
               PREMIUM SUPPLEMENTS
             </h1>
@@ -635,12 +638,12 @@ function ProductsContent() {
         </div>
 
         {/* Mobile filter toggle */}
-        <div className="md:hidden flex items-center justify-between mb-6 bg-white p-4 rounded-lg shadow-sm">
-          <h1 className="text-2xl font-bold text-[#2C3E50]">Products</h1>
+        <div className="md:hidden flex items-center justify-between mb-6 bg-white p-4 rounded-2xl shadow-lg border border-gray-100">
+          <h1 className="text-2xl font-bold text-gray-800">Products</h1>
           <Button
             variant="outline"
             onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
-            className="flex items-center gap-2 border-[#ce801f] text-[#ce801f] hover:bg-[#ce801f] hover:text-white"
+            className="flex items-center gap-2 border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white rounded-xl"
           >
             <Filter className="h-5 w-5" />
             Filters
@@ -656,18 +659,18 @@ function ProductsContent() {
                 : "hidden"
             } lg:block lg:static lg:z-auto lg:bg-transparent lg:p-0`}
           >
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 sticky top-20">
-              <div className="flex items-center justify-between p-6 border-b border-gray-100">
-                <h2 className="text-xl font-bold text-[#2C3E50]">FILTERS</h2>
+            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 sticky top-20">
+              <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-gradient-to-r from-orange-50 to-orange-100 rounded-t-2xl">
+                <h2 className="text-xl font-bold text-gray-800">FILTERS</h2>
                 <div className="flex gap-3">
                   <button
                     onClick={clearFilters}
-                    className="text-sm text-[#ce801f] hover:underline font-medium"
+                    className="text-sm text-orange-600 hover:text-orange-700 font-medium"
                   >
                     Clear all
                   </button>
                   <button
-                    className="lg:hidden text-gray-500"
+                    className="lg:hidden text-gray-500 hover:text-gray-700"
                     onClick={() => setMobileFiltersOpen(false)}
                   >
                     <X className="h-5 w-5" />
@@ -677,7 +680,7 @@ function ProductsContent() {
 
               {/* Search Filter */}
               <div className="p-6 border-b border-gray-100">
-                <h3 className="text-sm font-semibold mb-3 text-[#2C3E50] uppercase">
+                <h3 className="text-sm font-semibold mb-3 text-gray-800 uppercase">
                   Search
                 </h3>
                 <form
@@ -692,11 +695,11 @@ function ProductsContent() {
                     name="search"
                     placeholder="Search products..."
                     defaultValue={filters.search}
-                    className="w-full pr-10 border-gray-300 focus:border-[#ce801f] focus:ring-[#ce801f]"
+                    className="w-full pr-10 border-gray-200 focus:border-orange-500 focus:ring-orange-500 rounded-xl"
                   />
                   <button
                     type="submit"
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#ce801f] hover:text-[#E06A1A]"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-orange-500 hover:text-orange-600"
                   >
                     <Search className="h-4 w-4" />
                   </button>
@@ -709,7 +712,7 @@ function ProductsContent() {
                   className="flex items-center justify-between mb-3 cursor-pointer"
                   onClick={() => toggleFilterSection("categories")}
                 >
-                  <h3 className="text-sm font-semibold text-[#2C3E50] uppercase">
+                  <h3 className="text-sm font-semibold text-gray-800 uppercase">
                     Categories
                   </h3>
                   {activeFilterSection === "categories" ? (
@@ -721,9 +724,9 @@ function ProductsContent() {
                 {activeFilterSection === "categories" && (
                   <div className="space-y-3">
                     <div
-                      className={`cursor-pointer hover:text-[#ce801f] transition-colors ${
+                      className={`cursor-pointer hover:text-orange-500 transition-colors ${
                         filters.category === ""
-                          ? "font-semibold text-[#ce801f]"
+                          ? "font-semibold text-orange-500"
                           : "text-gray-600"
                       }`}
                       onClick={() => handleFilterChange("category", "")}
@@ -733,9 +736,9 @@ function ProductsContent() {
                     {categories.map((category) => (
                       <div key={category.id} className="ml-3">
                         <div
-                          className={`cursor-pointer hover:text-[#ce801f] flex items-center transition-colors ${
+                          className={`cursor-pointer hover:text-orange-500 flex items-center transition-colors ${
                             filters.category === category.slug
-                              ? "font-semibold text-[#ce801f]"
+                              ? "font-semibold text-orange-500"
                               : "text-gray-600"
                           }`}
                           onClick={() =>
@@ -750,9 +753,9 @@ function ProductsContent() {
                             {category.children.map((child) => (
                               <div
                                 key={child.id}
-                                className={`cursor-pointer hover:text-[#ce801f] text-sm transition-colors ${
+                                className={`cursor-pointer hover:text-orange-500 text-sm transition-colors ${
                                   filters.category === child.slug
-                                    ? "font-semibold text-[#ce801f]"
+                                    ? "font-semibold text-orange-500"
                                     : "text-gray-600"
                                 }`}
                                 onClick={() =>
@@ -1045,11 +1048,11 @@ function ProductsContent() {
                 ))}
               </div>
             ) : products.length === 0 ? (
-              <div className="bg-white p-12 rounded-xl shadow-sm text-center border border-gray-200">
+              <div className="bg-white p-12 rounded-2xl shadow-xl text-center border border-gray-100">
                 <div className="text-gray-400 mb-6">
                   <AlertCircle className="h-16 w-16 mx-auto" />
                 </div>
-                <h2 className="text-2xl font-bold text-[#2C3E50] mb-4">
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">
                   No products found
                 </h2>
                 <p className="text-gray-600 mb-8 max-w-md mx-auto">
@@ -1058,7 +1061,7 @@ function ProductsContent() {
                 </p>
                 <Button
                   onClick={clearFilters}
-                  className="bg-[#ce801f] hover:bg-[#E06A1A] text-white px-8 py-3 rounded-lg font-semibold"
+                  className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
                 >
                   Clear All Filters
                 </Button>
@@ -1068,9 +1071,9 @@ function ProductsContent() {
                 {products.map((product) => (
                   <div
                     key={product.id}
-                    className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-200 group"
+                    className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 group"
                   >
-                    <div className="relative h-64 w-full bg-gray-50 overflow-hidden">
+                    <div className="relative h-64 w-full bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
                       <Link href={`/products/${product.slug}`}>
                         <Image
                           src={product.image || "/product-placeholder.jpg"}
@@ -1082,7 +1085,7 @@ function ProductsContent() {
                       </Link>
 
                       {product.hasSale && (
-                        <span className="absolute top-3 left-3 bg-[#ce801f] text-white text-xs font-bold px-3 py-1 rounded-full">
+                        <span className="absolute top-3 left-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
                           SALE
                         </span>
                       )}
@@ -1091,8 +1094,8 @@ function ProductsContent() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className={`w-10 h-10 p-0 bg-white/90 hover:bg-[#ce801f] hover:text-white rounded-full shadow-sm ${
-                            wishlistItems[product.id] ? "text-[#ce801f]" : ""
+                          className={`w-10 h-10 p-0 bg-white/90 hover:bg-orange-500 hover:text-white rounded-full shadow-lg ${
+                            wishlistItems[product.id] ? "text-orange-500" : ""
                           }`}
                           onClick={(e) => handleAddToWishlist(product, e)}
                           disabled={isAddingToWishlist[product.id]}

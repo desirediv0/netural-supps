@@ -391,7 +391,7 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
       if (selectedVariant.salePrice && selectedVariant.salePrice > 0) {
         return (
           <div className="flex items-baseline gap-3">
-            <span className="text-3xl font-bold text-[#F47C20]">
+            <span className="text-3xl font-bold text-orange-500">
               {formatCurrency(selectedVariant.salePrice)}
             </span>
             <span className="text-xl text-gray-500 line-through">
@@ -401,7 +401,7 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
         );
       }
       return (
-        <span className="text-3xl font-bold text-[#2C3E50]">
+        <span className="text-3xl font-bold text-gray-800">
           {formatCurrency(selectedVariant.price || 0)}
         </span>
       );
@@ -412,7 +412,7 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
       if (productDetails.hasSale && productDetails.basePrice > 0) {
         return (
           <div className="flex items-baseline gap-3">
-            <span className="text-3xl font-bold text-[#F47C20]">
+            <span className="text-3xl font-bold text-orange-500">
               {formatCurrency(productDetails.basePrice)}
             </span>
             <span className="text-xl text-gray-500 line-through">
@@ -422,7 +422,7 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
         );
       }
       return (
-        <span className="text-3xl font-bold text-[#2C3E50]">
+        <span className="text-3xl font-bold text-gray-800">
           {formatCurrency(productDetails.basePrice || 0)}
         </span>
       );
@@ -433,7 +433,7 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
       if (product.hasSale && product.basePrice > 0) {
         return (
           <div className="flex items-baseline gap-3">
-            <span className="text-3xl font-bold text-[#F47C20]">
+            <span className="text-3xl font-bold text-orange-500">
               {formatCurrency(product.basePrice)}
             </span>
             <span className="text-xl text-gray-500 line-through">
@@ -443,7 +443,7 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
         );
       }
       return (
-        <span className="text-3xl font-bold text-[#2C3E50]">
+        <span className="text-3xl font-bold text-gray-800">
           {formatCurrency(product.basePrice || 0)}
         </span>
       );
@@ -461,9 +461,9 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[1000px] max-h-[95vh] overflow-hidden p-0 bg-white rounded-2xl shadow-2xl border-0">
         {/* Header */}
-        <DialogHeader className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+        <DialogHeader className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-orange-50 to-white">
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-xl sm:text-2xl font-bold text-[#2C3E50] pr-8 line-clamp-1">
+            <DialogTitle className="text-xl sm:text-2xl font-bold text-gray-800 pr-8 line-clamp-1">
               {displayProduct.name}
             </DialogTitle>
           </div>
@@ -471,13 +471,13 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
 
         {loading && !productDetails ? (
           <div className="py-16 flex justify-center">
-            <div className="w-12 h-12 border-4 border-[#F47C20] border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
           </div>
         ) : (
           <div className="flex flex-col lg:flex-row h-full">
             {/* Product Image - Mobile: Full width, Desktop: Left side */}
             <div className="w-full lg:w-1/2 p-4 lg:p-6">
-              <div className="relative h-64 sm:h-80 lg:h-[500px] rounded-2xl overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 shadow-lg">
+              <div className="relative h-64 sm:h-80 lg:h-[500px] rounded-2xl overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 shadow-xl">
                 <Image
                   src={getDisplayImage()}
                   alt={displayProduct.name}
@@ -487,13 +487,13 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
                   onError={() => setImgSrc("/product-placeholder.jpg")}
                 />
                 {displayProduct.hasSale && (
-                  <div className="absolute top-4 left-4 bg-gradient-to-r from-[#F47C20] to-[#E06A1A] text-white text-sm font-bold px-4 py-2 rounded-full shadow-lg">
+                  <div className="absolute top-4 left-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-bold px-4 py-2 rounded-full shadow-lg">
                     SALE
                   </div>
                 )}
                 {/* Rating badge */}
                 {displayProduct.avgRating > 0 && (
-                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-sm font-medium px-3 py-1 rounded-full shadow-md flex items-center gap-1">
+                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-sm font-medium px-3 py-1 rounded-full shadow-lg flex items-center gap-1">
                     <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
                     <span className="text-gray-800">
                       {displayProduct.avgRating?.toFixed(1)}
@@ -554,7 +554,7 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
               {productDetails?.flavorOptions &&
                 productDetails.flavorOptions.length > 0 && (
                   <div>
-                    <label className="block text-sm font-semibold text-[#2C3E50] mb-3">
+                    <label className="block text-sm font-semibold text-gray-800 mb-3">
                       Choose Flavor
                     </label>
                     <div className="flex flex-wrap gap-2">
@@ -572,9 +572,9 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
                             disabled={!isAvailable}
                             className={`px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all duration-200 ${
                               selectedFlavor?.id === flavor.id
-                                ? "border-[#F47C20] bg-gradient-to-r from-[#F47C20] to-[#E06A1A] text-white shadow-lg transform scale-105"
+                                ? "border-orange-500 bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg transform scale-105"
                                 : isAvailable
-                                ? "border-gray-200 hover:border-[#F47C20] hover:text-[#F47C20] hover:bg-gray-50"
+                                ? "border-gray-200 hover:border-orange-500 hover:text-orange-500 hover:bg-gray-50"
                                 : "border-gray-100 text-gray-400 cursor-not-allowed bg-gray-50"
                             }`}
                           >
@@ -590,7 +590,7 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
               {productDetails?.weightOptions &&
                 productDetails.weightOptions.length > 0 && (
                   <div>
-                    <label className="block text-sm font-semibold text-[#2C3E50] mb-3">
+                    <label className="block text-sm font-semibold text-gray-800 mb-3">
                       Choose Weight
                     </label>
                     <div className="flex flex-wrap gap-2">
@@ -614,9 +614,9 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
                             disabled={!isAvailable}
                             className={`px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all duration-200 ${
                               selectedWeight?.id === weight.id
-                                ? "border-[#F47C20] bg-gradient-to-r from-[#F47C20] to-[#E06A1A] text-white shadow-lg transform scale-105"
+                                ? "border-orange-500 bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg transform scale-105"
                                 : isAvailable
-                                ? "border-gray-200 hover:border-[#F47C20] hover:text-[#F47C20] hover:bg-gray-50"
+                                ? "border-gray-200 hover:border-orange-500 hover:text-orange-500 hover:bg-gray-50"
                                 : "border-gray-100 text-gray-400 cursor-not-allowed bg-gray-50"
                             }`}
                           >
@@ -654,7 +654,7 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
 
               {/* Quantity */}
               <div>
-                <label className="block text-sm font-semibold text-[#2C3E50] mb-3">
+                <label className="block text-sm font-semibold text-gray-800 mb-3">
                   Quantity
                 </label>
                 <div className="flex items-center space-x-4">
@@ -666,7 +666,7 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
                     >
                       <Minus className="h-4 w-4" />
                     </button>
-                    <span className="px-6 py-4 bg-white font-semibold text-[#2C3E50] min-w-[4rem] text-center">
+                    <span className="px-6 py-4 bg-white font-semibold text-gray-800 min-w-[4rem] text-center">
                       {quantity}
                     </span>
                     <button
@@ -689,7 +689,7 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
               <div className="flex flex-col sm:flex-row gap-3 pt-4">
                 <Button
                   onClick={handleAddToCart}
-                  className="flex-1 py-4 bg-gradient-to-r from-[#F47C20] to-[#E06A1A] hover:from-[#E06A1A] hover:to-[#D45A0A] text-white font-semibold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                  className="flex-1 py-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                   disabled={
                     loading ||
                     addingToCart ||
@@ -718,7 +718,7 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
                 >
                   <Button
                     variant="outline"
-                    className="w-full py-4 border-2 border-[#2C3E50] text-[#2C3E50] hover:bg-[#2C3E50] hover:text-white font-semibold text-lg rounded-xl transition-all duration-200 transform hover:scale-105 shadow-sm"
+                    className="w-full py-4 border-2 border-gray-800 text-gray-800 hover:bg-gray-800 hover:text-white font-semibold text-lg rounded-xl transition-all duration-200 transform hover:scale-105 shadow-sm"
                   >
                     View Full Details
                   </Button>
