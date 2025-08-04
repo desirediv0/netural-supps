@@ -82,7 +82,8 @@ export default function RegisterPage() {
         toast.success(
           "Registration successful! Please check your email to verify your account."
         );
-        router.push("/login");
+        // Use window.location.href instead of router.push to avoid hydration issues
+        window.location.href = "/login";
       } else {
         toast.error(data.message || "Registration failed");
       }

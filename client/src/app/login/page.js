@@ -47,7 +47,8 @@ export default function LoginPage() {
 
       if (response.ok) {
         toast.success("Login successful!");
-        router.push("/");
+        // Use window.location.href instead of router.push to avoid hydration issues
+        window.location.href = "/";
       } else {
         toast.error(data.message || "Login failed");
       }

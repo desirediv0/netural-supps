@@ -78,15 +78,6 @@ export function CartProvider({ children }) {
 
       // Provide visual feedback (could be improved with toast notification)
       if (typeof window !== "undefined") {
-        // Make cart icon pulse briefly
-        const cartIcon = document.querySelector(".cart-icon");
-        if (cartIcon) {
-          cartIcon.classList.add("animate-pulse");
-          setTimeout(() => {
-            cartIcon.classList.remove("animate-pulse");
-          }, 1000);
-        }
-
         // Show success toast
         toast.success("Item added to cart");
       }

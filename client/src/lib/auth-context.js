@@ -40,30 +40,32 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        // First try to read from cookies to avoid unnecessary API calls
-        const userSessionCookie = document.cookie
-          .split("; ")
-          .find((row) => row.startsWith("user_session="));
+        // Only check cookies on client side
+        if (typeof window !== "undefined") {
+          const userSessionCookie = document.cookie
+            .split("; ")
+            .find((row) => row.startsWith("user_session="));
 
-        if (userSessionCookie) {
-          try {
-            // If we have a cookie, we're at least temporarily authenticated
-            // and can avoid a loading flash
-            const sessionData = JSON.parse(
-              decodeURIComponent(userSessionCookie.split("=")[1])
-            );
-            if (sessionData.isAuthenticated) {
-              // Make the API call to get full user data
-              const res = await fetchApi("/users/me", {
-                credentials: "include",
-              });
-              setUser(res.data.user);
-              setLoading(false);
-              return;
+          if (userSessionCookie) {
+            try {
+              // If we have a cookie, we're at least temporarily authenticated
+              // and can avoid a loading flash
+              const sessionData = JSON.parse(
+                decodeURIComponent(userSessionCookie.split("=")[1])
+              );
+              if (sessionData.isAuthenticated) {
+                // Make the API call to get full user data
+                const res = await fetchApi("/users/me", {
+                  credentials: "include",
+                });
+                setUser(res.data.user);
+                setLoading(false);
+                return;
+              }
+            } catch (e) {
+              // If cookie parsing failed, continue to API call
+              console.error("Failed to parse user session cookie", e);
             }
-          } catch (e) {
-            // If cookie parsing failed, continue to API call
-            console.error("Failed to parse user session cookie", e);
           }
         }
 
@@ -179,12 +181,14 @@ export function AuthProvider({ children }) {
       setUser(null);
 
       // Manually clear cookies on the client side
-      document.cookie =
-        "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-      document.cookie =
-        "refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-      document.cookie =
-        "user_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      if (typeof window !== "undefined") {
+        document.cookie =
+          "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        document.cookie =
+          "refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        document.cookie =
+          "user_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      }
 
       // Then attempt the API call
       await fetchApi("/users/logout", {
@@ -352,30 +356,7 @@ export function AuthProvider({ children }) {
     forgotPassword,
     resetPassword,
     updateProfile,
-    isAuthenticated: (() => {
-      // First check cookie
-      if (typeof window !== "undefined") {
-        const userSessionCookie = document.cookie
-          .split("; ")
-          .find((row) => row.startsWith("user_session="));
-
-        if (userSessionCookie) {
-          try {
-            const sessionData = JSON.parse(
-              decodeURIComponent(userSessionCookie.split("=")[1])
-            );
-            if (sessionData.isAuthenticated) {
-              return true;
-            }
-          } catch (e) {
-            console.error("Failed to parse user session cookie", e);
-          }
-        }
-      }
-
-      // Fallback to user state
-      return !!user;
-    })(),
+    isAuthenticated: !!user,
     // Add helper methods
     isCustomer: user?.role === "CUSTOMER",
     userId: user?.id,
