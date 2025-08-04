@@ -322,7 +322,7 @@ export function Navbar() {
                 <Link href="/login" onClick={() => setIsMenuOpen(false)}>
                   <Button
                     variant="outline"
-                    className="w-full py-6 text-lg border-2 border-[#CE801F] text-[#CE801F] hover:bg-[#CE801F]/5 rounded-3xl"
+                    className="w-full py-6 text-lg border-2 border-[#CE801F] text-[#CE801F] hover:bg-[#CE801F]/5 hover:text-black rounded-3xl"
                   >
                     <LogIn className="h-4 w-4 mr-3" />
                     Login
@@ -682,7 +682,7 @@ export function Navbar() {
                           >
                             <Button
                               variant="outline"
-                              className="w-full py-4 mt-2 hover:scale-105 transition-transform duration-300 text-[#CE801F] border-[#CE801F] hover:bg-[#CE801F]/5 rounded-2xl font-semibold"
+                              className="w-full py-4 mt-2 hover:scale-105 transition-transform duration-300 text-[#CE801F] border-[#CE801F] hover:bg-[#CE801F]/5 hover:text-black rounded-2xl font-semibold"
                             >
                               <User className="h-5 w-5 mr-3" />
                               Register

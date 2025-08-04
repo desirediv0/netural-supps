@@ -17,7 +17,6 @@ import sendEmail from "../utils/sendEmail.js";
 import {
   getVerificationTemplate,
   getResetTemplate,
-  getDeleteTemplate,
 } from "../email/temp/EmailTemplate.js";
 
 // Register a new user
@@ -1087,7 +1086,17 @@ export const requestAccountDeletion = asyncHandler(async (req, res, next) => {
     await sendEmail({
       email: user.email,
       subject: "Confirm Account Deletion - Natural Supps",
-      html: getDeleteTemplate(deletionLink),
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #ce801f;">Account Deletion Request</h2>
+          <p>Dear ${user.name},</p>
+          <p>We've received a request to delete your Natural Supps account. To confirm this action, please click the link below:</p>
+          <p><a href="${deletionLink}" style="background-color: #ce801f; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Confirm Account Deletion</a></p>
+          <p>If you didn't request this deletion, please ignore this email.</p>
+          <p>This link will expire in 24 hours.</p>
+          <p>Best regards,<br>Natural Supps Team</p>
+        </div>
+      `,
     });
 
     console.log("Account deletion email sent to:", user.email);

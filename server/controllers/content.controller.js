@@ -3,6 +3,8 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponsive } from "../utils/ApiResponsive.js";
 import { prisma } from "../config/db.js";
 import { getFileUrl } from "../utils/deleteFromS3.js";
+import sendEmail from "../utils/sendEmail.js";
+import { getContactFormTemplate } from "../email/temp/EmailTemplate.js";
 
 /**
  * Get blog posts with pagination
@@ -336,6 +338,21 @@ const submitContactForm = asyncHandler(async (req, res) => {
       },
     });
 
+    // Send email notification to admin
+    const emailData = {
+      name,
+      email,
+      phone,
+      subject: subject || "Inquiry About Supplements",
+      message,
+    };
+
+    await sendEmail({
+      to: process.env.ADMIN_EMAIL || "support@naturalsupps.com",
+      subject: `New Contact Form Submission - ${subject || "General Inquiry"}`,
+      html: getContactFormTemplate(emailData),
+    });
+
     return res.status(201).json(
       new ApiResponsive(201, {
         message:
@@ -381,7 +398,7 @@ const getContactInfo = asyncHandler(async (req, res) => {
     const contactInfo = {
       address: "89/2 Sector 39, Gurugram, Haryana",
       phone: "+91 8053210008",
-      email: "support@Natural Supps",
+      email: "support@naturalsupps.com",
       hours: "Monday - Saturday: 10:00 AM - 7:00 PM",
       mapCoordinates: {
         lat: 19.076,
