@@ -10,7 +10,7 @@ import { useState } from "react";
 
 // Helper function to format image URLs correctly
 const getImageUrl = (image) => {
-  if (!image) return "/placeholder.svg?height=400&width=800";
+  if (!image) return "/placeholder.jpg";
   if (image.startsWith("http")) return image;
   return `https://desirediv-storage.blr1.digitaloceanspaces.com/${image}`;
 };
@@ -122,7 +122,7 @@ export default function BlogPostClient({ post, relatedPosts }) {
             {postData.coverImage && (
               <div className="relative w-full h-[400px] md:h-[500px] mb-10 rounded-2xl overflow-hidden shadow-lg">
                 <Image
-                  src={getImageUrl(postData.coverImage) || "/placeholder.svg"}
+                  src={getImageUrl(postData.coverImage) || "/placeholder.jpg"}
                   alt={postData.title}
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 768px, 1024px"
@@ -161,7 +161,7 @@ export default function BlogPostClient({ post, relatedPosts }) {
                           <Image
                             src={
                               getImageUrl(relatedPost.coverImage) ||
-                              "/placeholder.svg"
+                              "/placeholder.jpg"
                             }
                             alt={relatedPost.title}
                             fill

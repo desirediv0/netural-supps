@@ -612,7 +612,7 @@ export default function CheckoutPage() {
                         <div className="h-12 w-12 bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg flex-shrink-0 relative">
                           {item.product.image && (
                             <Image
-                              src={item.product.image || "/placeholder.svg"}
+                              src={item.product.image || "/placeholder.jpg"}
                               alt={item.product.name}
                               fill
                               className="object-contain p-1"

@@ -31,7 +31,7 @@ const CompactCategoryCard = ({ category, index }) => {
             <Image
               width={400}
               height={300}
-              src={category.image || "/placeholder.svg?height=300&width=400"}
+              src={category.image || "/placeholder.jpg"}
               alt={category.name}
               className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
             />

@@ -297,8 +297,8 @@ export default function OrderDetailsPage({ params }) {
               Order Not Found
             </h2>
             <p className="text-gray-500 mb-8 max-w-md mx-auto">
-              The order you&apos;re looking for doesn&apos;t exist or you don&apos;t have
-              permission to view it.
+              The order you&apos;re looking for doesn&apos;t exist or you
+              don&apos;t have permission to view it.
             </p>
             <Link href="/account/orders">
               <Button className="bg-yellow-600 hover:bg-yellow-700 px-8 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all">
@@ -483,7 +483,7 @@ export default function OrderDetailsPage({ params }) {
                               <Image
                                 width={64}
                                 height={64}
-                                src={item.image || "/placeholder.svg"}
+                                src={item.image || "/placeholder.jpg"}
                                 alt={item.name}
                                 className="w-full h-full object-cover"
                               />

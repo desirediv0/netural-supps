@@ -31,7 +31,7 @@ const CartItem = React.memo(
           <div className="md:col-span-6 flex items-center space-x-4">
             <div className="relative h-20 w-20 bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl overflow-hidden flex-shrink-0">
               <Image
-                src={item.product.image || "/placeholder.svg"}
+                src={item.product.image || "/placeholder.jpg"}
                 alt={item.product.name}
                 fill
                 className="object-contain p-2"

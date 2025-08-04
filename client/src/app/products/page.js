@@ -819,7 +819,7 @@ function ProductsContent() {
                         {flavor.image && (
                           <div className="w-4 h-4 rounded-full overflow-hidden mr-2">
                             <Image
-                              src={flavor.image || "/placeholder.svg"}
+                              src={flavor.image || "/placeholder.jpg"}
                               alt={flavor.name}
                               width={16}
                               height={16}

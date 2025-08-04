@@ -13,7 +13,7 @@ import { BookOpen, Calendar, ArrowRight, Tag } from "lucide-react";
 
 // Helper function to format image URLs correctly
 const getImageUrl = (image) => {
-  if (!image) return "/placeholder.svg?height=240&width=400";
+  if (!image) return "/placeholder.jpg";
   if (image.startsWith("http")) return image;
   return `https://desirediv-storage.blr1.digitaloceanspaces.com/${image}`;
 };
@@ -90,7 +90,7 @@ function BlogContent() {
                 <Link href={`/blog/${post.slug}`} className="block">
                   <div className="relative h-60 w-full overflow-hidden">
                     <Image
-                      src={getImageUrl(post.coverImage) || "/placeholder.svg"}
+                      src={getImageUrl(post.coverImage) || "/placeholder.jpg"}
                       alt={post.title}
                       fill
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

@@ -221,7 +221,7 @@ export function ProductCard({
       <div className="relative overflow-hidden">
         <Link to={`/products/${slug}`}>
           <img
-            src={displayImage?.url || "/placeholder-product.jpg"}
+            src={displayImage?.url || "/placeholder.jpg"}
             alt={displayImage?.alt || name}
             className="h-48 w-full object-cover transition-transform group-hover:scale-105"
           />

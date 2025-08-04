@@ -99,7 +99,7 @@ const FeaturedProducts = ({
                       <Link href={`/products/${product.slug || ""}`}>
                         {product.image ? (
                           <Image
-                            src={product.image || "/placeholder.svg"}
+                            src={product.image || "/placeholder.jpg"}
                             alt={product.name || "Product"}
                             fill
                             className="object-contain p-6 transition-transform duration-700 group-hover:scale-110"
@@ -107,7 +107,7 @@ const FeaturedProducts = ({
                           />
                         ) : (
                           <Image
-                            src="/product-placeholder.jpg"
+                            src="/placeholder.jpg"
                             alt={product.name || "Product"}
                             fill
                             className="object-contain p-6 transition-transform duration-700 group-hover:scale-110"
