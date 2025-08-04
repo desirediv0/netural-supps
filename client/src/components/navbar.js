@@ -549,7 +549,7 @@ export function Navbar() {
               <ClientOnly>
                 <Link
                   href="/cart"
-                  className="p-3 text-gray-600 hover:text-orange-500 transition-all duration-300 relative bg-gray-100 rounded-xl hover:bg-orange-50 hover:scale-110"
+                  className="p-3 text-gray-600 hidden md:block hover:text-orange-500 transition-all duration-300 relative bg-gray-100 rounded-xl hover:bg-orange-50 hover:scale-110"
                 >
                   <ShoppingCart className="h-5 w-5" />
                   {cart && cart.items?.length > 0 && (
