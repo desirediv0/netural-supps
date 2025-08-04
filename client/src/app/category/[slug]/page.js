@@ -514,7 +514,7 @@ export default function CategoryPage() {
                     {/* Rating Badge */}
                     {product.avgRating > 0 && (
                       <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-sm font-medium px-3 py-1 rounded-full shadow-md flex items-center gap-1">
-                        <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+                        <Star className="h-4 w-4 text-orange-400 fill-orange-400" />
                         <span className="text-gray-800 font-semibold">
                           {product.avgRating?.toFixed(1)}
                         </span>
@@ -616,7 +616,7 @@ export default function CategoryPage() {
                     {/* Rating */}
                     {product.avgRating > 0 && (
                       <div className="flex items-center gap-2 mb-3">
-                        <div className="flex text-yellow-400">
+                        <div className="flex text-orange-400">
                           {[...Array(5)].map((_, i) => (
                             <Star
                               key={i}

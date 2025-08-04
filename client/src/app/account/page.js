@@ -142,11 +142,11 @@ export default function AccountPage() {
         >
           {/* Welcome Banner */}
           <motion.div
-            className="relative overflow-hidden bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-3xl shadow-lg"
+            className="relative overflow-hidden bg-gradient-to-r from-orange-500 to-orange-600 rounded-3xl shadow-xl"
             variants={itemVariants}
           >
-            <div className="absolute right-0 top-0 w-64 h-64 bg-yellow-400 rounded-full -translate-y-1/2 translate-x-1/3 opacity-30"></div>
-            <div className="absolute left-0 bottom-0 w-40 h-40 bg-yellow-400 rounded-full translate-y-1/2 -translate-x-1/3 opacity-30"></div>
+            <div className="absolute right-0 top-0 w-64 h-64 bg-orange-400 rounded-full -translate-y-1/2 translate-x-1/3 opacity-30"></div>
+            <div className="absolute left-0 bottom-0 w-40 h-40 bg-orange-400 rounded-full translate-y-1/2 -translate-x-1/3 opacity-30"></div>
 
             <div className="relative p-8 md:p-10">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between">
@@ -154,7 +154,7 @@ export default function AccountPage() {
                   <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
                     Welcome back, {user?.name || "User"}!
                   </h1>
-                  <p className="text-yellow-100 text-lg">
+                  <p className="text-orange-100 text-lg">
                     Manage your profile, orders, and preferences
                   </p>
                 </div>
@@ -189,13 +189,13 @@ export default function AccountPage() {
 
           {/* Profile Information Card */}
           <motion.div
-            className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden"
+            className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden"
             variants={itemVariants}
           >
             <div className="flex justify-between items-center p-6 border-b border-gray-100">
               <div className="flex items-center">
-                <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-4">
-                  <User className="h-5 w-5 text-yellow-600" />
+                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mr-4">
+                  <User className="h-5 w-5 text-orange-600" />
                 </div>
                 <div>
                   <h2 className="text-xl font-bold text-gray-800">
@@ -210,7 +210,7 @@ export default function AccountPage() {
                 <Button
                   onClick={() => setIsEditing(true)}
                   variant="outline"
-                  className="border-yellow-200 text-yellow-600 hover:bg-yellow-50 hover:text-yellow-700"
+                  className="border-orange-200 text-orange-600 hover:bg-orange-50 hover:text-orange-700"
                 >
                   <Edit className="mr-2 h-4 w-4" />
                   Edit
@@ -281,7 +281,7 @@ export default function AccountPage() {
                     <Button
                       type="submit"
                       disabled={isSubmitting}
-                      className="px-6 py-2 h-11 bg-yellow-600 hover:bg-yellow-700"
+                      className="px-6 py-2 h-11 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
                     >
                       {isSubmitting ? (
                         <>
@@ -349,10 +349,10 @@ export default function AccountPage() {
             variants={itemVariants}
           >
             <Link href="/account/addresses" className="group">
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 h-full hover:shadow-md transition-shadow">
+              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 h-full hover:shadow-2xl transition-all duration-200 hover:border-orange-200">
                 <div className="flex items-start">
-                  <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center mr-4 group-hover:bg-amber-200 transition-colors">
-                    <MapPin className="h-6 w-6 text-amber-600" />
+                  <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mr-4 group-hover:bg-orange-200 transition-colors">
+                    <MapPin className="h-6 w-6 text-orange-600" />
                   </div>
                   <div>
                     <h3 className="font-bold text-gray-800 mb-1">
@@ -367,10 +367,10 @@ export default function AccountPage() {
             </Link>
 
             <Link href="/account/orders" className="group">
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 h-full hover:shadow-md transition-shadow">
+              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 h-full hover:shadow-2xl transition-all duration-200 hover:border-orange-200">
                 <div className="flex items-start">
-                  <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mr-4 group-hover:bg-blue-200 transition-colors">
-                    <Package className="h-6 w-6 text-blue-600" />
+                  <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mr-4 group-hover:bg-orange-200 transition-colors">
+                    <Package className="h-6 w-6 text-orange-600" />
                   </div>
                   <div>
                     <h3 className="font-bold text-gray-800 mb-1">
@@ -385,10 +385,10 @@ export default function AccountPage() {
             </Link>
 
             <Link href="/account/change-password" className="group">
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 h-full hover:shadow-md transition-shadow">
+              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 h-full hover:shadow-2xl transition-all duration-200 hover:border-orange-200">
                 <div className="flex items-start">
-                  <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mr-4 group-hover:bg-green-200 transition-colors">
-                    <ShieldCheck className="h-6 w-6 text-green-600" />
+                  <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mr-4 group-hover:bg-orange-200 transition-colors">
+                    <ShieldCheck className="h-6 w-6 text-orange-600" />
                   </div>
                   <div>
                     <h3 className="font-bold text-gray-800 mb-1">

@@ -126,15 +126,15 @@ export default function AddressForm({
     <div
       className={
         isInline
-          ? "bg-yellow-50 border border-yellow-200 rounded-2xl p-6 mb-6"
+          ? "bg-orange-50 border border-orange-200 rounded-2xl p-6 mb-6"
           : "bg-white rounded-2xl shadow-lg border border-gray-100 p-8"
       }
     >
       {isInline && (
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center">
-            <div className="bg-yellow-100 p-2 rounded-lg mr-3">
-              <MapPin className="h-5 w-5 text-yellow-600" />
+            <div className="bg-orange-100 p-2 rounded-lg mr-3">
+              <MapPin className="h-5 w-5 text-orange-600" />
             </div>
             <h3 className="text-xl font-bold text-gray-800">Add New Address</h3>
           </div>
@@ -162,7 +162,7 @@ export default function AddressForm({
               htmlFor="name"
               className="flex items-center text-sm font-semibold text-gray-700 mb-2"
             >
-              <User className="h-4 w-4 mr-2 text-yellow-500" />
+              <User className="h-4 w-4 mr-2 text-orange-500" />
               Full Name*
             </Label>
             <Input
@@ -173,7 +173,7 @@ export default function AddressForm({
               className={`h-12 px-4 border-2 rounded-xl transition-colors ${
                 errors.name
                   ? "border-red-500 focus:border-red-500"
-                  : "border-gray-200 focus:border-yellow-500"
+                  : "border-gray-200 focus:border-orange-500"
               }`}
               placeholder="Enter your full name"
             />
@@ -188,7 +188,7 @@ export default function AddressForm({
               htmlFor="street"
               className="flex items-center text-sm font-semibold text-gray-700 mb-2"
             >
-              <Home className="h-4 w-4 mr-2 text-yellow-500" />
+              <Home className="h-4 w-4 mr-2 text-orange-500" />
               Street Address*
             </Label>
             <Input
@@ -199,7 +199,7 @@ export default function AddressForm({
               className={`h-12 px-4 border-2 rounded-xl transition-colors ${
                 errors.street
                   ? "border-red-500 focus:border-red-500"
-                  : "border-gray-200 focus:border-yellow-500"
+                  : "border-gray-200 focus:border-orange-500"
               }`}
               placeholder="House number, Street, Apartment, etc."
             />
@@ -224,7 +224,7 @@ export default function AddressForm({
               className={`h-12 px-4 border-2 rounded-xl transition-colors ${
                 errors.city
                   ? "border-red-500 focus:border-red-500"
-                  : "border-gray-200 focus:border-yellow-500"
+                  : "border-gray-200 focus:border-orange-500"
               }`}
               placeholder="Enter city"
             />
@@ -249,7 +249,7 @@ export default function AddressForm({
               className={`h-12 px-4 border-2 rounded-xl transition-colors ${
                 errors.state
                   ? "border-red-500 focus:border-red-500"
-                  : "border-gray-200 focus:border-yellow-500"
+                  : "border-gray-200 focus:border-orange-500"
               }`}
               placeholder="Enter state"
             />
@@ -274,7 +274,7 @@ export default function AddressForm({
               className={`h-12 px-4 border-2 rounded-xl transition-colors ${
                 errors.postalCode
                   ? "border-red-500 focus:border-red-500"
-                  : "border-gray-200 focus:border-yellow-500"
+                  : "border-gray-200 focus:border-orange-500"
               }`}
               placeholder="Enter 6-digit postal code"
               maxLength={6}
@@ -290,7 +290,7 @@ export default function AddressForm({
               htmlFor="phone"
               className="flex items-center text-sm font-semibold text-gray-700 mb-2"
             >
-              <Phone className="h-4 w-4 mr-2 text-yellow-500" />
+              <Phone className="h-4 w-4 mr-2 text-orange-500" />
               Phone Number*
             </Label>
             <Input
@@ -301,7 +301,7 @@ export default function AddressForm({
               className={`h-12 px-4 border-2 rounded-xl transition-colors ${
                 errors.phone
                   ? "border-red-500 focus:border-red-500"
-                  : "border-gray-200 focus:border-yellow-500"
+                  : "border-gray-200 focus:border-orange-500"
               }`}
               placeholder="Enter 10-digit phone number"
               maxLength={10}
@@ -327,7 +327,7 @@ export default function AddressForm({
               className={`h-12 px-4 border-2 rounded-xl transition-colors ${
                 errors.country
                   ? "border-red-500 focus:border-red-500"
-                  : "border-gray-200 focus:border-yellow-500"
+                  : "border-gray-200 focus:border-orange-500"
               }`}
               placeholder="Enter country"
             />
@@ -338,20 +338,20 @@ export default function AddressForm({
 
           {/* Default Address Checkbox - Full width */}
           <div className="lg:col-span-3">
-            <div className="flex items-center space-x-3 bg-yellow-50 p-4 rounded-xl border border-yellow-200">
+            <div className="flex items-center space-x-3 bg-orange-50 p-4 rounded-xl border border-orange-200">
               <input
                 type="checkbox"
                 id="isDefault"
                 name="isDefault"
                 checked={formData.isDefault}
                 onChange={handleChange}
-                className="h-5 w-5 rounded border-gray-300 text-yellow-500 focus:ring-yellow-500"
+                className="h-5 w-5 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
               />
               <Label
                 htmlFor="isDefault"
                 className="font-medium cursor-pointer text-gray-700 flex items-center"
               >
-                <Home className="h-4 w-4 mr-2 text-yellow-500" />
+                <Home className="h-4 w-4 mr-2 text-orange-500" />
                 Set as default address
               </Label>
             </div>
@@ -373,7 +373,7 @@ export default function AddressForm({
           <Button
             type="submit"
             disabled={loading}
-            className="px-8 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white font-semibold rounded-xl transition-all duration-200 transform hover:scale-[1.02]"
+            className="px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl transition-all duration-200 transform hover:scale-[1.02]"
           >
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {existingAddress ? "Update Address" : "Save Address"}

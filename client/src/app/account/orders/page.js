@@ -92,9 +92,9 @@ export default function OrdersPage() {
   const getStatusInfo = (status) => {
     const statusMap = {
       PENDING: {
-        color: "bg-yellow-100 text-yellow-800 border-yellow-200",
+        color: "bg-orange-100 text-orange-800 border-orange-200",
         icon: Clock,
-        bgColor: "bg-yellow-50",
+        bgColor: "bg-orange-50",
       },
       PROCESSING: {
         color: "bg-blue-100 text-blue-800 border-blue-200",
@@ -183,7 +183,7 @@ export default function OrdersPage() {
     >
       {/* Page Header */}
       <motion.div
-        className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden"
+        className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden"
         variants={itemVariants}
       >
         <div className="p-6 md:p-8">
@@ -204,7 +204,7 @@ export default function OrdersPage() {
                 <input
                   type="text"
                   placeholder="Search orders..."
-                  className="pl-10 pr-4 py-2 w-full border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                  className="pl-10 pr-4 py-2 w-full border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -268,7 +268,7 @@ export default function OrdersPage() {
                 >
                   Cancel
                 </Button>
-                <Button className="bg-yellow-600 hover:bg-yellow-700">
+                <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200">
                   Apply Filters
                 </Button>
               </div>
@@ -289,17 +289,17 @@ export default function OrdersPage() {
       )}
 
       {loadingOrders ? (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-12 flex justify-center">
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-12 flex justify-center">
           <div className="relative">
-            <div className="h-16 w-16 rounded-full border-4 border-gray-200 border-t-yellow-500 animate-spin"></div>
+            <div className="h-16 w-16 rounded-full border-4 border-gray-200 border-t-orange-500 animate-spin"></div>
             <div className="absolute inset-0 flex items-center justify-center">
-              <Package className="h-6 w-6 text-yellow-500" />
+              <Package className="h-6 w-6 text-orange-500" />
             </div>
           </div>
         </div>
       ) : orders.length === 0 ? (
         <motion.div
-          className="bg-white rounded-2xl shadow-sm border border-gray-200 p-12 text-center"
+          className="bg-white rounded-2xl shadow-xl border border-gray-100 p-12 text-center"
           variants={itemVariants}
         >
           <div className="w-24 h-24 bg-gray-100 rounded-full mx-auto mb-6 flex items-center justify-center">
@@ -313,7 +313,7 @@ export default function OrdersPage() {
             orders here!
           </p>
           <Link href="/products">
-            <Button className="bg-yellow-600 hover:bg-yellow-700 px-8 py-3 rounded-lg">
+            <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200">
               Start Shopping
             </Button>
           </Link>
@@ -330,7 +330,7 @@ export default function OrdersPage() {
               return (
                 <motion.div
                   key={order.id}
-                  className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+                  className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-200"
                   variants={itemVariants}
                   onClick={() => router.push(`/account/orders/${order.id}`)}
                   whileHover={{ scale: 1.01 }}
@@ -382,7 +382,7 @@ export default function OrdersPage() {
                           {order.items.length === 1 ? "item" : "items"}
                         </p>
                         <Button
-                          className="bg-yellow-600 hover:bg-yellow-700"
+                          className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
                           onClick={(e) => {
                             e.stopPropagation();
                             router.push(`/account/orders/${order.id}`);
@@ -440,7 +440,7 @@ export default function OrdersPage() {
                           key={pageNumber}
                           className={`w-10 h-10 p-0 rounded-lg ${
                             pagination.page === pageNumber
-                              ? "bg-yellow-600 text-white hover:bg-yellow-700"
+                              ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700 shadow-lg"
                               : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
                           }`}
                           onClick={() => changePage(pageNumber)}

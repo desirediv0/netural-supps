@@ -791,9 +791,9 @@ function ProductsContent() {
                 {activeFilterSection === "flavors" && (
                   <div className="space-y-3">
                     <div
-                      className={`cursor-pointer hover:text-[#ce801f] transition-colors ${
+                      className={`cursor-pointer hover:text-orange-500 transition-colors ${
                         selectedFlavors.length === 0
-                          ? "font-semibold text-[#ce801f]"
+                          ? "font-semibold text-orange-500"
                           : "text-gray-600"
                       }`}
                       onClick={() => {
@@ -807,16 +807,16 @@ function ProductsContent() {
                     {flavors.map((flavor) => (
                       <div
                         key={flavor.id}
-                        className={`cursor-pointer hover:text-[#ce801f] ml-3 flex items-center transition-colors ${
+                        className={`cursor-pointer hover:text-orange-500 ml-3 flex items-center transition-colors ${
                           selectedFlavors.includes(flavor.id)
-                            ? "font-semibold text-[#ce801f]"
+                            ? "font-semibold text-orange-500"
                             : "text-gray-600"
                         }`}
                         onClick={() => handleFlavorChange(flavor.id)}
                       >
                         <div className="w-4 h-4 border-2 border-gray-300 rounded mr-3 flex items-center justify-center">
                           {selectedFlavors.includes(flavor.id) && (
-                            <div className="w-2 h-2 rounded-sm bg-[#ce801f]"></div>
+                            <div className="w-2 h-2 rounded-sm bg-orange-500"></div>
                           )}
                         </div>
                         {flavor.image && (
@@ -854,9 +854,9 @@ function ProductsContent() {
                 {activeFilterSection === "weights" && (
                   <div className="space-y-3">
                     <div
-                      className={`cursor-pointer hover:text-[#ce801f] transition-colors ${
+                      className={`cursor-pointer hover:text-orange-500 transition-colors ${
                         selectedWeights.length === 0
-                          ? "font-semibold text-[#ce801f]"
+                          ? "font-semibold text-orange-500"
                           : "text-gray-600"
                       }`}
                       onClick={() => {
@@ -870,16 +870,16 @@ function ProductsContent() {
                     {weights.map((weight) => (
                       <div
                         key={weight.id}
-                        className={`cursor-pointer hover:text-[#ce801f] ml-3 flex items-center transition-colors ${
+                        className={`cursor-pointer hover:text-orange-500 ml-3 flex items-center transition-colors ${
                           selectedWeights.includes(weight.id)
-                            ? "font-semibold text-[#ce801f]"
+                            ? "font-semibold text-orange-500"
                             : "text-gray-600"
                         }`}
                         onClick={() => handleWeightChange(weight.id)}
                       >
                         <div className="w-4 h-4 border-2 border-gray-300 rounded mr-3 flex items-center justify-center">
                           {selectedWeights.includes(weight.id) && (
-                            <div className="w-2 h-2 rounded-sm bg-[#ce801f]"></div>
+                            <div className="w-2 h-2 rounded-sm bg-orange-500"></div>
                           )}
                         </div>
                         {weight.display}
@@ -901,11 +901,11 @@ function ProductsContent() {
                 ) : (
                   <div className="text-lg">
                     Showing{" "}
-                    <span className="font-bold text-[#ce801f]">
+                    <span className="font-bold text-orange-500">
                       {products.length}
                     </span>{" "}
                     of{" "}
-                    <span className="font-bold text-[#ce801f]">
+                    <span className="font-bold text-orange-500">
                       {pagination.total || 0}
                     </span>{" "}
                     products
@@ -916,7 +916,7 @@ function ProductsContent() {
               <div className="flex items-center gap-4">
                 {loading && (
                   <div className="text-sm text-gray-500 flex items-center">
-                    <div className="w-4 h-4 border-2 border-[#ce801f] border-t-transparent rounded-full animate-spin mr-2"></div>
+                    <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin mr-2"></div>
                     Updating...
                   </div>
                 )}
@@ -966,7 +966,7 @@ function ProductsContent() {
                 </span>
 
                 {filters.search && (
-                  <div className="bg-[#ce801f] text-white text-sm px-3 py-1 rounded-full flex items-center">
+                  <div className="bg-orange-500 text-white text-sm px-3 py-1 rounded-full flex items-center">
                     <span>Search: {filters.search}</span>
                     <button
                       onClick={() => handleFilterChange("search", "")}
@@ -978,7 +978,7 @@ function ProductsContent() {
                 )}
 
                 {filters.category && (
-                  <div className="bg-[#ce801f] text-white text-sm px-3 py-1 rounded-full flex items-center">
+                  <div className="bg-orange-500 text-white text-sm px-3 py-1 rounded-full flex items-center">
                     <span>
                       Category:{" "}
                       {categories.find((c) => c.slug === filters.category)
@@ -994,7 +994,7 @@ function ProductsContent() {
                 )}
 
                 {selectedFlavors.length > 0 && (
-                  <div className="bg-[#ce801f] text-white text-sm px-3 py-1 rounded-full flex items-center">
+                  <div className="bg-orange-500 text-white text-sm px-3 py-1 rounded-full flex items-center">
                     <span>
                       Flavor:{" "}
                       {flavors.find((f) => f.id === selectedFlavors[0])?.name ||
@@ -1013,7 +1013,7 @@ function ProductsContent() {
                 )}
 
                 {selectedWeights.length > 0 && (
-                  <div className="bg-[#ce801f] text-white text-sm px-3 py-1 rounded-full flex items-center">
+                  <div className="bg-orange-500 text-white text-sm px-3 py-1 rounded-full flex items-center">
                     <span>
                       Weight:{" "}
                       {weights.find((w) => w.id === selectedWeights[0])
@@ -1033,7 +1033,7 @@ function ProductsContent() {
 
                 <button
                   onClick={clearFilters}
-                  className="text-sm text-[#ce801f] underline font-medium ml-2"
+                  className="text-sm text-orange-500 underline font-medium ml-2"
                 >
                   Clear All
                 </button>
@@ -1112,7 +1112,7 @@ function ProductsContent() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="w-10 h-10 p-0 bg-white/90 hover:bg-[#ce801f] hover:text-white rounded-full shadow-sm"
+                          className="w-10 h-10 p-0 bg-white/90 hover:bg-orange-500 hover:text-white rounded-full shadow-sm"
                           onClick={(e) => {
                             e.preventDefault();
                             handleQuickView(product);
@@ -1125,7 +1125,7 @@ function ProductsContent() {
 
                     <div className="p-6">
                       <div className="flex items-center justify-center mb-3">
-                        <div className="flex text-yellow-400">
+                        <div className="flex text-orange-400">
                           {[...Array(5)].map((_, i) => (
                             <Star
                               key={i}
@@ -1145,7 +1145,7 @@ function ProductsContent() {
 
                       <Link
                         href={`/products/${product.slug}`}
-                        className="block hover:text-[#ce801f] transition-colors"
+                        className="block hover:text-orange-500 transition-colors"
                       >
                         <h3 className="font-semibold text-[#2C3E50] mb-3 line-clamp-2 text-center">
                           {product.name}
@@ -1155,7 +1155,7 @@ function ProductsContent() {
                       <div className="text-center mb-4">
                         {product.hasSale ? (
                           <div className="flex items-center justify-center space-x-2">
-                            <span className="font-bold text-xl text-[#ce801f]">
+                            <span className="font-bold text-xl text-orange-500">
                               {formatCurrency(product.basePrice)}
                             </span>
                             <span className="text-gray-500 line-through text-sm">
@@ -1176,7 +1176,7 @@ function ProductsContent() {
                       )}
 
                       <Button
-                        className="w-full bg-[#ce801f] hover:bg-[#E06A1A] text-white font-semibold py-3 rounded-lg transition-colors duration-300"
+                        className="w-full bg-orange-500 hover:bg-[#E06A1A] text-white font-semibold py-3 rounded-lg transition-colors duration-300"
                         onClick={(e) => {
                           e.preventDefault();
                           handleAddToCart(product);
@@ -1207,7 +1207,7 @@ function ProductsContent() {
                     size="sm"
                     onClick={() => handlePageChange(pagination.page - 1)}
                     disabled={pagination.page === 1 || loading}
-                    className="rounded-none border-0 hover:bg-[#ce801f] hover:text-white px-4 py-3"
+                    className="rounded-none border-0 hover:bg-orange-500 hover:text-white px-4 py-3"
                   >
                     <ChevronUp className="h-4 w-4 rotate-90" />
                   </Button>
@@ -1227,7 +1227,7 @@ function ProductsContent() {
                           disabled={loading}
                           className={`px-4 py-3 font-medium transition-colors ${
                             pagination.page === page
-                              ? "bg-[#ce801f] text-white"
+                              ? "bg-orange-500 text-white"
                               : "hover:bg-gray-50 text-[#2C3E50]"
                           }`}
                         >
@@ -1256,7 +1256,7 @@ function ProductsContent() {
                     size="sm"
                     onClick={() => handlePageChange(pagination.page + 1)}
                     disabled={pagination.page === pagination.pages || loading}
-                    className="rounded-none border-0 hover:bg-[#ce801f] hover:text-white px-4 py-3"
+                    className="rounded-none border-0 hover:bg-orange-500 hover:text-white px-4 py-3"
                   >
                     <ChevronDown className="h-4 w-4 rotate-90" />
                   </Button>
@@ -1283,7 +1283,7 @@ export default function ProductsPage() {
       fallback={
         <div className="container mx-auto px-4 py-8">
           <div className="flex justify-center items-center h-64">
-            <div className="w-12 h-12 border-4 border-[#ce801f] border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
           </div>
         </div>
       }

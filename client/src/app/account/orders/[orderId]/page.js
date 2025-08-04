@@ -213,12 +213,12 @@ export default function OrderDetailsPage({ params }) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="relative">
-          <div className="h-24 w-24 rounded-full border-t-4 border-b-4 border-yellow-500 animate-spin"></div>
+          <div className="h-24 w-24 rounded-full border-t-4 border-b-4 border-orange-500 animate-spin"></div>
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="h-16 w-16 rounded-full bg-white shadow-lg"></div>
           </div>
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="h-8 w-8 rounded-full bg-yellow-500"></div>
+            <div className="h-8 w-8 rounded-full bg-orange-500"></div>
           </div>
         </div>
       </div>
@@ -233,7 +233,7 @@ export default function OrderDetailsPage({ params }) {
           <div>
             <Link
               href="/account/orders"
-              className="inline-flex items-center text-sm text-gray-600 hover:text-yellow-600 mb-2 font-medium transition-colors group"
+              className="inline-flex items-center text-sm text-gray-600 hover:text-orange-600 mb-2 font-medium transition-colors group"
             >
               <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
               Back to Orders
@@ -280,16 +280,16 @@ export default function OrderDetailsPage({ params }) {
         )}
 
         {loadingOrder ? (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-12 flex justify-center">
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-12 flex justify-center">
             <div className="relative">
-              <div className="h-16 w-16 rounded-full border-4 border-gray-200 border-t-yellow-500 animate-spin"></div>
+              <div className="h-16 w-16 rounded-full border-4 border-gray-200 border-t-orange-500 animate-spin"></div>
               <div className="absolute inset-0 flex items-center justify-center">
-                <Package className="h-6 w-6 text-yellow-500" />
+                <Package className="h-6 w-6 text-orange-500" />
               </div>
             </div>
           </div>
         ) : !order ? (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-12 text-center">
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-12 text-center">
             <div className="w-24 h-24 bg-red-100 rounded-full mx-auto mb-6 flex items-center justify-center">
               <FileX className="h-12 w-12 text-red-500" />
             </div>
@@ -301,7 +301,7 @@ export default function OrderDetailsPage({ params }) {
               don&apos;t have permission to view it.
             </p>
             <Link href="/account/orders">
-              <Button className="bg-yellow-600 hover:bg-yellow-700 px-8 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all">
+              <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200">
                 View All Orders
               </Button>
             </Link>
@@ -311,7 +311,7 @@ export default function OrderDetailsPage({ params }) {
             {/* Main Content */}
             <div className="lg:col-span-8 space-y-6">
               {/* Order Status Card */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
                 <div className="p-6 md:p-8">
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
                     <div className="mb-4 md:mb-0">
@@ -451,13 +451,13 @@ export default function OrderDetailsPage({ params }) {
               </div>
 
               {/* Order Items */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
                 <div
                   className="p-6 border-b border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
                   onClick={() => toggleSection("items")}
                 >
                   <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                    <Package className="h-5 w-5 mr-3 text-yellow-500" />
+                    <Package className="h-5 w-5 mr-3 text-orange-500" />
                     Order Items ({order.items.length})
                   </h3>
                   {expandedSections.items ? (
@@ -473,7 +473,7 @@ export default function OrderDetailsPage({ params }) {
                       {order.items.map((item, index) => (
                         <div
                           key={item.id}
-                          className="flex items-center p-4 border border-gray-100 rounded-xl hover:border-yellow-200 hover:shadow-sm transition-all"
+                          className="flex items-center p-4 border border-gray-100 rounded-xl hover:border-orange-200 hover:shadow-sm transition-all"
                         >
                           <Link
                             href={`/products/${item.slug}`}
@@ -533,7 +533,7 @@ export default function OrderDetailsPage({ params }) {
 
               {/* Tracking Information */}
               {order.tracking && (
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
                   <div
                     className="p-6 border-b border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
                     onClick={() => toggleSection("tracking")}
@@ -619,7 +619,7 @@ export default function OrderDetailsPage({ params }) {
             {/* Sidebar */}
             <div className="lg:col-span-4 space-y-6">
               {/* Order Summary */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
                 <div
                   className="p-6 border-b border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
                   onClick={() => toggleSection("payment")}
@@ -684,7 +684,7 @@ export default function OrderDetailsPage({ params }) {
                       )}
                       <div className="border-t border-gray-200 pt-3 mt-3 flex justify-between font-bold text-lg">
                         <span>Total:</span>
-                        <span className="text-yellow-600">
+                        <span className="text-orange-600">
                           {formatCurrency(order.total)}
                         </span>
                       </div>
@@ -693,7 +693,7 @@ export default function OrderDetailsPage({ params }) {
                     {/* Payment Info */}
                     <div className="border-t border-gray-200 pt-6">
                       <h4 className="text-sm font-bold mb-4 text-gray-900 flex items-center">
-                        <CreditCard className="h-4 w-4 mr-2 text-yellow-500" />
+                        <CreditCard className="h-4 w-4 mr-2 text-orange-500" />
                         Payment Information
                       </h4>
                       <div className="space-y-3 text-sm">
@@ -745,7 +745,7 @@ export default function OrderDetailsPage({ params }) {
               </div>
 
               {/* Shipping Address */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
                 <div
                   className="p-6 border-b border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
                   onClick={() => toggleSection("shipping")}
@@ -766,7 +766,7 @@ export default function OrderDetailsPage({ params }) {
                     {order.shippingAddress ? (
                       <div className="space-y-2">
                         <div className="flex items-center mb-3">
-                          <User className="h-4 w-4 text-yellow-500 mr-2" />
+                          <User className="h-4 w-4 text-orange-500 mr-2" />
                           <p className="font-semibold text-gray-900">
                             {order.shippingAddress.name || ""}
                           </p>
@@ -797,7 +797,7 @@ export default function OrderDetailsPage({ params }) {
 
               {/* Order Notes */}
               {order.notes && (
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
                   <div className="p-6 border-b border-gray-100">
                     <h3 className="text-lg font-semibold text-gray-900">
                       Order Notes

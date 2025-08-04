@@ -53,15 +53,15 @@ export default function LoginPage() {
       <div className="hidden lg:flex lg:w-1/2 xl:w-3/5 relative overflow-hidden bg-gradient-to-br from-orange-100 to-orange-50">
         {/* Animated Background Pattern */}
         <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-20 left-20 w-32 h-32 bg-[#CE801F] rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-20 w-24 h-24 bg-[#CE801F] rounded-full blur-2xl animate-pulse delay-1000"></div>
-          <div className="absolute top-1/2 left-1/3 w-16 h-16 bg-[#CE801F] rounded-full blur-xl animate-pulse delay-500"></div>
+          <div className="absolute top-20 left-20 w-32 h-32 bg-orange-500 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-20 w-24 h-24 bg-orange-500 rounded-full blur-2xl animate-pulse delay-1000"></div>
+          <div className="absolute top-1/2 left-1/3 w-16 h-16 bg-orange-500 rounded-full blur-xl animate-pulse delay-500"></div>
         </div>
 
         {/* Brand Logo/Title */}
         <div className="absolute top-8 left-8 z-20">
           <div className="flex items-center space-x-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#CE801F] shadow-2xl transform hover:scale-105 transition-transform duration-300">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-500 shadow-2xl transform hover:scale-105 transition-transform duration-300">
               <Package className="h-8 w-8 text-white" />
             </div>
             <div>
@@ -84,7 +84,7 @@ export default function LoginPage() {
           />
 
           {/* Enhanced Overlay with orange tint */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#CE801F]/90 via-[#CE801F]/50 to-transparent opacity-80 group-hover:opacity-95 transition-all duration-500" />
+          <div className="absolute inset-0 bg-gradient-to-t from-orange-500/90 via-orange-500/50 to-transparent opacity-80 group-hover:opacity-95 transition-all duration-500" />
 
           {/* Text Overlay */}
           <div className="absolute inset-0 flex items-center justify-center p-8 text-white">
@@ -116,7 +116,7 @@ export default function LoginPage() {
         </div>
 
         {/* Enhanced Bottom Gradient */}
-        <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-[#CE801F]/60 to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-orange-500/60 to-transparent pointer-events-none" />
       </div>
 
       {/* Right Side - Login Form */}
@@ -125,7 +125,7 @@ export default function LoginPage() {
           {/* Mobile Brand Header */}
           <div className="lg:hidden text-center mb-10">
             <div className="flex items-center justify-center space-x-4 mb-6">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#CE801F] shadow-2xl">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-500 shadow-2xl">
                 <Package className="h-9 w-9 text-white" />
               </div>
               <div>
@@ -142,7 +142,7 @@ export default function LoginPage() {
           {/* Enhanced Login Form Header */}
           <div className="text-center space-y-4">
             <div className="hidden lg:flex lg:justify-center lg:mb-6">
-              <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-[#CE801F] to-[#CE801F]/80 shadow-2xl transform hover:scale-105 transition-transform duration-300">
+              <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-orange-500/80 shadow-2xl transform hover:scale-105 transition-transform duration-300">
                 <Shield className="h-10 w-10 text-white" />
               </div>
             </div>
@@ -182,7 +182,7 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={isSubmitting}
                   required
-                  className="h-14 text-base pl-12 pr-4 border-2 border-gray-200 focus:border-[#CE801F] focus:ring-[#CE801F] rounded-xl transition-all duration-300 hover:border-gray-300"
+                  className="h-14 text-base pl-12 pr-4 border-2 border-gray-200 focus:border-orange-500 focus:ring-orange-500 rounded-xl transition-all duration-300 hover:border-gray-300"
                 />
               </div>
             </div>
@@ -204,14 +204,14 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={isSubmitting}
                   required
-                  className="h-14 text-base pl-12 pr-4 border-2 border-gray-200 focus:border-[#CE801F] focus:ring-[#CE801F] rounded-xl transition-all duration-300 hover:border-gray-300"
+                  className="h-14 text-base pl-12 pr-4 border-2 border-gray-200 focus:border-orange-500 focus:ring-orange-500 rounded-xl transition-all duration-300 hover:border-gray-300"
                 />
               </div>
             </div>
 
             <Button
               type="submit"
-              className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-[#CE801F] to-[#CE801F]/90 hover:from-[#CE801F]/90 hover:to-[#CE801F] focus:ring-[#CE801F] cursor-pointer shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-[1.02] rounded-xl"
+              className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-orange-500 to-orange-500/90 hover:from-orange-500/90 hover:to-orange-500 focus:ring-orange-500 cursor-pointer shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-[1.02] rounded-xl"
               disabled={isSubmitting || isLoading}
             >
               {isSubmitting ? (

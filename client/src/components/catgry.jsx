@@ -48,7 +48,7 @@ const CompactCategoryCard = ({ category, index }) => {
 
           {/* Content Section */}
           <div className="p-4">
-            <h3 className="text-lg font-bold text-gray-800 mb-2 group-hover:text-[#ce801f] transition-colors duration-300">
+            <h3 className="text-lg font-bold text-gray-800 mb-2 group-hover:text-orange-500 transition-colors duration-300">
               {category.name}
             </h3>
 
@@ -60,7 +60,7 @@ const CompactCategoryCard = ({ category, index }) => {
             <div className="flex items-center justify-between">
               <span className="text-xs text-gray-400">Explore Now</span>
               <motion.div
-                className="w-8 h-8 bg-gradient-to-r from-[#ce801f] to-[#b98544] rounded-full flex items-center justify-center"
+                className="w-8 h-8 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
               >
@@ -82,7 +82,7 @@ const CompactCategoryCard = ({ category, index }) => {
           </div>
 
           {/* Hover Effect Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#ce801f]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className="absolute inset-0 bg-gradient-to-t from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         </div>
       </Link>
     </motion.div>
@@ -154,8 +154,8 @@ const CompactCategoriesCarousel = ({ categories }) => {
         </CarouselContent>
 
         {/* Custom Navigation Buttons */}
-        <CarouselPrevious className="absolute -left-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm border-none shadow-lg hover:bg-[#ce801f] hover:text-white transition-all duration-300 w-10 h-10 rounded-full" />
-        <CarouselNext className="absolute -right-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm border-none shadow-lg hover:bg-[#ce801f] hover:text-white transition-all duration-300 w-10 h-10 rounded-full" />
+        <CarouselPrevious className="absolute -left-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm border-none shadow-lg hover:bg-orange-500 hover:text-white transition-all duration-300 w-10 h-10 rounded-full" />
+        <CarouselNext className="absolute -right-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm border-none shadow-lg hover:bg-orange-500 hover:text-white transition-all duration-300 w-10 h-10 rounded-full" />
 
         {/* Progress Indicators */}
         <div className="flex justify-center mt-6 gap-2">
@@ -166,7 +166,7 @@ const CompactCategoriesCarousel = ({ categories }) => {
                 onClick={() => api?.scrollTo(idx * 4)}
                 className={`w-2 h-2 rounded-full transition-all duration-300 ${
                   Math.floor(currentIndex / 4) === idx
-                    ? "bg-[#ce801f] scale-125"
+                    ? "bg-orange-500 scale-125"
                     : "bg-gray-300 hover:bg-gray-400"
                 }`}
                 aria-label={`Go to slide group ${idx + 1}`}
@@ -219,15 +219,15 @@ const CompactCategoriesSection = () => {
 
               {/* Decorative Line */}
               <div className="flex items-center justify-center gap-2 mt-4">
-                <div className="w-8 h-0.5 bg-gradient-to-r from-transparent to-[#ce801f]"></div>
-                <div className="w-2 h-2 bg-[#ce801f] rounded-full"></div>
-                <div className="w-8 h-0.5 bg-gradient-to-l from-transparent to-[#ce801f]"></div>
+                <div className="w-8 h-0.5 bg-gradient-to-r from-transparent to-orange-500"></div>
+                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                <div className="w-8 h-0.5 bg-gradient-to-l from-transparent to-orange-500"></div>
               </div>
             </div>
           </motion.div>
 
           {/* Background Decoration */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-gradient-to-r from-[#ce801f]/10 to-transparent rounded-full blur-3xl -z-10" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-gradient-to-r from-orange-500/10 to-transparent rounded-full blur-3xl -z-10" />
         </div>
 
         {categoriesLoading ? (
@@ -257,7 +257,7 @@ const CompactCategoriesSection = () => {
         >
           <Link href="/categories">
             <motion.button
-              className="group relative inline-flex items-center justify-center px-6 py-3 font-semibold text-white rounded-full overflow-hidden bg-gradient-to-r from-[#ce801f] to-[#b98544] shadow-lg hover:shadow-xl transition-all duration-300"
+              className="group relative inline-flex items-center justify-center px-6 py-3 font-semibold text-white rounded-full overflow-hidden bg-gradient-to-r from-orange-500 to-orange-600 shadow-lg hover:shadow-xl transition-all duration-300"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >

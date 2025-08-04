@@ -21,9 +21,9 @@ export default function AccountLayout({ children }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-50">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
         <div className="container mx-auto py-10 flex justify-center">
-          <div className="w-12 h-12 border-4 border-yellow-700 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-12 h-12 border-4 border-orange-700 border-t-transparent rounded-full animate-spin"></div>
         </div>
       </div>
     );
@@ -49,7 +49,7 @@ export default function AccountLayout({ children }) {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
       <ClientOnly>
         <div className="container mx-auto py-10 px-4">
           {isSpecialPage ? (
@@ -63,8 +63,8 @@ export default function AccountLayout({ children }) {
                 <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 sticky top-24">
                   <div className="space-y-1">
                     <h2 className="text-2xl font-bold mb-6 text-gray-800 flex items-center">
-                      <div className="bg-yellow-100 p-2 rounded-lg mr-3">
-                        <User className="h-5 w-5 text-yellow-600" />
+                      <div className="bg-orange-100 p-2 rounded-lg mr-3">
+                        <User className="h-5 w-5 text-orange-600" />
                       </div>
                       My Account
                     </h2>
@@ -77,8 +77,8 @@ export default function AccountLayout({ children }) {
                             href={item.path}
                             className={`flex items-center p-3 rounded-xl transition-all duration-200 ${
                               isActive(item.path)
-                                ? "bg-gradient-to-r from-yellow-500 to-yellow-600 text-white shadow-lg"
-                                : "hover:bg-yellow-50 text-gray-700 hover:text-yellow-600"
+                                ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg"
+                                : "hover:bg-orange-50 text-gray-700 hover:text-orange-600"
                             }`}
                           >
                             <IconComponent className="mr-3 h-5 w-5" />

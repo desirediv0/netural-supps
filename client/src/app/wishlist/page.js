@@ -97,21 +97,21 @@ export default function WishlistPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-50">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
         <div className="container mx-auto py-10 flex justify-center">
-          <div className="w-12 h-12 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
       <ClientOnly>
         <div className="container mx-auto py-12 px-4">
           {/* Header Section */}
           <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-full mb-6">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full mb-6 shadow-lg">
               <Heart className="h-8 w-8 text-white" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
@@ -147,12 +147,12 @@ export default function WishlistPage() {
 
           {loadingItems ? (
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-12 flex justify-center">
-              <div className="w-12 h-12 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
             </div>
           ) : wishlistItems.length === 0 ? (
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-12 text-center max-w-md mx-auto">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-yellow-100 rounded-full mb-6">
-                <Heart className="h-8 w-8 text-yellow-600" />
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full mb-6">
+                <Heart className="h-8 w-8 text-orange-600" />
               </div>
               <h2 className="text-2xl font-bold mb-4 text-gray-800">
                 Your Wishlist is Empty
@@ -161,7 +161,7 @@ export default function WishlistPage() {
                 Save your favorite items to your wishlist for easy access later.
               </p>
               <Link href="/products">
-                <Button className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105">
+                <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
                   <ShoppingBag className="h-4 w-4 mr-2" />
                   Explore Products
                 </Button>
@@ -184,7 +184,7 @@ export default function WishlistPage() {
                   <Link href="/products">
                     <Button
                       variant="outline"
-                      className="border-yellow-200 text-yellow-600 hover:bg-yellow-50"
+                      className="border-orange-200 text-orange-600 hover:bg-orange-50"
                     >
                       <ShoppingBag className="h-4 w-4 mr-2" />
                       Continue Shopping
@@ -201,7 +201,7 @@ export default function WishlistPage() {
                     className="bg-white overflow-hidden transition-all hover:shadow-xl shadow-lg rounded-2xl border border-gray-100 group"
                   >
                     <Link href={`/products/${product.slug}`}>
-                      <div className="relative h-64 w-full bg-gradient-to-br from-yellow-50 to-yellow-100 overflow-hidden">
+                      <div className="relative h-64 w-full bg-gradient-to-br from-orange-50 to-orange-100 overflow-hidden">
                         <Image
                           src={product.images[0] || "/placeholder.jpg"}
                           alt={product.name}
@@ -214,7 +214,7 @@ export default function WishlistPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="text-white hover:text-white hover:bg-yellow-500/80 rounded-full p-2"
+                            className="text-white hover:text-white hover:bg-orange-500/80 rounded-full p-2"
                             onClick={(e) => {
                               e.preventDefault();
                               handleQuickView(product);
@@ -260,7 +260,7 @@ export default function WishlistPage() {
 
                     <div className="p-6 text-center">
                       <div className="flex items-center justify-center mb-3">
-                        <div className="flex text-yellow-400">
+                        <div className="flex text-orange-400">
                           {[...Array(5)].map((_, i) => (
                             <Star
                               key={i}
@@ -280,7 +280,7 @@ export default function WishlistPage() {
 
                       <Link
                         href={`/products/${product.slug}`}
-                        className="hover:text-yellow-600 transition-colors"
+                        className="hover:text-orange-600 transition-colors"
                       >
                         <h3 className="font-semibold text-gray-800 mb-3 line-clamp-2 text-lg">
                           {product.name}
@@ -298,7 +298,7 @@ export default function WishlistPage() {
                           href={`/products/${product.slug}`}
                           className="flex-1"
                         >
-                          <Button className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white rounded-xl font-semibold transition-all duration-200">
+                          <Button className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl font-semibold transition-all duration-200">
                             View Product
                             <ArrowRight className="h-4 w-4 ml-2" />
                           </Button>

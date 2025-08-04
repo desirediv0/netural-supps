@@ -322,10 +322,10 @@ export default function CheckoutPage() {
 
   if (!isAuthenticated || loadingAddresses) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-50">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
         <div className="container mx-auto px-4 py-10">
           <div className="flex justify-center items-center h-64">
-            <div className="w-12 h-12 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
           </div>
         </div>
       </div>
@@ -335,18 +335,18 @@ export default function CheckoutPage() {
   // If order created successfully
   if (orderCreated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-50">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
         <div className="container mx-auto px-4 py-12">
           <div className="max-w-lg mx-auto bg-white p-8 rounded-2xl shadow-xl border border-gray-100 relative overflow-hidden">
             {/* Background pattern for festive feel */}
-            <div className="absolute inset-0 bg-gradient-to-br from-yellow-50 to-transparent z-0"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-transparent z-0"></div>
 
             {/* Celebration animation */}
             <div className="relative z-10">
               <div className="relative flex justify-center">
-                <div className="h-36 w-36 bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
+                <div className="h-36 w-36 bg-gradient-to-br from-orange-100 to-orange-200 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
                   <PartyPopper
-                    className={`h-20 w-20 text-yellow-600 ${
+                    className={`h-20 w-20 text-orange-600 ${
                       confettiCannon ? "animate-pulse" : ""
                     }`}
                   />
@@ -354,9 +354,9 @@ export default function CheckoutPage() {
 
                 {/* Radiating circles animation */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="animate-ping absolute h-40 w-40 rounded-full bg-yellow-500 opacity-20"></div>
+                  <div className="animate-ping absolute h-40 w-40 rounded-full bg-orange-500 opacity-20"></div>
                   <div className="animate-ping absolute h-32 w-32 rounded-full bg-green-500 opacity-10 delay-150"></div>
-                  <div className="animate-ping absolute h-24 w-24 rounded-full bg-yellow-500 opacity-10 delay-300"></div>
+                  <div className="animate-ping absolute h-24 w-24 rounded-full bg-orange-500 opacity-10 delay-300"></div>
                 </div>
               </div>
 
@@ -370,8 +370,8 @@ export default function CheckoutPage() {
                 </h2>
 
                 {orderNumber && (
-                  <div className="bg-gradient-to-r from-yellow-100 to-yellow-200 py-3 px-6 rounded-full inline-block mb-4">
-                    <p className="text-lg font-semibold text-yellow-700">
+                  <div className="bg-gradient-to-r from-orange-100 to-orange-200 py-3 px-6 rounded-full inline-block mb-4">
+                    <p className="text-lg font-semibold text-orange-700">
                       Order #{orderNumber}
                     </p>
                   </div>
@@ -398,7 +398,7 @@ export default function CheckoutPage() {
 
                 <div className="flex justify-center gap-4">
                   <Link href="/account/orders">
-                    <Button className="gap-2 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 rounded-xl">
+                    <Button className="gap-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-xl">
                       <ShoppingBag size={16} />
                       My Orders
                     </Button>
@@ -406,7 +406,7 @@ export default function CheckoutPage() {
                   <Link href="/products">
                     <Button
                       variant="outline"
-                      className="gap-2 border-yellow-200 text-yellow-600 hover:bg-yellow-50 rounded-xl"
+                      className="gap-2 border-orange-200 text-orange-600 hover:bg-orange-50 rounded-xl"
                     >
                       <Gift size={16} />
                       Continue Shopping
@@ -422,7 +422,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-gray-800">Secure Checkout</h1>
@@ -455,13 +455,13 @@ export default function CheckoutPage() {
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold flex items-center text-gray-800">
-                  <MapPin className="h-6 w-6 mr-3 text-yellow-500" />
+                  <MapPin className="h-6 w-6 mr-3 text-orange-500" />
                   Shipping Address
                 </h2>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-yellow-600 hover:bg-yellow-50 rounded-xl"
+                  className="text-orange-600 hover:bg-orange-50 rounded-xl"
                   onClick={() => setShowAddressForm(!showAddressForm)}
                 >
                   <Plus className="h-4 w-4 mr-1" />
@@ -480,11 +480,11 @@ export default function CheckoutPage() {
               )}
 
               {addresses.length === 0 && !showAddressForm ? (
-                <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-200">
-                  <span className="text-yellow-700">
+                <div className="bg-orange-50 p-4 rounded-xl border border-orange-200">
+                  <span className="text-orange-700">
                     You don&apos;t have any saved addresses.{" "}
                     <button
-                      className="font-medium underline hover:text-yellow-800"
+                      className="font-medium underline hover:text-orange-800"
                       onClick={() => setShowAddressForm(true)}
                     >
                       Add an address
@@ -503,7 +503,7 @@ export default function CheckoutPage() {
                       key={address.id}
                       className={`border-2 rounded-xl p-4 cursor-pointer transition-all ${
                         selectedAddressId === address.id
-                          ? "border-yellow-500 bg-yellow-50"
+                          ? "border-orange-500 bg-orange-50"
                           : "border-gray-200 hover:border-gray-300"
                       }`}
                       onClick={() => handleAddressSelect(address.id)}
@@ -513,7 +513,7 @@ export default function CheckoutPage() {
                           {address.name}
                         </span>
                         {address.isDefault && (
-                          <span className="text-xs bg-yellow-100 text-yellow-600 px-2 py-1 rounded-full">
+                          <span className="text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded-full">
                             Default
                           </span>
                         )}
@@ -534,7 +534,7 @@ export default function CheckoutPage() {
                           name="addressSelection"
                           checked={selectedAddressId === address.id}
                           onChange={() => handleAddressSelect(address.id)}
-                          className="h-4 w-4 text-yellow-500 border-gray-300 focus:ring-yellow-500"
+                          className="h-4 w-4 text-orange-500 border-gray-300 focus:ring-orange-500"
                         />
                         <label className="ml-2 text-sm font-medium text-gray-700">
                           Ship to this address
@@ -549,7 +549,7 @@ export default function CheckoutPage() {
             {/* Payment Method */}
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
               <h2 className="text-xl font-bold flex items-center mb-6 text-gray-800">
-                <CreditCard className="h-6 w-6 mr-3 text-yellow-500" />
+                <CreditCard className="h-6 w-6 mr-3 text-orange-500" />
                 Payment Method
               </h2>
 
@@ -557,7 +557,7 @@ export default function CheckoutPage() {
                 <div
                   className={`border-2 rounded-xl p-4 cursor-pointer transition-all ${
                     paymentMethod === "RAZORPAY"
-                      ? "border-yellow-500 bg-yellow-50"
+                      ? "border-orange-500 bg-orange-50"
                       : "border-gray-200 hover:border-gray-300"
                   }`}
                   onClick={() => handlePaymentMethodSelect("RAZORPAY")}
@@ -569,7 +569,7 @@ export default function CheckoutPage() {
                       name="paymentMethod"
                       checked={paymentMethod === "RAZORPAY"}
                       onChange={() => handlePaymentMethodSelect("RAZORPAY")}
-                      className="h-4 w-4 text-yellow-500 border-gray-300 focus:ring-yellow-500"
+                      className="h-4 w-4 text-orange-500 border-gray-300 focus:ring-orange-500"
                     />
                     <label
                       htmlFor="razorpay"
@@ -583,7 +583,7 @@ export default function CheckoutPage() {
                       </span>
                     </label>
                     <span className="flex items-center">
-                      <IndianRupee className="h-5 w-5 text-yellow-500" />
+                      <IndianRupee className="h-5 w-5 text-orange-500" />
                     </span>
                   </div>
                   <p className="text-sm text-gray-600 mt-2 ml-7">
@@ -609,7 +609,7 @@ export default function CheckoutPage() {
                   <div className="max-h-52 overflow-y-auto space-y-3">
                     {cart.items?.map((item) => (
                       <div key={item.id} className="flex items-center gap-3">
-                        <div className="h-12 w-12 bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg flex-shrink-0 relative">
+                        <div className="h-12 w-12 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg flex-shrink-0 relative">
                           {item.product.image && (
                             <Image
                               src={item.product.image || "/placeholder.jpg"}
@@ -664,7 +664,7 @@ export default function CheckoutPage() {
                 <div className="pt-4">
                   <div className="flex justify-between font-bold text-xl">
                     <span className="text-gray-800">Total</span>
-                    <span className="text-yellow-600">
+                    <span className="text-orange-600">
                       {formatCurrency(totals.subtotal - totals.discount)}
                     </span>
                   </div>
@@ -672,7 +672,7 @@ export default function CheckoutPage() {
               </div>
 
               <Button
-                className="w-full mt-6 h-14 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white font-bold text-lg rounded-xl transition-all duration-200 transform hover:scale-[1.02]"
+                className="w-full mt-6 h-14 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold text-lg rounded-xl transition-all duration-200 transform hover:scale-[1.02]"
                 onClick={handleCheckout}
                 disabled={
                   processing ||
@@ -712,8 +712,10 @@ export default function CheckoutPage() {
                     <span className="text-xs text-gray-600">Free Shipping</span>
                   </div>
                   <div className="flex flex-col items-center">
-                    <Clock className="h-6 w-6 text-yellow-500 mb-1" />
-                    <span className="text-xs text-gray-600">Fast Delivery</span>
+                    <Clock className="h-6 w-6 text-orange-500 mb-1" />
+                    <span className="text-xs text-gray-600">
+                      Scratch Card + Fast Delivery
+                    </span>
                   </div>
                 </div>
               </div>

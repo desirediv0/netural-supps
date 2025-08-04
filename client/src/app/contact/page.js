@@ -86,13 +86,13 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
       <main className="py-12 md:py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             {/* Header Section */}
             <div className="text-center mb-12">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-full mb-6">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full mb-6">
                 <MessageCircle className="h-8 w-8 text-white" />
               </div>
               <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
@@ -109,8 +109,8 @@ export default function ContactPage() {
               <div className="md:col-span-3">
                 <div className="bg-white p-8 md:p-10 rounded-2xl shadow-xl border border-gray-100">
                   <div className="flex items-center mb-8">
-                    <div className="bg-yellow-100 p-3 rounded-xl mr-4">
-                      <Send className="h-6 w-6 text-yellow-600" />
+                    <div className="bg-orange-100 p-3 rounded-xl mr-4">
+                      <Send className="h-6 w-6 text-orange-600" />
                     </div>
                     <div>
                       <h2 className="text-2xl font-bold text-gray-800">
@@ -138,7 +138,7 @@ export default function ContactPage() {
                           onChange={handleInputChange}
                           required
                           placeholder="Enter your name"
-                          className="w-full h-12 px-4 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-yellow-500 transition-colors"
+                          className="w-full h-12 px-4 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-orange-500 transition-colors"
                         />
                       </div>
                       <div>
@@ -156,7 +156,7 @@ export default function ContactPage() {
                           onChange={handleInputChange}
                           required
                           placeholder="Enter your email"
-                          className="w-full h-12 px-4 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-yellow-500 transition-colors"
+                          className="w-full h-12 px-4 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-orange-500 transition-colors"
                         />
                       </div>
                     </div>
@@ -175,7 +175,7 @@ export default function ContactPage() {
                           value={formData.phone}
                           onChange={handleInputChange}
                           placeholder="Enter your phone number"
-                          className="w-full h-12 px-4 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-yellow-500 transition-colors"
+                          className="w-full h-12 px-4 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-orange-500 transition-colors"
                         />
                       </div>
                       <div>
@@ -191,7 +191,7 @@ export default function ContactPage() {
                           value={formData.subject}
                           onChange={handleInputChange}
                           placeholder="What is this regarding?"
-                          className="w-full h-12 px-4 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-yellow-500 transition-colors"
+                          className="w-full h-12 px-4 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-orange-500 transition-colors"
                         />
                       </div>
                     </div>
@@ -211,13 +211,13 @@ export default function ContactPage() {
                         required
                         placeholder="How can we help you?"
                         rows={6}
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:ring-yellow-500 transition-colors resize-none"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-orange-500 transition-colors resize-none"
                       />
                     </div>
 
                     <Button
                       type="submit"
-                      className="w-full h-12 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white font-semibold rounded-xl transition-all duration-200 transform hover:scale-[1.02]"
+                      className="w-full h-12 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl transition-all duration-200 transform hover:scale-[1.02]"
                       disabled={formLoading}
                     >
                       {formLoading ? (
@@ -252,8 +252,8 @@ export default function ContactPage() {
                   <>
                     <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
                       <div className="flex items-center mb-6">
-                        <div className="bg-yellow-100 p-3 rounded-xl mr-4">
-                          <HeadphonesIcon className="h-6 w-6 text-yellow-600" />
+                        <div className="bg-orange-100 p-3 rounded-xl mr-4">
+                          <HeadphonesIcon className="h-6 w-6 text-orange-600" />
                         </div>
                         <div>
                           <h3 className="text-xl font-bold text-gray-800">
@@ -266,8 +266,8 @@ export default function ContactPage() {
                       </div>
                       <div className="space-y-6">
                         <div className="flex items-start">
-                          <div className="bg-yellow-50 p-2 rounded-lg mr-4">
-                            <MapPin className="h-5 w-5 text-yellow-600" />
+                          <div className="bg-orange-50 p-2 rounded-lg mr-4">
+                            <MapPin className="h-5 w-5 text-orange-600" />
                           </div>
                           <div>
                             <p className="font-semibold text-gray-800">
@@ -280,8 +280,8 @@ export default function ContactPage() {
                           </div>
                         </div>
                         <div className="flex items-start">
-                          <div className="bg-yellow-50 p-2 rounded-lg mr-4">
-                            <Phone className="h-5 w-5 text-yellow-600" />
+                          <div className="bg-orange-50 p-2 rounded-lg mr-4">
+                            <Phone className="h-5 w-5 text-orange-600" />
                           </div>
                           <div>
                             <p className="font-semibold text-gray-800">Phone</p>
@@ -291,8 +291,8 @@ export default function ContactPage() {
                           </div>
                         </div>
                         <div className="flex items-start">
-                          <div className="bg-yellow-50 p-2 rounded-lg mr-4">
-                            <Mail className="h-5 w-5 text-yellow-600" />
+                          <div className="bg-orange-50 p-2 rounded-lg mr-4">
+                            <Mail className="h-5 w-5 text-orange-600" />
                           </div>
                           <div>
                             <p className="font-semibold text-gray-800">Email</p>
@@ -302,8 +302,8 @@ export default function ContactPage() {
                           </div>
                         </div>
                         <div className="flex items-start">
-                          <div className="bg-yellow-50 p-2 rounded-lg mr-4">
-                            <Clock className="h-5 w-5 text-yellow-600" />
+                          <div className="bg-orange-50 p-2 rounded-lg mr-4">
+                            <Clock className="h-5 w-5 text-orange-600" />
                           </div>
                           <div>
                             <p className="font-semibold text-gray-800">
@@ -320,8 +320,8 @@ export default function ContactPage() {
 
                     <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
                       <div className="flex items-center mb-6">
-                        <div className="bg-yellow-100 p-3 rounded-xl mr-4">
-                          <Users className="h-6 w-6 text-yellow-600" />
+                        <div className="bg-orange-100 p-3 rounded-xl mr-4">
+                          <Users className="h-6 w-6 text-orange-600" />
                         </div>
                         <div>
                           <h3 className="text-xl font-bold text-gray-800">

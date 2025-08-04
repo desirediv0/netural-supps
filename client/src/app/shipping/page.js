@@ -27,7 +27,7 @@ export default function ShippingPolicyPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-50">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
         <div className="container mx-auto px-4 py-12">
           <div className="max-w-4xl mx-auto">
             <Skeleton className="h-10 w-1/2 mx-auto mb-6" />
@@ -49,13 +49,13 @@ export default function ShippingPolicyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
       <main className="py-12 md:py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             {/* Header Section */}
             <div className="text-center mb-12">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-full mb-6">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full mb-6">
                 <Truck className="h-8 w-8 text-white" />
               </div>
               <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
@@ -70,8 +70,8 @@ export default function ShippingPolicyPage() {
             {/* Quick Info Cards */}
             <div className="grid md:grid-cols-3 gap-6 mb-12">
               <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 text-center">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-yellow-100 rounded-xl mb-4">
-                  <Package className="h-6 w-6 text-yellow-600" />
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-orange-100 rounded-xl mb-4">
+                  <Package className="h-6 w-6 text-orange-600" />
                 </div>
                 <h3 className="font-bold text-gray-800 mb-2">Free Shipping</h3>
                 <p className="text-gray-600 text-sm">
@@ -79,17 +79,19 @@ export default function ShippingPolicyPage() {
                 </p>
               </div>
               <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 text-center">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-yellow-100 rounded-xl mb-4">
-                  <Clock className="h-6 w-6 text-yellow-600" />
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-orange-100 rounded-xl mb-4">
+                  <Clock className="h-6 w-6 text-orange-600" />
                 </div>
-                <h3 className="font-bold text-gray-800 mb-2">Fast Delivery</h3>
+                <h3 className="font-bold text-gray-800 mb-2">
+                  Scratch Card + Fast Delivery
+                </h3>
                 <p className="text-gray-600 text-sm">
                   1-3 days in metro cities
                 </p>
               </div>
               <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 text-center">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-yellow-100 rounded-xl mb-4">
-                  <Shield className="h-6 w-6 text-yellow-600" />
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-orange-100 rounded-xl mb-4">
+                  <Shield className="h-6 w-6 text-orange-600" />
                 </div>
                 <h3 className="font-bold text-gray-800 mb-2">
                   Secure Packaging
@@ -106,7 +108,7 @@ export default function ShippingPolicyPage() {
               {content && content.content ? (
                 <div className="p-8">
                   <div
-                    className="prose prose-lg max-w-none prose-headings:text-gray-800 prose-p:text-gray-600 prose-a:text-yellow-600 prose-strong:text-gray-800"
+                    className="prose prose-lg max-w-none prose-headings:text-gray-800 prose-p:text-gray-600 prose-a:text-orange-600 prose-strong:text-gray-800"
                     dangerouslySetInnerHTML={{ __html: content.content }}
                   />
                 </div>
@@ -115,8 +117,8 @@ export default function ShippingPolicyPage() {
                   <div className="prose prose-lg max-w-none">
                     <section className="mb-10">
                       <div className="flex items-center mb-4">
-                        <div className="bg-yellow-100 p-2 rounded-lg mr-3">
-                          <Truck className="h-5 w-5 text-yellow-600" />
+                        <div className="bg-orange-100 p-2 rounded-lg mr-3">
+                          <Truck className="h-5 w-5 text-orange-600" />
                         </div>
                         <h2 className="text-2xl font-bold text-gray-800">
                           Delivery Information
@@ -134,8 +136,8 @@ export default function ShippingPolicyPage() {
 
                     <section className="mb-10">
                       <div className="flex items-center mb-4">
-                        <div className="bg-yellow-100 p-2 rounded-lg mr-3">
-                          <Clock className="h-5 w-5 text-yellow-600" />
+                        <div className="bg-orange-100 p-2 rounded-lg mr-3">
+                          <Clock className="h-5 w-5 text-orange-600" />
                         </div>
                         <h2 className="text-2xl font-bold text-gray-800">
                           Delivery Timeframes
@@ -146,10 +148,10 @@ export default function ShippingPolicyPage() {
                         (excluding weekends and holidays). The estimated
                         delivery times are as follows:
                       </p>
-                      <div className="bg-yellow-50 p-6 rounded-xl border border-yellow-100">
+                      <div className="bg-orange-50 p-6 rounded-xl border border-orange-100">
                         <ul className="space-y-3">
                           <li className="flex items-center">
-                            <div className="w-2 h-2 bg-yellow-500 rounded-full mr-3"></div>
+                            <div className="w-2 h-2 bg-orange-500 rounded-full mr-3"></div>
                             <strong className="text-gray-800">
                               Metro Cities (Delhi, Mumbai, Bangalore, Chennai,
                               Hyderabad, Kolkata):
@@ -159,7 +161,7 @@ export default function ShippingPolicyPage() {
                             </span>
                           </li>
                           <li className="flex items-center">
-                            <div className="w-2 h-2 bg-yellow-500 rounded-full mr-3"></div>
+                            <div className="w-2 h-2 bg-orange-500 rounded-full mr-3"></div>
                             <strong className="text-gray-800">
                               Tier 2 Cities:
                             </strong>
@@ -168,7 +170,7 @@ export default function ShippingPolicyPage() {
                             </span>
                           </li>
                           <li className="flex items-center">
-                            <div className="w-2 h-2 bg-yellow-500 rounded-full mr-3"></div>
+                            <div className="w-2 h-2 bg-orange-500 rounded-full mr-3"></div>
                             <strong className="text-gray-800">
                               Other regions:
                             </strong>
@@ -177,7 +179,7 @@ export default function ShippingPolicyPage() {
                             </span>
                           </li>
                           <li className="flex items-center">
-                            <div className="w-2 h-2 bg-yellow-500 rounded-full mr-3"></div>
+                            <div className="w-2 h-2 bg-orange-500 rounded-full mr-3"></div>
                             <strong className="text-gray-800">
                               Remote areas:
                             </strong>
@@ -196,8 +198,8 @@ export default function ShippingPolicyPage() {
 
                     <section className="mb-10">
                       <div className="flex items-center mb-4">
-                        <div className="bg-yellow-100 p-2 rounded-lg mr-3">
-                          <Package className="h-5 w-5 text-yellow-600" />
+                        <div className="bg-orange-100 p-2 rounded-lg mr-3">
+                          <Package className="h-5 w-5 text-orange-600" />
                         </div>
                         <h2 className="text-2xl font-bold text-gray-800">
                           Shipping Fees
@@ -236,8 +238,8 @@ export default function ShippingPolicyPage() {
 
                     <section className="mb-10">
                       <div className="flex items-center mb-4">
-                        <div className="bg-yellow-100 p-2 rounded-lg mr-3">
-                          <MapPin className="h-5 w-5 text-yellow-600" />
+                        <div className="bg-orange-100 p-2 rounded-lg mr-3">
+                          <MapPin className="h-5 w-5 text-orange-600" />
                         </div>
                         <h2 className="text-2xl font-bold text-gray-800">
                           Order Tracking
@@ -250,21 +252,21 @@ export default function ShippingPolicyPage() {
                       </p>
                       <ol className="space-y-2 text-gray-600">
                         <li className="flex items-start">
-                          <span className="bg-yellow-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">
+                          <span className="bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">
                             1
                           </span>
                           Logging into your account and viewing your order
                           history
                         </li>
                         <li className="flex items-start">
-                          <span className="bg-yellow-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">
+                          <span className="bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">
                             2
                           </span>
                           Using the tracking link provided in your shipping
                           confirmation email
                         </li>
                         <li className="flex items-start">
-                          <span className="bg-yellow-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">
+                          <span className="bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">
                             3
                           </span>
                           Contacting our customer support team with your order
@@ -300,8 +302,8 @@ export default function ShippingPolicyPage() {
 
                     <section>
                       <div className="flex items-center mb-4">
-                        <div className="bg-yellow-100 p-2 rounded-lg mr-3">
-                          <Shield className="h-5 w-5 text-yellow-600" />
+                        <div className="bg-orange-100 p-2 rounded-lg mr-3">
+                          <Shield className="h-5 w-5 text-orange-600" />
                         </div>
                         <h2 className="text-2xl font-bold text-gray-800">
                           Lost or Damaged Packages
@@ -314,14 +316,14 @@ export default function ShippingPolicyPage() {
                         courier service to locate your package or arrange for a
                         replacement to be sent to you.
                       </p>
-                      <div className="bg-yellow-50 p-6 rounded-xl border border-yellow-200">
+                      <div className="bg-orange-50 p-6 rounded-xl border border-orange-200">
                         <div className="flex items-center">
-                          <Phone className="h-5 w-5 text-yellow-600 mr-3" />
+                          <Phone className="h-5 w-5 text-orange-600 mr-3" />
                           <div>
-                            <p className="text-yellow-800 font-medium">
+                            <p className="text-orange-800 font-medium">
                               For any shipping-related queries, contact us at:
                             </p>
-                            <p className="text-yellow-700">
+                            <p className="text-orange-700">
                               Email: support@powerfitness.com | Phone: +91 98765
                               43210
                             </p>

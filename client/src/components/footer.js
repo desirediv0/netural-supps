@@ -47,7 +47,9 @@ export function Footer() {
               </div>
               <div className="flex items-center space-x-2 text-sm">
                 <Truck className="w-4 h-4 text-orange-500" />
-                <span className="text-gray-300">Fast Delivery</span>
+                <span className="text-gray-300">
+                  Scratch Card + Fast Delivery
+                </span>
               </div>
               <div className="flex items-center space-x-2 text-sm">
                 <Sparkles className="w-4 h-4 text-orange-500" />
@@ -180,9 +182,11 @@ export function Footer() {
             </div>
             <div className="flex flex-col items-center">
               <Truck className="w-8 h-8 text-orange-500 mb-2" />
-              <h4 className="text-white font-semibold mb-1">Fast Delivery</h4>
+              <h4 className="text-white font-semibold mb-1">
+                Scratch Card + Fast Delivery
+              </h4>
               <p className="text-gray-400 text-sm">
-                Free shipping on orders above ₹999
+                Get a Scratch Card on orders over ₹999!
               </p>
             </div>
             <div className="flex flex-col items-center">

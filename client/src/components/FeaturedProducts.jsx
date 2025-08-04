@@ -68,13 +68,13 @@ const FeaturedProducts = ({
     <section className="py-16 bg-gradient-to-b from-gray-50 to-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-[#2C3E50] to-[#ce801f] bg-clip-text text-transparent mb-4">
+          <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-[#2C3E50] to-orange-500 bg-clip-text text-transparent mb-4">
             Featured Products
           </h2>
           <div className="flex items-center justify-center gap-2">
-            <div className="w-12 h-1 bg-gradient-to-r from-[#2C3E50] to-[#ce801f] rounded-full"></div>
-            <div className="w-3 h-3 bg-[#ce801f] rounded-full"></div>
-            <div className="w-12 h-1 bg-gradient-to-r from-[#ce801f] to-[#2C3E50] rounded-full"></div>
+            <div className="w-12 h-1 bg-gradient-to-r from-[#2C3E50] to-orange-500 rounded-full"></div>
+            <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+            <div className="w-12 h-1 bg-gradient-to-r from-orange-500 to-[#2C3E50] rounded-full"></div>
           </div>
         </div>
 
@@ -161,7 +161,7 @@ const FeaturedProducts = ({
 
                       {/* Rating */}
                       <div className="flex items-center mb-3">
-                        <div className="flex text-yellow-400">
+                        <div className="flex text-orange-400">
                           {[...Array(5)].map((_, i) => (
                             <Star
                               key={i}
@@ -183,7 +183,7 @@ const FeaturedProducts = ({
                       <div className="mb-4">
                         {product.hasSale ? (
                           <div className="flex items-center space-x-2">
-                            <span className="font-bold text-2xl bg-gradient-to-r from-[#50432c] to-[#ce801f] bg-clip-text text-transparent">
+                            <span className="font-bold text-2xl bg-gradient-to-r from-[#50432c] to-orange-500 bg-clip-text text-transparent">
                               ₹{product.basePrice || 0}
                             </span>
                             <span className="text-gray-400 line-through text-base">
@@ -191,7 +191,7 @@ const FeaturedProducts = ({
                             </span>
                           </div>
                         ) : (
-                          <span className="font-bold text-2xl bg-gradient-to-r from-[#50432c] to-[#ce801f] bg-clip-text text-transparent">
+                          <span className="font-bold text-2xl bg-gradient-to-r from-[#50432c] to-orange-500 bg-clip-text text-transparent">
                             ₹{product.basePrice || 0}
                           </span>
                         )}
@@ -206,7 +206,7 @@ const FeaturedProducts = ({
 
                       {/* Add to Cart Button */}
                       <Button
-                        className="w-full bg-gradient-to-r from-[#ce801f] to-[#ce801f] hover:from-[#ce801f] hover:to-[#ce801f] text-white font-medium py-3 rounded-xl transition-all duration-500 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 group mt-auto"
+                        className="w-full bg-gradient-to-r from-orange-500 to-orange-500 hover:from-orange-500 hover:to-orange-500 text-white font-medium py-3 rounded-xl transition-all duration-500 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 group mt-auto"
                         onClick={(e) => {
                           e.preventDefault();
                           console.log("Add to cart:", product);
@@ -220,8 +220,8 @@ const FeaturedProducts = ({
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="hidden md:flex -left-4 w-12 h-12 bg-white border-2 border-[#ce801f] text-[#ce801f] hover:bg-gradient-to-r hover:from-[#ce801f] hover:to-[#ce801f] hover:text-white transition-all duration-300 transform hover:scale-110" />
-            <CarouselNext className="hidden md:flex -right-4 w-12 h-12 bg-white border-2 border-[#ce801f] text-[#ce801f] hover:bg-gradient-to-r hover:from-[#ce801f] hover:to-[#ce801f] hover:text-white transition-all duration-300 transform hover:scale-110" />
+            <CarouselPrevious className="hidden md:flex -left-4 w-12 h-12 bg-white border-2 border-orange-500 text-orange-500 hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-500 hover:text-white transition-all duration-300 transform hover:scale-110" />
+            <CarouselNext className="hidden md:flex -right-4 w-12 h-12 bg-white border-2 border-orange-500 text-orange-500 hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-500 hover:text-white transition-all duration-300 transform hover:scale-110" />
           </Carousel>
         </div>
 
@@ -231,7 +231,7 @@ const FeaturedProducts = ({
             <Button
               variant="outline"
               size="lg"
-              className="font-medium border-2 border-[#ce801f] text-[#ce801f] hover:bg-gradient-to-r hover:from-[#ce801f] hover:to-[#ce801f] hover:text-white px-12 py-6 rounded-full transition-all duration-500 transform hover:-translate-y-1 hover:shadow-2xl group"
+              className="font-medium border-2 border-orange-500 text-orange-500 hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-500 hover:text-white px-12 py-6 rounded-full transition-all duration-500 transform hover:-translate-y-1 hover:shadow-2xl group"
             >
               <span className="mr-2 transition-transform duration-500 group-hover:translate-x-1">
                 View All Products

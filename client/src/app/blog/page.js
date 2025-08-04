@@ -52,10 +52,10 @@ function BlogContent() {
       {/* Show current category as a title if filtering */}
       {categorySlug && (
         <div className="mb-8 text-center">
-          <div className="inline-flex items-center bg-yellow-100 px-6 py-3 rounded-full">
-            <Tag className="h-5 w-5 text-yellow-600 mr-2" />
-            <span className="text-yellow-700 font-semibold">
-              Category: <span className="text-yellow-600">{categorySlug}</span>
+          <div className="inline-flex items-center bg-orange-100 px-6 py-3 rounded-full">
+            <Tag className="h-5 w-5 text-orange-600 mr-2" />
+            <span className="text-orange-700 font-semibold">
+              Category: <span className="text-orange-600">{categorySlug}</span>
             </span>
           </div>
         </div>
@@ -101,19 +101,19 @@ function BlogContent() {
                 </Link>
                 <div className="p-6">
                   <div className="flex items-center text-sm text-gray-500 mb-3">
-                    <Calendar className="h-4 w-4 mr-2 text-yellow-500" />
+                    <Calendar className="h-4 w-4 mr-2 text-orange-500" />
                     <span className="mr-4">{formatDate(post.createdAt)}</span>
                     {post.categories?.length > 0 && (
                       <>
-                        <Tag className="h-4 w-4 mr-2 text-yellow-500" />
-                        <span className="bg-yellow-100 text-yellow-600 px-2 py-1 rounded-full text-xs font-medium">
+                        <Tag className="h-4 w-4 mr-2 text-orange-500" />
+                        <span className="bg-orange-100 text-orange-600 px-2 py-1 rounded-full text-xs font-medium">
                           {post.categories[0].name}
                         </span>
                       </>
                     )}
                   </div>
                   <Link href={`/blog/${post.slug}`}>
-                    <h2 className="text-xl font-bold mb-3 hover:text-yellow-600 transition-colors line-clamp-2 text-gray-800">
+                    <h2 className="text-xl font-bold mb-3 hover:text-orange-600 transition-colors line-clamp-2 text-gray-800">
                       {post.title}
                     </h2>
                   </Link>
@@ -123,7 +123,7 @@ function BlogContent() {
                   <Link href={`/blog/${post.slug}`}>
                     <Button
                       variant="link"
-                      className="px-0 text-yellow-600 hover:text-yellow-700 font-semibold group"
+                      className="px-0 text-orange-600 hover:text-orange-700 font-semibold group"
                     >
                       Read More
                       <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -142,7 +142,7 @@ function BlogContent() {
                   variant="outline"
                   onClick={() => setPage(page - 1)}
                   disabled={page === 1}
-                  className="px-6 py-2 border-2 border-yellow-200 text-yellow-600 hover:bg-yellow-50 rounded-xl"
+                  className="px-6 py-2 border-2 border-orange-200 text-orange-600 hover:bg-orange-50 rounded-xl"
                 >
                   Previous
                 </Button>
@@ -153,8 +153,8 @@ function BlogContent() {
                     onClick={() => setPage(index + 1)}
                     className={`px-4 py-2 rounded-xl ${
                       page === index + 1
-                        ? "bg-gradient-to-r from-yellow-500 to-yellow-600 text-white"
-                        : "border-2 border-yellow-200 text-yellow-600 hover:bg-yellow-50"
+                        ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white"
+                        : "border-2 border-orange-200 text-orange-600 hover:bg-orange-50"
                     }`}
                   >
                     {index + 1}
@@ -164,7 +164,7 @@ function BlogContent() {
                   variant="outline"
                   onClick={() => setPage(page + 1)}
                   disabled={page === pagination.totalPages}
-                  className="px-6 py-2 border-2 border-yellow-200 text-yellow-600 hover:bg-yellow-50 rounded-xl"
+                  className="px-6 py-2 border-2 border-orange-200 text-orange-600 hover:bg-orange-50 rounded-xl"
                 >
                   Next
                 </Button>
@@ -174,8 +174,8 @@ function BlogContent() {
         </>
       ) : (
         <div className="text-center py-12 bg-white rounded-2xl shadow-lg border border-gray-100">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-yellow-100 rounded-full mb-6">
-            <BookOpen className="h-8 w-8 text-yellow-600" />
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full mb-6">
+            <BookOpen className="h-8 w-8 text-orange-600" />
           </div>
           <h2 className="text-2xl font-semibold mb-2 text-gray-800">
             No blog posts found
@@ -192,7 +192,7 @@ function BlogContent() {
           {categorySlug && (
             <Button
               onClick={() => (window.location.href = "/blog")}
-              className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white px-8 py-3 rounded-xl font-semibold"
+              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-8 py-3 rounded-xl font-semibold"
             >
               View All Posts
             </Button>
@@ -205,11 +205,11 @@ function BlogContent() {
 
 export default function BlogPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
       <main className="container mx-auto px-4 py-12">
         {/* Header Section */}
         <div className="text-center max-w-3xl mx-auto mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-full mb-6">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full mb-6">
             <BookOpen className="h-8 w-8 text-white" />
           </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-4 text-gray-800">

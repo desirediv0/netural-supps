@@ -116,7 +116,7 @@ export default function ReviewSection({ product }) {
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-lg">Customer Reviews</h3>
               <div className="flex items-center">
-                <div className="flex text-yellow-400 mr-2">
+                <div className="flex text-orange-400 mr-2">
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
@@ -143,7 +143,7 @@ export default function ReviewSection({ product }) {
                       <p className="font-semibold text-gray-800">
                         {review.user.name}
                       </p>
-                      <div className="flex text-yellow-400 mt-1">
+                      <div className="flex text-orange-400 mt-1">
                         {[...Array(5)].map((_, i) => (
                           <Star
                             key={i}
@@ -218,7 +218,7 @@ export default function ReviewSection({ product }) {
                         className={`h-8 w-8 cursor-pointer ${
                           formErrors.rating
                             ? "text-red-200 hover:text-red-400"
-                            : "text-gray-300 hover:text-yellow-400"
+                            : "text-gray-300 hover:text-orange-400"
                         }`}
                         fill={reviewForm.rating >= rating ? "#FBBF24" : "none"}
                         onClick={() => handleRatingClick(rating)}
@@ -355,7 +355,7 @@ export default function ReviewSection({ product }) {
                         className={`h-8 w-8 cursor-pointer ${
                           formErrors.rating
                             ? "text-red-200 hover:text-red-400"
-                            : "text-gray-300 hover:text-yellow-400"
+                            : "text-gray-300 hover:text-orange-400"
                         }`}
                         fill={reviewForm.rating >= rating ? "#FBBF24" : "none"}
                         onClick={() => handleRatingClick(rating)}

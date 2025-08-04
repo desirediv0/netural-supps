@@ -81,7 +81,7 @@ const HeroCarousel = () => {
         >
           <source src="/video.mp4" type="video/mp4" />
         </video>
-        <div className="absolute inset-0 bg-[#ce801f]/20 backdrop-blur-[2px] z-10" />
+        <div className="absolute inset-0 bg-orange-500/20 backdrop-blur-[2px] z-10" />
       </div>
 
       <Carousel setApi={setApi} className="h-full relative z-20">
@@ -106,7 +106,7 @@ const HeroCarousel = () => {
                     <Link href={slide.ctaLink}>
                       <Button
                         size="lg"
-                        className="text-lg px-8 lg:px-12 py-7 font-bold bg-[#ce801f] text-white hover:bg-[#ce801f]/90 hover:scale-105 transition-transform duration-200"
+                        className="text-lg px-8 lg:px-12 py-7 font-bold bg-orange-500 text-white hover:bg-orange-500/90 hover:scale-105 transition-transform duration-200"
                       >
                         {slide.cta}
                         <ChevronRight className="ml-2 h-5 w-5" />
@@ -169,7 +169,7 @@ const HeroCarousel = () => {
 // Announcement Banner
 const AnnouncementBanner = () => {
   return (
-    <div className="bg-gradient-to-r from-[#ce801f]/5 via-[#ce801f]/10 to-[#ce801f]/5 py-4 overflow-hidden border-b border-[#ce801f]/10">
+    <div className="bg-gradient-to-r from-orange-500/5 via-orange-500/10 to-orange-500/5 py-4 overflow-hidden border-b border-orange-500/10">
       <div className="container mx-auto px-4">
         <div className="flex flex-wrap items-center justify-center gap-6 md:gap-12 text-center">
           <motion.div
@@ -178,11 +178,11 @@ const AnnouncementBanner = () => {
             transition={{ duration: 0.5 }}
             className="flex items-center space-x-2"
           >
-            <div className="w-8 h-8 rounded-full bg-[#ce801f]/10 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-orange-500/10 flex items-center justify-center">
               ⚡
             </div>
             <span className="text-sm md:text-base font-medium">
-              FREE SHIPPING ON ORDERS ABOVE ₹999
+              Get a Scratch Card on orders over ₹999!
             </span>
           </motion.div>
 
@@ -210,8 +210,8 @@ const AnnouncementBanner = () => {
               🔥
             </div>
             <span className="text-sm md:text-base font-medium">
-              USE CODE <strong className="text-[#ce801f]">FIT10</strong> FOR 10%
-              OFF
+              USE CODE <strong className="text-orange-500">FIT10</strong> FOR
+              10% OFF
             </span>
           </motion.div>
         </div>
@@ -253,8 +253,8 @@ const TestimonialsSection = () => {
     <section className="py-32 bg-gradient-to-b from-white via-gray-50 to-white relative overflow-hidden">
       {/* Background elements */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute top-0 left-0 w-72 h-72 bg-[#ce801f]/5 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#ce801f]/5 rounded-full translate-x-1/2 translate-y-1/2 blur-3xl"></div>
+        <div className="absolute top-0 left-0 w-72 h-72 bg-orange-500/5 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-orange-500/5 rounded-full translate-x-1/2 translate-y-1/2 blur-3xl"></div>
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
@@ -286,7 +286,7 @@ const TestimonialsSection = () => {
                 <div className="absolute top-0 left-0 w-24 h-24 bg-primary/5 rounded-full -translate-x-1/2 -translate-y-1/2 blur-2xl"></div>
 
                 {/* Quote mark */}
-                <div className="absolute top-6 right-6 text-6xl text-[#ce801f]/10 font-serif">
+                <div className="absolute top-6 right-6 text-6xl text-orange-500/10 font-serif">
                   &quot;
                 </div>
 
@@ -294,8 +294,8 @@ const TestimonialsSection = () => {
                 <div className="relative">
                   {/* Avatar and info */}
                   <div className="flex items-center mb-6">
-                    <div className="w-16 h-16 relative rounded-full overflow-hidden border-2 border-[#ce801f]/20 shadow-md">
-                      <div className="w-full h-full bg-gradient-to-br from-[#ce801f] to-[#ce801f]/80 flex items-center justify-center text-white font-bold text-xl">
+                    <div className="w-16 h-16 relative rounded-full overflow-hidden border-2 border-orange-500/20 shadow-md">
+                      <div className="w-full h-full bg-gradient-to-br from-orange-500 to-orange-500/80 flex items-center justify-center text-white font-bold text-xl">
                         {testimonial.name.substring(0, 2).toUpperCase()}
                       </div>
                     </div>
@@ -303,7 +303,7 @@ const TestimonialsSection = () => {
                       <h3 className="font-bold text-gray-900 text-lg">
                         {testimonial.name}
                       </h3>
-                      <p className="text-sm text-[#ce801f] font-medium">
+                      <p className="text-sm text-orange-500 font-medium">
                         {testimonial.role}
                       </p>
                     </div>
@@ -316,7 +316,7 @@ const TestimonialsSection = () => {
                         key={i}
                         className={`h-5 w-5 ${
                           i < testimonial.rating
-                            ? "text-yellow-400 fill-yellow-400"
+                            ? "text-orange-400 fill-orange-400"
                             : "text-gray-300"
                         }`}
                       />
@@ -331,7 +331,7 @@ const TestimonialsSection = () => {
                   {/* Bottom design element */}
                   <div className="mt-8 flex justify-center">
                     <motion.div
-                      className="h-1 w-12 bg-[#ce801f]/30 rounded-full"
+                      className="h-1 w-12 bg-orange-500/30 rounded-full"
                       whileHover={{ width: 60 }}
                       transition={{ duration: 0.3 }}
                     />

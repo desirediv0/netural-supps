@@ -210,7 +210,7 @@ export default function LoginPage() {
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 text-sm">
-                  Fast Delivery
+                  Scratch Card + Fast Delivery
                 </h3>
                 <p className="text-gray-600 text-xs">
                   Quick and reliable shipping nationwide

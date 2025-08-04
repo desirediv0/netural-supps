@@ -22,7 +22,7 @@ export default function BlogPostClient({ post, relatedPosts }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-50">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
         <div className="container mx-auto px-4 py-12">
           <div className="max-w-4xl mx-auto">
             <Skeleton className="h-8 w-3/4 mb-4" />
@@ -45,11 +45,11 @@ export default function BlogPostClient({ post, relatedPosts }) {
 
   if (!postData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-50">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
         <div className="container mx-auto px-4 py-20 text-center">
           <div className="max-w-md mx-auto bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-yellow-100 rounded-full mb-6">
-              <BookOpen className="h-8 w-8 text-yellow-600" />
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full mb-6">
+              <BookOpen className="h-8 w-8 text-orange-600" />
             </div>
             <h1 className="text-2xl font-bold mb-4 text-gray-800">
               Blog Post Not Found
@@ -59,7 +59,7 @@ export default function BlogPostClient({ post, relatedPosts }) {
               been removed.
             </p>
             <Link href="/blog">
-              <Button className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white px-6 py-3 rounded-xl font-semibold">
+              <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 py-3 rounded-xl font-semibold">
                 <ChevronLeft className="h-4 w-4 mr-2" />
                 Back to Blog
               </Button>
@@ -71,14 +71,14 @@ export default function BlogPostClient({ post, relatedPosts }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
       <main className="pt-12 pb-20">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             {/* Back to blog link */}
             <Link
               href="/blog"
-              className="inline-flex items-center text-yellow-600 hover:text-yellow-700 mb-8 font-medium transition-colors group"
+              className="inline-flex items-center text-orange-600 hover:text-orange-700 mb-8 font-medium transition-colors group"
             >
               <ChevronLeft className="h-4 w-4 mr-1 transition-transform group-hover:-translate-x-1" />
               Back to Blog
@@ -88,7 +88,7 @@ export default function BlogPostClient({ post, relatedPosts }) {
             <header className="mb-10 bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
               <div className="flex flex-wrap items-center gap-4 mb-6 text-sm">
                 <div className="flex items-center text-gray-500">
-                  <Calendar className="h-4 w-4 mr-2 text-yellow-500" />
+                  <Calendar className="h-4 w-4 mr-2 text-orange-500" />
                   <time dateTime={postData.createdAt}>
                     {formatDate(postData.createdAt)}
                   </time>
@@ -97,14 +97,14 @@ export default function BlogPostClient({ post, relatedPosts }) {
                   <Link
                     key={category.id}
                     href={`/blog?category=${category.slug}`}
-                    className="flex items-center bg-yellow-100 text-yellow-600 px-3 py-1 rounded-full hover:bg-yellow-200 transition-colors"
+                    className="flex items-center bg-orange-100 text-orange-600 px-3 py-1 rounded-full hover:bg-orange-200 transition-colors"
                   >
                     <Tag className="h-3 w-3 mr-1" />
                     {category.name}
                   </Link>
                 ))}
                 <div className="flex items-center text-gray-500">
-                  <Clock className="h-4 w-4 mr-2 text-yellow-500" />
+                  <Clock className="h-4 w-4 mr-2 text-orange-500" />
                   <span>5 min read</span>
                 </div>
               </div>
@@ -136,7 +136,7 @@ export default function BlogPostClient({ post, relatedPosts }) {
             {/* Post content */}
             <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 mb-16">
               <div
-                className="prose prose-lg max-w-none prose-headings:text-gray-800 prose-p:text-gray-600 prose-a:text-yellow-600 prose-strong:text-gray-800"
+                className="prose prose-lg max-w-none prose-headings:text-gray-800 prose-p:text-gray-600 prose-a:text-orange-600 prose-strong:text-gray-800"
                 dangerouslySetInnerHTML={{ __html: postData.content }}
               />
             </div>
@@ -172,11 +172,11 @@ export default function BlogPostClient({ post, relatedPosts }) {
                       </Link>
                       <div className="p-4">
                         <div className="flex items-center text-xs text-gray-500 mb-2">
-                          <Calendar className="h-3 w-3 mr-1 text-yellow-500" />
+                          <Calendar className="h-3 w-3 mr-1 text-orange-500" />
                           {formatDate(relatedPost.createdAt)}
                         </div>
                         <Link href={`/blog/${relatedPost.slug}`}>
-                          <h3 className="font-bold hover:text-yellow-600 transition-colors line-clamp-2 mb-2 text-gray-800">
+                          <h3 className="font-bold hover:text-orange-600 transition-colors line-clamp-2 mb-2 text-gray-800">
                             {relatedPost.title}
                           </h3>
                         </Link>
@@ -186,7 +186,7 @@ export default function BlogPostClient({ post, relatedPosts }) {
                         <Link href={`/blog/${relatedPost.slug}`}>
                           <Button
                             variant="link"
-                            className="px-0 text-yellow-600 text-sm font-semibold hover:text-yellow-700"
+                            className="px-0 text-orange-600 text-sm font-semibold hover:text-orange-700"
                           >
                             Read More
                           </Button>

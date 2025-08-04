@@ -130,22 +130,22 @@ export default function ChangePasswordPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-50">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
         <div className="container mx-auto py-10 flex justify-center">
-          <div className="w-12 h-12 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
       <ClientOnly>
         <div className="container mx-auto py-10 px-4">
           <div className="flex items-center mb-8">
             <Link
               href="/account"
-              className="inline-flex items-center text-sm text-gray-600 hover:text-yellow-600 mr-6 font-medium transition-colors"
+              className="inline-flex items-center text-sm text-gray-600 hover:text-orange-600 mr-6 font-medium transition-colors"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Account
@@ -157,11 +157,11 @@ export default function ChangePasswordPage() {
 
           <div className="max-w-md mx-auto">
             {/* Header Card */}
-            <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-2xl p-8 text-white mb-8">
+            <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl p-8 text-white mb-8">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold mb-2">Security Settings</h2>
-                  <p className="text-yellow-100">
+                  <p className="text-orange-100">
                     Update your account password
                   </p>
                 </div>
@@ -173,9 +173,9 @@ export default function ChangePasswordPage() {
 
             {/* Form Card */}
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-              <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 px-8 py-6 border-b border-yellow-200">
+              <div className="bg-gradient-to-r from-orange-50 to-orange-100 px-8 py-6 border-b border-orange-200">
                 <div className="flex items-center">
-                  <div className="bg-yellow-500 p-3 rounded-xl mr-4">
+                  <div className="bg-orange-500 p-3 rounded-xl mr-4">
                     <Lock className="h-6 w-6 text-white" />
                   </div>
                   <div>
@@ -213,7 +213,7 @@ export default function ChangePasswordPage() {
                       htmlFor="currentPassword"
                       className="flex items-center text-sm font-semibold text-gray-700 mb-2"
                     >
-                      <Lock className="h-4 w-4 mr-2 text-yellow-500" />
+                      <Lock className="h-4 w-4 mr-2 text-orange-500" />
                       Current Password
                     </label>
                     <div className="relative">
@@ -224,7 +224,7 @@ export default function ChangePasswordPage() {
                         value={formData.currentPassword}
                         onChange={handleChange}
                         required
-                        className="h-12 px-4 pr-12 border-2 border-gray-200 rounded-xl focus:border-yellow-500 transition-colors"
+                        className="h-12 px-4 pr-12 border-2 border-gray-200 rounded-xl focus:border-orange-500 transition-colors"
                         placeholder="Enter your current password"
                       />
                       <button
@@ -246,7 +246,7 @@ export default function ChangePasswordPage() {
                       htmlFor="newPassword"
                       className="flex items-center text-sm font-semibold text-gray-700 mb-2"
                     >
-                      <Lock className="h-4 w-4 mr-2 text-yellow-500" />
+                      <Lock className="h-4 w-4 mr-2 text-orange-500" />
                       New Password
                     </label>
                     <div className="relative">
@@ -258,7 +258,7 @@ export default function ChangePasswordPage() {
                         onChange={handleChange}
                         required
                         minLength={8}
-                        className="h-12 px-4 pr-12 border-2 border-gray-200 rounded-xl focus:border-yellow-500 transition-colors"
+                        className="h-12 px-4 pr-12 border-2 border-gray-200 rounded-xl focus:border-orange-500 transition-colors"
                         placeholder="Enter your new password"
                       />
                       <button
@@ -284,7 +284,7 @@ export default function ChangePasswordPage() {
                       htmlFor="confirmPassword"
                       className="flex items-center text-sm font-semibold text-gray-700 mb-2"
                     >
-                      <Lock className="h-4 w-4 mr-2 text-yellow-500" />
+                      <Lock className="h-4 w-4 mr-2 text-orange-500" />
                       Confirm New Password
                     </label>
                     <div className="relative">
@@ -295,7 +295,7 @@ export default function ChangePasswordPage() {
                         value={formData.confirmPassword}
                         onChange={handleChange}
                         required
-                        className="h-12 px-4 pr-12 border-2 border-gray-200 rounded-xl focus:border-yellow-500 transition-colors"
+                        className="h-12 px-4 pr-12 border-2 border-gray-200 rounded-xl focus:border-orange-500 transition-colors"
                         placeholder="Confirm your new password"
                       />
                       <button
@@ -314,7 +314,7 @@ export default function ChangePasswordPage() {
 
                   <Button
                     type="submit"
-                    className="w-full h-12 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white font-semibold rounded-xl transition-all duration-200 transform hover:scale-[1.02]"
+                    className="w-full h-12 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl transition-all duration-200 transform hover:scale-[1.02]"
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? (

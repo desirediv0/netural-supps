@@ -105,7 +105,7 @@ export default function FAQsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-50">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
         <div className="container mx-auto px-4 py-12">
           <div className="max-w-4xl mx-auto">
             <Skeleton className="h-10 w-1/2 mx-auto mb-6" />
@@ -129,13 +129,13 @@ export default function FAQsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50">
       <main className="py-12 md:py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             {/* Header Section */}
             <div className="text-center mb-12">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-full mb-6">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full mb-6">
                 <HelpCircle className="h-8 w-8 text-white" />
               </div>
               <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
@@ -156,7 +156,7 @@ export default function FAQsPage() {
                   placeholder="Search FAQs..."
                   value={searchQuery}
                   onChange={handleSearchChange}
-                  className="w-full pl-12 pr-4 py-3 h-12 rounded-xl border-2 border-gray-200 focus:border-yellow-500 focus:ring-yellow-500 transition-colors"
+                  className="w-full pl-12 pr-4 py-3 h-12 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:ring-orange-500 transition-colors"
                 />
               </div>
             </div>
@@ -177,8 +177,8 @@ export default function FAQsPage() {
                       onClick={() => handleCategoryChange(category)}
                       className={`px-6 py-3 rounded-full text-sm font-semibold transition-all duration-200 ${
                         activeCategory === category
-                          ? "bg-gradient-to-r from-yellow-500 to-yellow-600 text-white shadow-lg transform scale-105"
-                          : "bg-white text-gray-700 border-2 border-gray-200 hover:border-yellow-300 hover:bg-yellow-50"
+                          ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg transform scale-105"
+                          : "bg-white text-gray-700 border-2 border-gray-200 hover:border-orange-300 hover:bg-orange-50"
                       }`}
                     >
                       {category === "all" ? "All Questions" : category}
@@ -202,9 +202,9 @@ export default function FAQsPage() {
                           : ""
                       }`}
                     >
-                      <AccordionTrigger className="text-lg font-semibold py-6 px-6 hover:no-underline hover:bg-yellow-50 transition-colors text-left">
+                      <AccordionTrigger className="text-lg font-semibold py-6 px-6 hover:no-underline hover:bg-orange-50 transition-colors text-left">
                         <span className="flex items-start">
-                          <span className="bg-yellow-100 text-yellow-600 rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-4 mt-0.5 flex-shrink-0">
+                          <span className="bg-orange-100 text-orange-600 rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-4 mt-0.5 flex-shrink-0">
                             {index + 1}
                           </span>
                           {faq.question}
@@ -236,7 +236,7 @@ export default function FAQsPage() {
                       setSearchQuery("");
                       setActiveCategory("all");
                     }}
-                    className="text-yellow-600 hover:text-yellow-700 font-medium underline"
+                    className="text-orange-600 hover:text-orange-700 font-medium underline"
                   >
                     view all FAQs
                   </button>
@@ -245,18 +245,18 @@ export default function FAQsPage() {
             )}
 
             {/* Contact section */}
-            <div className="mt-12 bg-gradient-to-r from-yellow-500 to-yellow-600 p-8 rounded-2xl text-center text-white shadow-xl">
+            <div className="mt-12 bg-gradient-to-r from-orange-500 to-orange-600 p-8 rounded-2xl text-center text-white shadow-xl">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-6">
                 <MessageCircle className="h-8 w-8 text-white" />
               </div>
               <h2 className="text-2xl font-bold mb-3">Still have questions?</h2>
-              <p className="text-yellow-100 mb-8 max-w-md mx-auto">
+              <p className="text-orange-100 mb-8 max-w-md mx-auto">
                 Can&apos;t find the answer you&apos;re looking for? Our support
                 team is here to help!
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
                 <a href="/contact">
-                  <Button className="bg-white text-yellow-600 hover:bg-gray-100 px-8 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105">
+                  <Button className="bg-white text-orange-600 hover:bg-gray-100 px-8 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105">
                     <MessageCircle className="h-4 w-4 mr-2" />
                     Contact Us
                   </Button>
@@ -264,7 +264,7 @@ export default function FAQsPage() {
                 <a href="mailto:support@powerfitness.com">
                   <Button
                     variant="outline"
-                    className="border-2 border-white text-white hover:bg-white hover:text-yellow-600 px-8 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105"
+                    className="border-2 border-white text-white hover:bg-white hover:text-orange-600 px-8 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105"
                   >
                     <Mail className="h-4 w-4 mr-2" />
                     Email Support

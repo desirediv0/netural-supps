@@ -494,7 +494,7 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
                 {/* Rating badge */}
                 {displayProduct.avgRating > 0 && (
                   <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-sm font-medium px-3 py-1 rounded-full shadow-lg flex items-center gap-1">
-                    <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+                    <Star className="h-4 w-4 text-orange-400 fill-orange-400" />
                     <span className="text-gray-800">
                       {displayProduct.avgRating?.toFixed(1)}
                     </span>
@@ -537,7 +537,7 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
                         key={star}
                         className={`h-5 w-5 ${
                           star <= Math.round(displayProduct.avgRating || 0)
-                            ? "text-yellow-400 fill-yellow-400"
+                            ? "text-orange-400 fill-orange-400"
                             : "text-gray-300"
                         }`}
                       />

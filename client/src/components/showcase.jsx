@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 
-
 export default function GymSupplementBanner() {
   const [isVisible, setIsVisible] = useState(false);
 
@@ -55,9 +54,9 @@ export default function GymSupplementBanner() {
                 Premium Collection
               </h2>
               <h1 className="text-4xl md:text-5xl font-extrabold mt-2 tracking-tight">
-                PURE <span className="text-[#ce801f]">NATURE</span>
+                PURE <span className="text-orange-500">NATURE</span>
               </h1>
-              <div className="h-1 w-16 bg-[#ce801f] mt-4 mb-6"></div>
+              <div className="h-1 w-16 bg-orange-500 mt-4 mb-6"></div>
             </motion.div>
 
             <motion.p

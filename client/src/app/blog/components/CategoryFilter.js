@@ -48,8 +48,8 @@ function CategoryFilterContent() {
           onClick={() => router.push("/blog")}
           className={`rounded-full px-6 py-2 font-semibold transition-all duration-200 ${
             !activeCategory
-              ? "bg-gradient-to-r from-yellow-500 to-yellow-600 text-white shadow-lg transform scale-105"
-              : "border-2 border-yellow-200 text-yellow-600 hover:bg-yellow-50"
+              ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg transform scale-105"
+              : "border-2 border-orange-200 text-orange-600 hover:bg-orange-50"
           }`}
         >
           All Posts
@@ -61,8 +61,8 @@ function CategoryFilterContent() {
             variant={activeCategory === category.slug ? "default" : "outline"}
             className={`px-4 py-2 text-sm cursor-pointer font-semibold transition-all duration-200 ${
               activeCategory === category.slug
-                ? "bg-gradient-to-r from-yellow-500 to-yellow-600 text-white shadow-lg transform scale-105"
-                : "border-2 border-yellow-200 text-yellow-600 hover:bg-yellow-50"
+                ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg transform scale-105"
+                : "border-2 border-orange-200 text-orange-600 hover:bg-orange-50"
             }`}
             onClick={() => handleCategoryClick(category.slug)}
           >
