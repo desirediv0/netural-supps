@@ -59,7 +59,10 @@ export const getProductsByType = asyncHandler(async (req, res, next) => {
         },
       },
     },
-    orderBy: [{ ourProduct: "desc" }, { [sort]: order }],
+    orderBy: [
+      { ourProduct: "desc" },
+      ...(sort === "price" ? [] : [{ [sort]: order }]),
+    ],
     skip,
     take: parseInt(limit),
   });
@@ -192,7 +195,10 @@ export const getProducts = asyncHandler(async (req, res, next) => {
         },
       },
     },
-    orderBy: [{ ourProduct: "desc" }, { [sort]: order }],
+    orderBy: [
+      { ourProduct: "desc" },
+      ...(sort === "price" ? [] : [{ [sort]: order }]),
+    ],
     skip,
     take: parseInt(limit),
   });
