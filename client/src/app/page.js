@@ -1,224 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
-import Image from "next/image";
+
 import { fetchApi } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { ArrowRight, Star, ChevronRight, Heart, Eye } from "lucide-react";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselPrevious,
-  CarouselNext,
-} from "@/components/ui/carousel";
+
+import { Star } from "lucide-react";
+
 import { motion } from "framer-motion";
-import GymSupplementShowcase from "@/components/showcase";
+
 import BenefitsSec from "@/components/benifit-sec";
 import FeaturedCategoriesSection from "@/components/catgry";
-import Headtext from "@/components/ui/headtext";
-import ProductQuickView from "@/components/ProductQuickView";
 import FeaturedProducts from "@/components/FeaturedProducts";
-
-// Hero Carousel Component
-const HeroCarousel = () => {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [api, setApi] = useState(null);
-  const [autoplay, setAutoplay] = useState(true);
-
-  const slides = [
-    {
-      title: "PREMIUM SUPPLEMENTS",
-      subtitle: "Fuel your workouts with high-quality ingredients",
-      cta: "SHOP NOW",
-      ctaLink: "/products",
-    },
-    {
-      title: "ADVANCED PROTEIN FORMULA",
-      subtitle: "30g protein per serving with zero added sugar",
-      cta: "EXPLORE",
-      ctaLink: "/category/protein",
-    },
-  ];
-
-  // Handle autoplay functionality
-  useEffect(() => {
-    if (!api || !autoplay) return;
-
-    const interval = setInterval(() => {
-      api.scrollNext();
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [api, autoplay]);
-
-  // Update current slide index when carousel changes
-  useEffect(() => {
-    if (!api) return;
-
-    const onSelect = () => {
-      setCurrentSlide(api.selectedScrollSnap());
-    };
-
-    api.on("select", onSelect);
-
-    return () => {
-      api.off("select", onSelect);
-    };
-  }, [api]);
-
-  return (
-    <div className="relative overflow-hidden h-[500px] md:h-[700px]">
-      {/* Single background video that stays consistent across all slides */}
-      <div className="absolute inset-0 w-full h-full z-0">
-        <video
-          className="w-full h-full object-cover"
-          autoPlay
-          muted
-          loop
-          playsInline
-        >
-          <source src="/video.mp4" type="video/mp4" />
-        </video>
-        <div className="absolute inset-0 bg-orange-500/20 backdrop-blur-[2px] z-10" />
-      </div>
-
-      <Carousel setApi={setApi} className="h-full relative z-20">
-        <CarouselContent className="h-full">
-          {slides.map((slide, index) => (
-            <CarouselItem key={index} className="h-full p-0">
-              <div className="relative h-full w-full overflow-hidden flex items-center justify-center">
-                {/* Content */}
-                <div className="container mx-auto px-4">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="max-w-2xl mx-auto text-center"
-                  >
-                    <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold mt-32 lg:mt-48 text-white mb-6 uppercase tracking-wider leading-tight">
-                      {slide.title}
-                    </h1>
-                    <p className="text-xl md:text-2xl text-white/90 mb-10 font-light">
-                      {slide.subtitle}
-                    </p>
-                    <Link href={slide.ctaLink}>
-                      <Button
-                        size="lg"
-                        className="text-lg px-8 lg:px-12 py-7 font-bold bg-orange-500 text-white hover:bg-orange-500/90 hover:scale-105 transition-transform duration-200"
-                      >
-                        {slide.cta}
-                        <ChevronRight className="ml-2 h-5 w-5" />
-                      </Button>
-                    </Link>
-                  </motion.div>
-                </div>
-              </div>
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-
-        {/* Navigation Controls
-        <CarouselPrevious
-          className="left-8 h-10 w-10 z-30 opacity-70 hover:opacity-100"
-          variant="secondary"
-        />
-        <CarouselNext
-          className="right-8 h-10 w-10 z-30 opacity-70 hover:opacity-100"
-          variant="secondary"
-        /> */}
-
-        {/* Dot Indicators */}
-        <div className="absolute bottom-8 left-0 right-0 z-30 flex justify-center space-x-3">
-          {slides.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => api?.scrollTo(index)}
-              className={`w-4 h-4 rounded-full transition-all transform ${
-                index === currentSlide
-                  ? "bg-white scale-100"
-                  : "bg-white/40 hover:bg-white/60"
-              }`}
-              aria-label={`Go to slide ${index + 1}`}
-            />
-          ))}
-        </div>
-
-        {/* Autoplay Toggle */}
-        <div className="absolute bottom-8 right-8 z-30">
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-10 w-10 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full"
-            onClick={() => setAutoplay(!autoplay)}
-            aria-label={autoplay ? "Pause slideshow" : "Play slideshow"}
-          >
-            {autoplay ? (
-              <span className="block w-3 h-3 bg-white"></span>
-            ) : (
-              <span className="block w-0 h-0 border-t-[5px] border-t-transparent border-b-[5px] border-b-transparent border-l-[8px] border-l-white ml-0.5"></span>
-            )}
-          </Button>
-        </div>
-      </Carousel>
-    </div>
-  );
-};
-
-// Announcement Banner
-const AnnouncementBanner = () => {
-  return (
-    <div className="bg-gradient-to-r from-orange-500/5 via-orange-500/10 to-orange-500/5 py-4 overflow-hidden border-b border-orange-500/10">
-      <div className="container mx-auto px-4">
-        <div className="flex flex-wrap items-center justify-center gap-6 md:gap-12 text-center">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="flex items-center space-x-2"
-          >
-            <div className="w-8 h-8 rounded-full bg-orange-500/10 flex items-center justify-center">
-              ⚡
-            </div>
-            <span className="text-sm md:text-base font-medium">
-              Get a Scratch Card on orders over ₹999!
-            </span>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="hidden md:flex items-center space-x-2"
-          >
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-              🎁
-            </div>
-            <span className="text-sm md:text-base font-medium">
-              GET A FREE SHAKER WITH PROTEIN PURCHASES
-            </span>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="flex items-center space-x-2"
-          >
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-              🔥
-            </div>
-            <span className="text-sm md:text-base font-medium">
-              USE CODE <strong className="text-orange-500">FIT10</strong> FOR
-              10% OFF
-            </span>
-          </motion.div>
-        </div>
-      </div>
-    </div>
-  );
-};
+import HeroCarousel from "@/components/HeroCarousel";
+import Headtext from "@/components/ui/headtext";
 
 // Testimonials Section
 const TestimonialsSection = () => {
@@ -386,6 +180,7 @@ export default function Home() {
   return (
     <div>
       <HeroCarousel />
+
       {/* <AnnouncementBanner /> */}
 
       {/* Featured Categories Section */}
