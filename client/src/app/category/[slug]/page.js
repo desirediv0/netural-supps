@@ -15,6 +15,7 @@ import {
   Filter,
   ArrowLeft,
 } from "lucide-react";
+import Image from "next/image";
 
 // Helper function to format image URLs correctly
 const getImageUrl = (image) => {
