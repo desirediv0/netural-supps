@@ -541,6 +541,72 @@ export const getProductVariant = asyncHandler(async (req, res) => {
     );
 });
 
+// Get product variant by ID
+export const getProductVariantById = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  if (!id) {
+    throw new ApiError(400, "Variant ID is required");
+  }
+
+  const variant = await prisma.productVariant.findFirst({
+    where: {
+      id: id,
+      isActive: true,
+    },
+    include: {
+      flavor: true,
+      weight: true,
+      images: true,
+      product: {
+        include: {
+          images: {
+            where: { isPrimary: true },
+            take: 1,
+          },
+        },
+      },
+    },
+  });
+
+  if (!variant) {
+    throw new ApiError(404, "Product variant not found");
+  }
+
+  // Format the variant response with proper image URL
+  const formattedVariant = {
+    ...variant,
+    flavor: variant.flavor
+      ? {
+          ...variant.flavor,
+          image: variant.flavor.image ? getFileUrl(variant.flavor.image) : null,
+        }
+      : null,
+    images: variant.images
+      ? variant.images.map((image) => ({
+          ...image,
+          url: getFileUrl(image.url),
+        }))
+      : [],
+    product: {
+      ...variant.product,
+      image: variant.product.images?.[0]?.url
+        ? getFileUrl(variant.product.images[0].url)
+        : null,
+    },
+  };
+
+  res
+    .status(200)
+    .json(
+      new ApiResponsive(
+        200,
+        { variant: formattedVariant },
+        "Product variant fetched successfully"
+      )
+    );
+});
+
 // Get all flavors
 export const getAllFlavors = asyncHandler(async (req, res) => {
   const flavors = await prisma.flavor.findMany({

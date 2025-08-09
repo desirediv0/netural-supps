@@ -20,6 +20,14 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
+import { useAddVariantToCart } from "@/lib/cart-utils";
+
+// Helper function to format image URLs correctly
+const getImageUrl = (image) => {
+  if (!image) return "/product-placeholder.jpg";
+  if (image.startsWith("http")) return image;
+  return `https://desirediv-storage.blr1.digitaloceanspaces.com/${image}`;
+};
 
 export default function ProductQuickView({ product, open, onOpenChange }) {
   const [selectedFlavor, setSelectedFlavor] = useState(null);
@@ -31,6 +39,7 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
   const [addingToCart, setAddingToCart] = useState(false);
   const [success, setSuccess] = useState(false);
   const { addToCart } = useCart();
+  const { addVariantToCart } = useAddVariantToCart();
   const [productDetails, setProductDetails] = useState(null);
   const [imgSrc, setImgSrc] = useState("");
   const [availableCombinations, setAvailableCombinations] = useState([]);
@@ -76,8 +85,8 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
           // Update image if available
           if (productData.images && productData.images.length > 0) {
             setImgSrc(
-              productData.images[0].url ||
-                productData.image ||
+              getImageUrl(productData.images[0].url) ||
+                getImageUrl(productData.image) ||
                 "/product-placeholder.jpg"
             );
           }
@@ -301,13 +310,20 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
     }
 
     try {
-      await addToCart(variantToAdd.id, quantity);
-      setSuccess(true);
-
-      // Auto close after success notification
-      setTimeout(() => {
-        onOpenChange(false);
-      }, 2000);
+      const result = await addVariantToCart(
+        variantToAdd,
+        quantity,
+        productDetails?.name || product?.name
+      );
+      if (result.success) {
+        setSuccess(true);
+        // Auto close after success notification
+        setTimeout(() => {
+          onOpenChange(false);
+        }, 2000);
+      } else {
+        setError("Failed to add to cart. Please try again.");
+      }
     } catch (err) {
       console.error("Error adding to cart:", err);
       setError("Failed to add to cart. Please try again.");
@@ -329,9 +345,7 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
         ? primaryImage.url
         : selectedVariant.images[0]?.url;
 
-      if (imageUrl && imageUrl.startsWith("http")) return imageUrl;
-      if (imageUrl)
-        return `https://desirediv-storage.blr1.cdn.digitaloceanspaces.com/${imageUrl}`;
+      return getImageUrl(imageUrl);
     }
 
     // Priority 2: Product images
@@ -341,9 +355,7 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
         ? primaryImage.url
         : displayProduct.images[0]?.url;
 
-      if (imageUrl && imageUrl.startsWith("http")) return imageUrl;
-      if (imageUrl)
-        return `https://desirediv-storage.blr1.cdn.digitaloceanspaces.com/${imageUrl}`;
+      return getImageUrl(imageUrl);
     }
 
     // Priority 3: Any variant images from any variant
@@ -359,18 +371,13 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
           ? primaryImage.url
           : variantWithImages.images[0]?.url;
 
-        if (imageUrl && imageUrl.startsWith("http")) return imageUrl;
-        if (imageUrl)
-          return `https://desirediv-storage.blr1.cdn.digitaloceanspaces.com/${imageUrl}`;
+        return getImageUrl(imageUrl);
       }
     }
 
     // Priority 4: Check product.image property (from API response)
     if (displayProduct?.image) {
-      const imageUrl = displayProduct.image;
-      if (imageUrl && imageUrl.startsWith("http")) return imageUrl;
-      if (imageUrl)
-        return `https://desirediv-storage.blr1.cdn.digitaloceanspaces.com/${imageUrl}`;
+      return getImageUrl(displayProduct.image);
     }
 
     // Final fallback
@@ -381,27 +388,25 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
   const getPriceDisplay = () => {
     // Show loading state while initial data is being fetched
     if (initialLoading || loading) {
-      return (
-        <div className="h-8 w-32 bg-gray-200 animate-pulse rounded-lg"></div>
-      );
+      return <div className="h-8 w-32 bg-gray-200 animate-pulse rounded"></div>;
     }
 
     // If we have a selected variant, show its price
     if (selectedVariant) {
       if (selectedVariant.salePrice && selectedVariant.salePrice > 0) {
         return (
-          <div className="flex items-baseline gap-3">
-            <span className="text-3xl font-bold text-orange-500">
+          <div className="flex items-baseline gap-2">
+            <span className="text-2xl font-bold text-primary">
               {formatCurrency(selectedVariant.salePrice)}
             </span>
-            <span className="text-xl text-gray-500 line-through">
+            <span className="text-lg text-gray-500 line-through">
               {formatCurrency(selectedVariant.price)}
             </span>
           </div>
         );
       }
       return (
-        <span className="text-3xl font-bold text-gray-800">
+        <span className="text-2xl font-bold">
           {formatCurrency(selectedVariant.price || 0)}
         </span>
       );
@@ -411,18 +416,18 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
     if (productDetails) {
       if (productDetails.hasSale && productDetails.basePrice > 0) {
         return (
-          <div className="flex items-baseline gap-3">
-            <span className="text-3xl font-bold text-orange-500">
+          <div className="flex items-baseline gap-2">
+            <span className="text-2xl font-bold text-primary">
               {formatCurrency(productDetails.basePrice)}
             </span>
-            <span className="text-xl text-gray-500 line-through">
+            <span className="text-lg text-gray-500 line-through">
               {formatCurrency(productDetails.regularPrice || 0)}
             </span>
           </div>
         );
       }
       return (
-        <span className="text-3xl font-bold text-gray-800">
+        <span className="text-2xl font-bold">
           {formatCurrency(productDetails.basePrice || 0)}
         </span>
       );
@@ -432,18 +437,18 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
     if (product) {
       if (product.hasSale && product.basePrice > 0) {
         return (
-          <div className="flex items-baseline gap-3">
-            <span className="text-3xl font-bold text-orange-500">
+          <div className="flex items-baseline gap-2">
+            <span className="text-2xl font-bold text-primary">
               {formatCurrency(product.basePrice)}
             </span>
-            <span className="text-xl text-gray-500 line-through">
+            <span className="text-lg text-gray-500 line-through">
               {formatCurrency(product.regularPrice || 0)}
             </span>
           </div>
         );
       }
       return (
-        <span className="text-3xl font-bold text-gray-800">
+        <span className="text-2xl font-bold">
           {formatCurrency(product.basePrice || 0)}
         </span>
       );
@@ -459,103 +464,87 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[1000px] max-h-[95vh] overflow-hidden p-0 bg-white rounded-2xl shadow-2xl border-0">
-        {/* Header */}
-        <DialogHeader className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-orange-50 to-white">
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-xl sm:text-2xl font-bold text-gray-800 pr-8 line-clamp-1">
-              {displayProduct.name}
-            </DialogTitle>
-          </div>
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-xl">{displayProduct.name}</DialogTitle>
         </DialogHeader>
 
         {loading && !productDetails ? (
-          <div className="py-16 flex justify-center">
-            <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+          <div className="py-8 flex justify-center">
+            <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
           </div>
         ) : (
-          <div className="flex flex-col lg:flex-row h-full">
-            {/* Product Image - Mobile: Full width, Desktop: Left side */}
-            <div className="w-full lg:w-1/2 p-4 lg:p-6">
-              <div className="relative h-64 sm:h-80 lg:h-[500px] rounded-2xl overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 shadow-xl">
-                <Image
-                  src={getDisplayImage()}
-                  alt={displayProduct.name}
-                  fill
-                  className="object-contain p-4"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 500px"
-                  onError={() => setImgSrc("/product-placeholder.jpg")}
-                />
-                {displayProduct.hasSale && (
-                  <div className="absolute top-4 left-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-bold px-4 py-2 rounded-full shadow-lg">
-                    SALE
-                  </div>
-                )}
-                {/* Rating badge */}
-                {displayProduct.avgRating > 0 && (
-                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-sm font-medium px-3 py-1 rounded-full shadow-lg flex items-center gap-1">
-                    <Star className="h-4 w-4 text-orange-400 fill-orange-400" />
-                    <span className="text-gray-800">
-                      {displayProduct.avgRating?.toFixed(1)}
-                    </span>
-                  </div>
-                )}
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
+            {/* Product Image */}
+            <div className="relative h-72 md:h-full rounded-md overflow-hidden bg-gray-50 shadow-sm">
+              <Image
+                src={getDisplayImage()}
+                alt={displayProduct.name}
+                fill
+                className="object-contain p-2"
+                sizes="(max-width: 768px) 100vw, 400px"
+                onError={() => setImgSrc("/product-placeholder.jpg")}
+              />
+              {displayProduct.hasSale && (
+                <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-full">
+                  SALE
+                </div>
+              )}
             </div>
 
-            {/* Product Info - Mobile: Below image, Desktop: Right side */}
-            <div className="w-full lg:w-1/2 p-4 lg:p-6 flex flex-col space-y-6 overflow-y-auto max-h-[60vh] lg:max-h-none">
+            {/* Product Info */}
+            <div className="flex flex-col">
               {/* Success Message */}
               {success && (
-                <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 text-green-700 text-sm rounded-xl flex items-center shadow-sm">
-                  <CheckCircle className="h-5 w-5 mr-3 flex-shrink-0" />
-                  <span className="font-medium">
-                    Item added to cart successfully!
-                  </span>
+                <div className="mb-4 p-3 bg-green-50 text-green-600 text-sm rounded flex items-center">
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Item added to cart successfully
                 </div>
               )}
 
               {/* Error message */}
               {error && (
-                <div className="p-4 bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 text-red-700 text-sm rounded-xl flex items-center shadow-sm">
-                  <AlertCircle className="h-5 w-5 mr-3 flex-shrink-0" />
-                  <span className="font-medium">{error}</span>
+                <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded flex items-center">
+                  <AlertCircle className="h-4 w-4 mr-2" />
+                  {error}
                 </div>
               )}
 
               {/* Price */}
-              <div className="border-b border-gray-100 pb-4">
-                {getPriceDisplay()}
-              </div>
+              <div className="mb-4">{getPriceDisplay()}</div>
 
-              {/* Rating - Desktop only (mobile shows in image) */}
+              {/* Rating */}
               {displayProduct.avgRating > 0 && (
-                <div className="hidden lg:flex items-center space-x-3">
+                <div className="flex items-center mb-4">
                   <div className="flex">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <Star
                         key={star}
-                        className={`h-5 w-5 ${
+                        className={`h-4 w-4 ${
                           star <= Math.round(displayProduct.avgRating || 0)
-                            ? "text-orange-400 fill-orange-400"
+                            ? "text-yellow-400 fill-yellow-400"
                             : "text-gray-300"
                         }`}
                       />
                     ))}
                   </div>
-                  <span className="text-sm text-gray-600 font-medium">
-                    {displayProduct.avgRating?.toFixed(1)} (
-                    {displayProduct.reviewCount || 0} reviews)
+                  <span className="text-sm text-gray-600 ml-2">
+                    ({displayProduct.reviewCount || 0} reviews)
                   </span>
                 </div>
               )}
 
+              {/* Description */}
+              <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+                {displayProduct.description || "No description available"}
+              </p>
+
               {/* Flavor selection */}
               {productDetails?.flavorOptions &&
                 productDetails.flavorOptions.length > 0 && (
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-800 mb-3">
-                      Choose Flavor
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Flavor
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {productDetails.flavorOptions.map((flavor) => {
@@ -570,12 +559,12 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
                             type="button"
                             onClick={() => handleFlavorChange(flavor)}
                             disabled={!isAvailable}
-                            className={`px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all duration-200 ${
+                            className={`px-3 py-2 rounded-md border text-sm transition-all ${
                               selectedFlavor?.id === flavor.id
-                                ? "border-orange-500 bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg transform scale-105"
+                                ? "border-primary bg-primary/10 text-primary font-medium"
                                 : isAvailable
-                                ? "border-gray-200 hover:border-orange-500 hover:text-orange-500 hover:bg-gray-50"
-                                : "border-gray-100 text-gray-400 cursor-not-allowed bg-gray-50"
+                                ? "border-gray-300 hover:border-gray-400"
+                                : "border-gray-200 text-gray-400 cursor-not-allowed"
                             }`}
                           >
                             {flavor.name}
@@ -589,9 +578,9 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
               {/* Weight selection */}
               {productDetails?.weightOptions &&
                 productDetails.weightOptions.length > 0 && (
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-800 mb-3">
-                      Choose Weight
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Weight
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {productDetails.weightOptions.map((weight) => {
@@ -612,12 +601,12 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
                             type="button"
                             onClick={() => handleWeightChange(weight)}
                             disabled={!isAvailable}
-                            className={`px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all duration-200 ${
+                            className={`px-3 py-2 rounded-md border text-sm transition-all ${
                               selectedWeight?.id === weight.id
-                                ? "border-orange-500 bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg transform scale-105"
+                                ? "border-primary bg-primary/10 text-primary font-medium"
                                 : isAvailable
-                                ? "border-gray-200 hover:border-orange-500 hover:text-orange-500 hover:bg-gray-50"
-                                : "border-gray-100 text-gray-400 cursor-not-allowed bg-gray-50"
+                                ? "border-gray-300 hover:border-gray-400"
+                                : "border-gray-200 text-gray-400 cursor-not-allowed"
                             }`}
                           >
                             {weight.value} {weight.unit}
@@ -630,21 +619,14 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
 
               {/* Stock Availability */}
               {selectedVariant && (
-                <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-xl border border-gray-200">
+                <div className="mb-4">
                   <span
-                    className={`text-sm font-medium flex items-center gap-2 ${
+                    className={`text-sm ${
                       selectedVariant.quantity > 0
                         ? "text-green-600"
                         : "text-red-600"
                     }`}
                   >
-                    <div
-                      className={`w-2 h-2 rounded-full ${
-                        selectedVariant.quantity > 0
-                          ? "bg-green-500"
-                          : "bg-red-500"
-                      }`}
-                    ></div>
                     {selectedVariant.quantity > 0
                       ? `In Stock (${selectedVariant.quantity} available)`
                       : "Out of Stock"}
@@ -653,43 +635,41 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
               )}
 
               {/* Quantity */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-800 mb-3">
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Quantity
                 </label>
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center border-2 border-gray-200 rounded-xl overflow-hidden shadow-sm">
-                    <button
-                      onClick={() => handleQuantityChange(-1)}
-                      className="p-4 bg-gray-50 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      disabled={quantity <= 1 || loading}
-                    >
-                      <Minus className="h-4 w-4" />
-                    </button>
-                    <span className="px-6 py-4 bg-white font-semibold text-gray-800 min-w-[4rem] text-center">
-                      {quantity}
-                    </span>
-                    <button
-                      onClick={() => handleQuantityChange(1)}
-                      className="p-4 bg-gray-50 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      disabled={
-                        loading ||
-                        (selectedVariant &&
-                          selectedVariant.quantity > 0 &&
-                          quantity >= selectedVariant.quantity)
-                      }
-                    >
-                      <Plus className="h-4 w-4" />
-                    </button>
-                  </div>
+                <div className="flex items-center">
+                  <button
+                    onClick={() => handleQuantityChange(-1)}
+                    className="p-2.5 rounded-l border border-gray-300 bg-gray-50 hover:bg-gray-100 transition-colors disabled:opacity-50"
+                    disabled={quantity <= 1 || loading}
+                  >
+                    <Minus className="h-4 w-4" />
+                  </button>
+                  <span className="px-6 py-2.5 border-t border-b border-gray-300 bg-white min-w-[3rem] text-center">
+                    {quantity}
+                  </span>
+                  <button
+                    onClick={() => handleQuantityChange(1)}
+                    className="p-2.5 rounded-r border border-gray-300 bg-gray-50 hover:bg-gray-100 transition-colors disabled:opacity-50"
+                    disabled={
+                      loading ||
+                      (selectedVariant &&
+                        selectedVariant.quantity > 0 &&
+                        quantity >= selectedVariant.quantity)
+                    }
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
                 </div>
               </div>
 
               {/* Actions */}
-              <div className="flex flex-col sm:flex-row gap-3 pt-4">
+              <div className="flex space-x-2 mt-auto">
                 <Button
                   onClick={handleAddToCart}
-                  className="flex-1 py-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                  className="flex-1 py-6"
                   disabled={
                     loading ||
                     addingToCart ||
@@ -701,12 +681,12 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
                 >
                   {addingToCart ? (
                     <>
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-3"></div>
-                      Adding to Cart...
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                      Adding...
                     </>
                   ) : (
                     <>
-                      <ShoppingCart className="h-5 w-5 mr-3" />
+                      <ShoppingCart className="h-4 w-4 mr-2" />
                       Add to Cart
                     </>
                   )}
@@ -716,11 +696,8 @@ export default function ProductQuickView({ product, open, onOpenChange }) {
                   href={`/products/${displayProduct.slug}`}
                   className="flex-1"
                 >
-                  <Button
-                    variant="outline"
-                    className="w-full py-4 border-2 border-gray-800 text-gray-800 hover:bg-gray-800 hover:text-white font-semibold text-lg rounded-xl transition-all duration-200 transform hover:scale-105 shadow-sm"
-                  >
-                    View Full Details
+                  <Button variant="outline" className="w-full py-6">
+                    View Details
                   </Button>
                 </Link>
               </div>

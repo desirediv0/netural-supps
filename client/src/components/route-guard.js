@@ -6,14 +6,7 @@ import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
 
 // Define private routes that require authentication
-const privateRoutes = [
-  "/account",
-  "/checkout",
-  "/wishlist",
-  "/shipping",
-  "/cart",
-  "/orders",
-];
+const privateRoutes = ["/account", "/checkout", "/wishlist", "/orders"];
 
 // Define auth routes that should redirect to dashboard if already logged in
 const authRoutes = [

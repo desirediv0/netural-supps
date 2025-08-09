@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
+import ProductCard from "./ProducCard";
 import { Button } from "@/components/ui/button";
 import {
   Carousel,
@@ -11,8 +10,6 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { Star, Eye, Heart, ShoppingCart } from "lucide-react";
-import ProductQuickView from "./ProductQuickView";
 
 const ProductSkeleton = () => (
   <div className="bg-white rounded-lg shadow-sm overflow-hidden animate-pulse">
@@ -31,9 +28,6 @@ const FeaturedProducts = ({
   isLoading = false,
   error = null,
 }) => {
-  const [quickViewProduct, setQuickViewProduct] = useState(null);
-  const [quickViewOpen, setQuickViewOpen] = useState(false);
-
   if (!isLoading && !error && products.length === 0) {
     return null;
   }
@@ -93,130 +87,7 @@ const FeaturedProducts = ({
                   key={product.id || product.slug || Math.random().toString()}
                   className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/4"
                 >
-                  <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden group relative transform hover:-translate-y-2 h-full flex flex-col">
-                    {/* Product Image */}
-                    <div className="relative h-72 bg-gradient-to-br from-gray-50 to-white overflow-hidden flex-shrink-0">
-                      <Link href={`/products/${product.slug || ""}`}>
-                        {product.image ? (
-                          <Image
-                            src={product.image || "/placeholder.jpg"}
-                            alt={product.name || "Product"}
-                            fill
-                            className="object-contain p-6 transition-transform duration-700 group-hover:scale-110"
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                          />
-                        ) : (
-                          <Image
-                            src="/placeholder.jpg"
-                            alt={product.name || "Product"}
-                            fill
-                            className="object-contain p-6 transition-transform duration-700 group-hover:scale-110"
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                          />
-                        )}
-                      </Link>
-
-                      {/* Sale Badge */}
-                      {product.hasSale && (
-                        <span className="absolute top-4 left-4 bg-gradient-to-r from-red-500 to-[#F47C20] text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg transform -rotate-12">
-                          SALE
-                        </span>
-                      )}
-
-                      {/* Action Icons */}
-                      <div className="absolute top-4 right-4 flex flex-col space-y-2 translate-x-12 group-hover:translate-x-0 transition-transform duration-500">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="w-10 h-10 p-0 bg-white hover:bg-gradient-to-r hover:from-[#F47C20] hover:to-[#E06A1A] hover:text-white rounded-full shadow-lg backdrop-blur-sm bg-opacity-90 transform hover:scale-110 transition-all duration-300"
-                        >
-                          <Heart className="h-5 w-5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="w-10 h-10 p-0 bg-white hover:bg-gradient-to-r hover:from-[#F47C20] hover:to-[#E06A1A] hover:text-white rounded-full shadow-lg backdrop-blur-sm bg-opacity-90 transform hover:scale-110 transition-all duration-300"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setQuickViewProduct(product);
-                            setQuickViewOpen(true);
-                          }}
-                        >
-                          <Eye className="h-5 w-5" />
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Product Info */}
-                    <div className="p-6 flex-grow flex flex-col">
-                      {/* Product Name */}
-                      <Link
-                        href={`/products/${product.slug || ""}`}
-                        className="block transition-colors flex-grow"
-                      >
-                        <h3 className="font-semibold text-gray-800 mb-2 text-lg line-clamp-2 group-hover:text-[#F47C20] transition-colors">
-                          {product.name || "Product"}
-                        </h3>
-                      </Link>
-
-                      {/* Rating */}
-                      <div className="flex items-center mb-3">
-                        <div className="flex text-orange-400">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className="h-4 w-4"
-                              fill={
-                                i < Math.round(product.avgRating || 0)
-                                  ? "currentColor"
-                                  : "none"
-                              }
-                            />
-                          ))}
-                        </div>
-                        <span className="text-sm text-gray-500 ml-2">
-                          ({product.reviewCount || 0})
-                        </span>
-                      </div>
-
-                      {/* Price */}
-                      <div className="mb-4">
-                        {product.hasSale ? (
-                          <div className="flex items-center space-x-2">
-                            <span className="font-bold text-2xl bg-gradient-to-r from-[#50432c] to-orange-500 bg-clip-text text-transparent">
-                              ₹{product.basePrice || 0}
-                            </span>
-                            <span className="text-gray-400 line-through text-base">
-                              ₹{product.regularPrice || 0}
-                            </span>
-                          </div>
-                        ) : (
-                          <span className="font-bold text-2xl bg-gradient-to-r from-[#50432c] to-orange-500 bg-clip-text text-transparent">
-                            ₹{product.basePrice || 0}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Variants Info */}
-                      {(product.flavors || 0) > 1 && (
-                        <p className="text-sm text-gray-500 mb-4">
-                          {product.flavors} variants available
-                        </p>
-                      )}
-
-                      {/* Add to Cart Button */}
-                      <Button
-                        className="w-full bg-gradient-to-r from-orange-500 to-orange-500 hover:from-orange-500 hover:to-orange-500 text-white font-medium py-3 rounded-xl transition-all duration-500 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 group mt-auto"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          console.log("Add to cart:", product);
-                        }}
-                      >
-                        <ShoppingCart className="h-5 w-5 mr-2 transition-transform duration-500 group-hover:rotate-12" />
-                        Add to Cart
-                      </Button>
-                    </div>
-                  </div>
+                  <ProductCard product={product} />
                 </CarouselItem>
               ))}
             </CarouselContent>
@@ -242,13 +113,6 @@ const FeaturedProducts = ({
             </Button>
           </Link>
         </div>
-
-        {/* Quick View Dialog */}
-        <ProductQuickView
-          product={quickViewProduct}
-          open={quickViewOpen}
-          onOpenChange={setQuickViewOpen}
-        />
       </div>
     </section>
   );

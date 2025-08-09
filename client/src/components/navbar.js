@@ -33,7 +33,7 @@ import { logo } from "@/assets";
 
 export function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
-  const { cart } = useCart();
+  const { cart, getCartItemCount } = useCart();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [categories, setCategories] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -126,10 +126,7 @@ export function Navbar() {
     categories,
     searchQuery,
     setSearchQuery,
-    handleSearch,
     isAuthenticated,
-    user,
-    cart,
     handleLogout,
   }) => {
     const handleMobileSearch = (e) => {
@@ -335,7 +332,7 @@ export function Navbar() {
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse"></div>
         <div className="relative z-10 flex items-center justify-center gap-4 capitalize">
           <Truck className="h-5 w-5 animate-bounce" />
-          <span className="font-semibold">
+          <span className="font-semibold capitalize">
             Shop for ₹999+ and receive a scratch card with exciting rewards!
           </span>
           <Shield className="h-5 w-5" />
@@ -552,9 +549,9 @@ export function Navbar() {
                   className="p-3 text-gray-600 hidden md:block hover:text-orange-500 transition-all duration-300 relative bg-gray-100 rounded-xl hover:bg-orange-50 hover:scale-110"
                 >
                   <ShoppingCart className="h-5 w-5" />
-                  {cart && cart.items?.length > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-orange-500 text-white rounded-full text-xs w-6 h-6 flex items-center justify-center font-bold shadow-lg animate-pulse">
-                      {cart.items.reduce((acc, item) => acc + item.quantity, 0)}
+                  {getCartItemCount() > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-primary text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
+                      {getCartItemCount()}
                     </span>
                   )}
                 </Link>
@@ -774,9 +771,9 @@ export function Navbar() {
               } transition-transform duration-300`}
             >
               <ShoppingCart className="h-6 w-6" />
-              {cart && cart.items?.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-orange-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center font-bold animate-bounce shadow-lg">
-                  {cart.items.reduce((acc, item) => acc + item.quantity, 0)}
+              {getCartItemCount() > 0 && (
+                <span className="absolute -top-1 -right-1 bg-primary text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
+                  {getCartItemCount()}
                 </span>
               )}
               {pathname === "/cart" && (
